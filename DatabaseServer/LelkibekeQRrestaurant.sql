@@ -67,6 +67,46 @@ ALTER TABLE `order_items` ADD CONSTRAINT `order_items_fk1` FOREIGN KEY (`order_i
 ALTER TABLE `order_items` ADD CONSTRAINT `order_items_fk2` FOREIGN KEY (`menu_item_id`) REFERENCES `menu_items`(`id`);
 ALTER TABLE `menu_items` ADD CONSTRAINT `menu_items_fk1` FOREIGN KEY (`category_id`) REFERENCES `category`(`id`);
 
+-- Insert into users
+INSERT INTO users (email, password, name, role) VALUES
+('admin@example.com', 'hashedpassword1', 'Admin User', 'admin'),
+('user1@example.com', 'hashedpassword2', 'John Doe', 'user'),
+('user2@example.com', 'hashedpassword3', 'Jane Smith', 'user'),
+('waiter1@example.com', 'hashedpassword4', 'Michael Scott', 'waiter');
+
+-- Insert into tables
+INSERT INTO tables (table_number, qr_code_url, is_avalable) VALUES
+('T1', 'https://example.com/qr1', true),
+('T2', 'https://example.com/qr2', false),
+('T3', 'https://example.com/qr3', true);
+
+-- Insert into category
+INSERT INTO category (name) VALUES
+('Pizza'),
+('Burger'),
+('Pasta'),
+('Drinks');
+
+-- Insert into menu_items
+INSERT INTO menu_items (category_id, name, description, price, image_url) VALUES
+(1, 'Margherita Pizza', 'Classic Italian pizza with mozzarella and tomato sauce', 2500, 'https://example.com/margherita.jpg'),
+(1, 'Pepperoni Pizza', 'Spicy pepperoni with mozzarella cheese', 2800, 'https://example.com/pepperoni.jpg'),
+(2, 'Cheeseburger', 'Juicy beef patty with cheese and lettuce', 2000, 'https://example.com/cheeseburger.jpg'),
+(2, 'Chicken Burger', 'Crispy chicken patty with mayo and lettuce', 2200, 'https://example.com/chickenburger.jpg'),
+(3, 'Spaghetti Bolognese', 'Classic pasta with meat sauce', 2300, 'https://example.com/spaghetti.jpg'),
+(4, 'Coke', 'Refreshing Coca-Cola', 600, 'https://example.com/coke.jpg');
+
+-- Insert into orders
+INSERT INTO orders (user_id, table_id, status, total_price, created_at) VALUES
+(2, 1, 'cooking', '4500', NOW()),
+(3, 2, 'done', '2800', NOW()),
+(2, 3, 'cooking', '2300', NOW());
+
+-- Insert into order_items
+INSERT INTO order_items (order_id, menu_item_id, quantity, notes) VALUES
+(1, 1, 1, 'Extra cheese'),
+(1, 3, 1, 'No onions'),
+(3, 5, 1, 'Gluten-free pasta');
 
 
 DELIMITER //
@@ -87,12 +127,12 @@ CREATE PROCEDURE GetActiveOrders()
 BEGIN
     SELECT 
         orders.table_id, 
-        GROUP_CONCAT(menu_items.name SEPARATOR ', ') AS menu_items
+        GROUP_CONCAT(menu_items.name ORDER BY menu_items.name SEPARATOR ', ') AS menu_items
     FROM orders
     JOIN order_items ON orders.id = order_items.order_id
     JOIN menu_items ON order_items.menu_item_id = menu_items.id
     WHERE orders.status = 'cooking'
-    ORDER BY orders.table_id, menu_items.name;
+    GROUP BY orders.table_id
 END //
 
 DELIMITER //
@@ -105,5 +145,3 @@ BEGIN
     WHERE orders.status = 'cooking'
     ORDER BY menu_items.name;
 END //
-
-
