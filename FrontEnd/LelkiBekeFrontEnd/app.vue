@@ -1,6 +1,12 @@
+<script>
+import { NuxtPage } from '#components';
+import RestaurantMenu from './components/RestaurantMenu.vue';
+
+</script>
+
+
+
 <template>
-  <div>
-    <NuxtRouteAnnouncer />
-    <NuxtWelcome />
-  </div>
+  <NuxtPage/>
 </template>
+
