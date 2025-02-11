@@ -118,8 +118,17 @@ END //
 DELIMITER //
 CREATE PROCEDURE GetMenu()
 BEGIN
-  SELECT * FROM `menu_items`;
+  SELECT 
+    menu_items.id, 
+    category.name AS category_name, 
+    menu_items.name, 
+    menu_items.description, 
+    menu_items.price, 
+    menu_items.image_url
+  FROM menu_items
+  JOIN category ON menu_items.category_id = category.id;
 END //
+
 
 
 DELIMITER //
@@ -147,7 +156,7 @@ BEGIN
     ORDER BY menu_items.name;
 END //
 
-<<<<<<< HEAD
+
 DELIMITER //
 CREATE PROCEDURE CreateNewMenuItem(IN p_category_id INT, IN p_name VARCHAR(255), IN p_description TEXT, IN p_price DECIMAL(10,0), IN p_image_url TEXT)
 BEGIN
@@ -205,6 +214,47 @@ END //
 -- CALL CreateNewTable('T50', 'https://example.com/qr50', true);
 -- CALL ModifyTableById(4, 'T355', 'https://example.com/qr355', false);
 -- CALL DeleteTableById(4);
-=======
-CALL GetActiveOrders()
->>>>>>> origin/main
+
+
+
+DELIMITER //
+
+CREATE PROCEDURE sendOrder(
+    IN p_user_id INT,
+    IN p_table_id INT,
+    IN p_total_price DECIMAL(10,2),
+    IN p_items JSON
+)
+BEGIN
+    DECLARE v_order_id INT;
+    INSERT INTO orders (user_id, table_id, status, total_price, created_at)
+    VALUES (p_user_id, p_table_id, 'cooking', p_total_price, NOW());
+    SET v_order_id = LAST_INSERT_ID();
+    SET @json = p_items;
+    SET @i = 0;
+    SET @length = JSON_LENGTH(@json);
+
+    WHILE @i < @length DO
+        INSERT INTO order_items (order_id, menu_item_id, quantity, notes)
+        VALUES (
+            v_order_id,
+            JSON_UNQUOTE(JSON_EXTRACT(@json, CONCAT('$[', @i, '].menu_item_id'))),
+            JSON_UNQUOTE(JSON_EXTRACT(@json, CONCAT('$[', @i, '].quantity'))),
+            JSON_UNQUOTE(JSON_EXTRACT(@json, CONCAT('$[', @i, '].notes')))
+        );
+        SET @i = @i + 1;
+    END WHILE;
+    SELECT 'Order placed successfully' AS message, v_order_id AS order_id;
+END //
+
+DELIMITER ;
+-- Mukodik
+-- CALL sendOrder(
+--     1, -- user_id
+--     3, -- table_id
+--     29.99, -- total_price
+--     '[{"menu_item_id": 2, "quantity": 1, "notes": "Extra cheese"},
+--       {"menu_item_id": 5, "quantity": 2, "notes": "No onions"}]' -- order items JSON
+-- );
+
+
