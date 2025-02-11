@@ -132,8 +132,9 @@ BEGIN
     JOIN order_items ON orders.id = order_items.order_id
     JOIN menu_items ON order_items.menu_item_id = menu_items.id
     WHERE orders.status = 'cooking'
-    GROUP BY orders.table_id
+    GROUP BY orders.table_id;
 END //
+
 
 DELIMITER //
 CREATE PROCEDURE GetAllOrderedItems()
@@ -146,6 +147,7 @@ BEGIN
     ORDER BY menu_items.name;
 END //
 
+<<<<<<< HEAD
 DELIMITER //
 CREATE PROCEDURE CreateNewMenuItem(IN p_category_id INT, IN p_name VARCHAR(255), IN p_description TEXT, IN p_price DECIMAL(10,0), IN p_image_url TEXT)
 BEGIN
@@ -203,3 +205,6 @@ END //
 -- CALL CreateNewTable('T50', 'https://example.com/qr50', true);
 -- CALL ModifyTableById(4, 'T355', 'https://example.com/qr355', false);
 -- CALL DeleteTableById(4);
+=======
+CALL GetActiveOrders()
+>>>>>>> origin/main
