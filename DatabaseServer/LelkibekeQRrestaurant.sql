@@ -216,6 +216,7 @@ END //
 -- CALL DeleteTableById(4);
 
 
+
 DELIMITER //
 
 CREATE PROCEDURE sendOrder(
@@ -255,4 +256,5 @@ DELIMITER ;
 --     '[{"menu_item_id": 2, "quantity": 1, "notes": "Extra cheese"},
 --       {"menu_item_id": 5, "quantity": 2, "notes": "No onions"}]' -- order items JSON
 -- );
+
 
