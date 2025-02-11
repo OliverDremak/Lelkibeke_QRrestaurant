@@ -145,3 +145,61 @@ BEGIN
     WHERE orders.status = 'cooking'
     ORDER BY menu_items.name;
 END //
+
+DELIMITER //
+CREATE PROCEDURE CreateNewMenuItem(IN p_category_id INT, IN p_name VARCHAR(255), IN p_description TEXT, IN p_price DECIMAL(10,0), IN p_image_url TEXT)
+BEGIN
+    INSERT INTO menu_items (category_id, name, description, price, image_url)
+    VALUES (p_category_id, p_name, p_description, p_price, p_image_url);
+END //
+
+DELIMITER //
+CREATE PROCEDURE ModifyMenuItemById(IN p_menu_item_id INT, IN p_category_id INT, IN p_name VARCHAR(255), IN p_description TEXT, IN p_price DECIMAL(10,0), IN p_image_url TEXT)
+BEGIN
+    UPDATE menu_items
+    SET category_id = p_category_id,
+        name = p_name,
+        description = p_description,
+        price = p_price,
+        image_url = p_image_url
+    WHERE id = p_menu_item_id;
+END //
+
+DELIMITER //
+CREATE PROCEDURE DeleteMenuItemById(IN p_menu_item_id INT)
+BEGIN
+    DELETE FROM menu_items WHERE id = p_menu_item_id;
+END //
+
+DELIMITER //
+CREATE PROCEDURE CreateNewTable(IN p_table_number VARCHAR(255), IN p_qr_code_url TEXT, IN p_is_available BOOLEAN)
+BEGIN
+    INSERT INTO `tables` (table_number, qr_code_url, is_avalable)
+    VALUES (p_table_number, p_qr_code_url, p_is_available);
+END //
+
+DELIMITER //
+CREATE PROCEDURE ModifyTableById(IN p_table_id INT, IN p_table_number VARCHAR(255), IN p_qr_code_url TEXT, IN p_is_available BOOLEAN)
+BEGIN
+    UPDATE `tables`
+    SET table_number = p_table_number,
+        qr_code_url = p_qr_code_url,
+        is_avalable = p_is_available
+    WHERE id = p_table_id;
+END //
+
+DELIMITER //
+CREATE PROCEDURE DeleteTableById(
+    IN p_table_id INT
+)
+BEGIN
+    DELETE FROM `tables` WHERE id = p_table_id;
+END //
+
+
+-- CALL CreateNewMenuItem(1, 'Geronimo Pizza', 'Geronimo Italian pizza with tomato sauce and mozzarella', 2500, 'https://example.com/geronimo.jpg');
+-- CALL ModifyMenuItemById(7, 1, 'Jojo Pizza', 'Jojo pizza with pepperoni and extra cheese', 2800, 'https://example.com/jojo.jpg');
+-- CALL DeleteMenuItemById(7);
+-- CALL CreateNewTable('T50', 'https://example.com/qr50', true);
+-- CALL ModifyTableById(4, 'T355', 'https://example.com/qr355', false);
+-- CALL DeleteTableById(4);
