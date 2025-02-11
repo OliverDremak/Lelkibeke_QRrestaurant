@@ -132,8 +132,9 @@ BEGIN
     JOIN order_items ON orders.id = order_items.order_id
     JOIN menu_items ON order_items.menu_item_id = menu_items.id
     WHERE orders.status = 'cooking'
-    GROUP BY orders.table_id
+    GROUP BY orders.table_id;
 END //
+
 
 DELIMITER //
 CREATE PROCEDURE GetAllOrderedItems()
@@ -145,3 +146,5 @@ BEGIN
     WHERE orders.status = 'cooking'
     ORDER BY menu_items.name;
 END //
+
+CALL GetActiveOrders()
