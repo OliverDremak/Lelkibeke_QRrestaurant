@@ -23,9 +23,9 @@
         <h2>Main Courses</h2>
         <div class="menu-grid">
           <div v-for="item in filteredMainCourses" :key="item.id" class="menu-item">
-            <h3>{{ item.name }} ({{ item.category }})</h3>
+            <h3>{{ item.name }} ({{ item.category_name }})</h3>
             <p>{{ item.description }}</p>
-            <p class="price">${{ item.price.toFixed(2) }}</p>
+            <p class="price">{{ item.price }}ft</p>
             <ButtonComponet @click="addToCart(item)" text="Add to cart"/>
           </div>
         </div>
@@ -37,14 +37,14 @@
         <div v-else>
           <div v-for="(cartItem, index) in cart" :key="index" class="cart-item">
             <span>{{ cartItem.name }} (x{{ cartItem.quantity }})</span>
-            <span>${{ (cartItem.price * cartItem.quantity).toFixed(2) }}</span>
+            <span>{{ (cartItem.price * cartItem.quantity).toFixed(2) }}ft</span>
             <button @click="decreaseQuantity(index)">&#9664;</button>
             <button @click="increaseQuantity(index)">&#9654;</button>
             <button @click="removeFromCart(index)"><i class="bi bi-trash3"></i></button>
           </div>
           <hr>
           <div class="total">
-            <span>Total: ${{ cartTotal.toFixed(2) }}</span>
+            <span>Total: {{ cartTotal }}ft</span>
           </div>
           <ButtonComponet @click="handleCheckout" text="Checkout"/>
         </div>
@@ -56,126 +56,94 @@
   </div>
 </template>
 
-<script>
+<script setup>
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import ButtonComponet from './ButtonComponet.vue';
+const { data } = useFetch('http://localhost:8000/menu');
 
-export default {
-  components: {
-    ButtonComponet
-  },
-  setup() {
-    const mainCourses = ref([
-      { id: 1, name: 'Grilled Salmon', description: 'Fresh Atlantic salmon with herbs', price: 18.50, category: 'Seafood' },
-      { id: 2, name: 'Ribeye Steak', description: 'USDA prime cut with roasted vegetables', price: 24.90, category: 'Meat' },
-      { id: 3, name: 'Vegetarian Lasagna', description: 'Layers of pasta and fresh vegetables', price: 16.75, category: 'Vegetarian' },
-      { id: 4, name: 'Chicken Alfredo', description: 'Creamy fettuccine with grilled chicken', price: 15.95, category: 'Pasta' },
-      { id: 5, name: 'Beef Tacos', description: 'Three tacos with seasoned beef', price: 12.25, category: 'Mexican' },
-      { id: 6, name: 'Chicken Curry', description: 'Spicy Indian curry with basmati rice', price: 14.50, category: 'Indian' },
-      { id: 7, name: 'Margherita Pizza', description: 'Classic pizza with fresh mozzarella', price: 11.75, category: 'Pizza' },
-      { id: 8, name: 'Sushi Platter', description: 'Assorted sushi rolls and sashimi', price: 22.00, category: 'Japanese' }
-    ]);
-    const isWide = ref(false);
-    const menuClass = computed(() => ({
-      "menu-section": true,
-      "col-8": isWide.value,
-      "col-12": !isWide.value,
-    }));
-    const handleResize = () => {
-    isWide.value = window.innerWidth >= 1000;
-    };
+const mainCourses = ref(data);
+const isWide = ref(false);
+const menuClass = computed(() => ({
+  "menu-section": true,
+  "col-8": isWide.value,
+  "col-12": !isWide.value,
+}));
+const handleResize = () => {
+isWide.value = window.innerWidth >= 1000;
+};
 
-    onMounted(() => {
-      handleResize();
-      window.addEventListener("resize", handleResize);
-    });
+onMounted(() => {
+  handleResize();
+  window.addEventListener("resize", handleResize);
+});
 
-    onUnmounted(() => {
-      window.removeEventListener("resize", handleResize);
-    });
+onUnmounted(() => {
+  window.removeEventListener("resize", handleResize);
+});
 
-    const cart = ref([]);
-    if (typeof window !== 'undefined') {
-      cart.value = JSON.parse(localStorage.getItem('cart')) || [];
-    }
-    const isCartExpanded = ref(false);
-    const selectedCategory = ref('');
-    const filteredMainCourses = computed(() => {
-      return selectedCategory.value
-        ? mainCourses.value.filter(item => item.category === selectedCategory.value)
-        : mainCourses.value;
-    });
+const cart = ref([]);
+if (typeof window !== 'undefined') {
+  cart.value = JSON.parse(localStorage.getItem('cart')) || [];
+}
+const isCartExpanded = ref(false);
+const selectedCategory = ref('');
+const filteredMainCourses = computed(() => {
+  return selectedCategory.value
+    ? mainCourses.value.filter(item => item.category_name === selectedCategory.value)
+    : mainCourses.value;
+});
 
-    const uniqueCategories = computed(() => {
-      const categories = mainCourses.value.map(item => item.category);
-      return [...new Set(categories)];
-    });
+const uniqueCategories = computed(() => {
+  const categories = mainCourses.value.map(item => item.category_name);
+  return [...new Set(categories)];
+});
 
-    const cartTotal = computed(() => {
-      return cart.value.reduce((total, item) => total + item.price * item.quantity, 0);
-    });
+const cartTotal = computed(() => {
+  return cart.value.reduce((total, item) => total + item.price * item.quantity, 0);
+});
 
-    const addToCart = (item) => {
-      const cartItem = cart.value.find(ci => ci.id === item.id);
-      if (cartItem) {
-        cartItem.quantity++;
-      } else {
-        cart.value.push({ ...item, quantity: 1 });
-      }
-    };
-
-    const removeFromCart = (index) => {
-      cart.value.splice(index, 1);
-    };
-
-    const increaseQuantity = (index) => {
-      cart.value[index].quantity++;
-    };
-
-    const decreaseQuantity = (index) => {
-      if (cart.value[index].quantity > 1) {
-        cart.value[index].quantity--;
-      } else {
-        removeFromCart(index);
-      }
-    };
-
-    const toggleCart = () => {
-      isCartExpanded.value = !isCartExpanded.value;
-    };
-
-    const handleCheckout = () => {
-      // Handle checkout logic here
-      console.log('Checkout:', cartTotal);
-    };
-
-    const filterByCategory = (category) => {
-      selectedCategory.value = category;
-    };
-
-    watch(cart, (newCart) => {
-      localStorage.setItem('cart', JSON.stringify(newCart));
-    }, { deep: true });
-
-    return {
-      mainCourses,
-      cart,
-      isCartExpanded,
-      selectedCategory,
-      filteredMainCourses,
-      uniqueCategories,
-      cartTotal,
-      addToCart,
-      removeFromCart,
-      increaseQuantity,
-      decreaseQuantity,
-      toggleCart,
-      handleCheckout,
-      filterByCategory,
-      menuClass
-    };
+const addToCart = (item) => {
+  const cartItem = cart.value.find(ci => ci.id === item.id);
+  if (cartItem) {
+    cartItem.quantity++;
+  } else {
+    cart.value.push({ ...item, quantity: 1 });
   }
 };
+
+const removeFromCart = (index) => {
+  cart.value.splice(index, 1);
+};
+
+const increaseQuantity = (index) => {
+  cart.value[index].quantity++;
+};
+
+const decreaseQuantity = (index) => {
+  if (cart.value[index].quantity > 1) {
+    cart.value[index].quantity--;
+  } else {
+    removeFromCart(index);
+  }
+};
+
+const toggleCart = () => {
+  isCartExpanded.value = !isCartExpanded.value;
+};
+
+const handleCheckout = () => {
+  // Handle checkout logic here
+  console.log('Checkout:', cartTotal);
+};
+
+const filterByCategory = (category) => {
+  selectedCategory.value = category;
+};
+
+watch(cart, (newCart) => {
+  localStorage.setItem('cart', JSON.stringify(newCart));
+}, { deep: true });
+
 </script>
 
 <style scoped>
