@@ -63,7 +63,7 @@ interface LoginResponse {
 const email = ref('');
 const password = ref('');
 const errorMessage = ref('');
-const rememberMe = ref(false);
+const rememberMe = ref(false); // TODO: Implement remember me functionality
 
 const login = async () => {
   try {
