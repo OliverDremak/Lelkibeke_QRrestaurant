@@ -9,6 +9,6 @@ const router = useRouter();
   <div>
     <Navbar />
     <QRreaded/>
-    <Footer />
+    <Footer/>
   </div>
 </template>
