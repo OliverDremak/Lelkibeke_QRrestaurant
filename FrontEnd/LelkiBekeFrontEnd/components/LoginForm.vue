@@ -5,7 +5,7 @@
           <div class="card">
             <div class="card-body">
               <h3 class="card-title text-center">Login</h3>
-              <form @submit.prevent="handleLogin">
+              <form @submit.prevent="login">
                 <div class="form-group">
                   <label for="email">Email</label>
                   <input
@@ -47,23 +47,23 @@
   </template>
   
   <script setup lang="ts">
-  import { ref } from 'vue'
-  import { useRouter } from 'vue-router'
-  
-  const email = ref('')
-  const password = ref('')
-  const rememberMe = ref(false)
-  const router = useRouter()
-  
-  const handleLogin = () => {
-    // Add your login logic here (e.g., API call)
-    // For demonstration, we'll just redirect to the home page
-    if (email.value && password.value) {
-      router.push('/')
-    } else {
-      alert('Please enter your email and password')
-    }
-  }
+  import { ref } from 'vue';
+  const email = ref('');
+  const password = ref('');
+  const errorMessage = ref('');
+  const api = useApi();
+  const rememberMe = ref(false);
+
+  const login = async () => {
+      try {
+          await api.login(email.value, password.value);
+          navigateTo('/menu');
+      } catch (error) {
+          errorMessage.value = 'Invalid credentials!';
+      }
+  };
+
+
   </script>
   
   <style scoped>
