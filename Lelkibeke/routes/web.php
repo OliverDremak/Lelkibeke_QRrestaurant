@@ -11,8 +11,7 @@ Route::get('/', function () {
 
 Route::get('/users', [UserController::class, 'getUsers']);
 Route::get('/menu', [MenuItemController::class, 'getMenu']);
-Route::post('/register', [UserController::class, 'register']);
-Route::post('/login', [UserController::class, 'login']);
+
 //Route::post('/sendorder', [OrderController::class, 'sendOrder']); //Meg nem jo kell a useres rész
 
-Route::middleware('auth:sanctum')->get('/user', [UserController::class, 'userProfile']);
+//Route::middleware('auth:sanctum')->get('/user', [UserController::class, 'userProfile']);
