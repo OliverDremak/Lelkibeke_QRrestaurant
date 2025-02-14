@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
+use Laravel\Sanctum\HasApiTokens;
+use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller
 {
@@ -27,28 +29,28 @@ class UserController extends Controller
             'role' => 'nullable|in:admin,user,waiter'
         ]);
 
-        try {
-            // Call the stored procedure
+        try {            
             DB::statement('CALL RegisterUser(?, ?, ?, ?)', [
                 $validated['email'],
                 $validated['password'],
                 $validated['name'],
-                $validated['role'] ?? null
+                $validated['role'] ?? 'user' 
             ]);
 
-            // Get the newly created user
             $user = User::where('email', $validated['email'])->first();
+            $token = $user->createToken('auth-token')->plainTextToken;
 
             return response()->json([
-                'message' => 'User registered successfully',
+                'token' => $token,
                 'user' => $user
             ], 201);
 
         } catch (\Exception $e) {
+            $statusCode = method_exists($e, 'getStatusCode') ? $e->getStatusCode() : 500;
             return response()->json([
                 'message' => 'Registration failed',
                 'error' => $e->getMessage()
-            ], 500);
+            ], $statusCode);
         }
     }
 
@@ -56,30 +58,27 @@ class UserController extends Controller
     {
         $credentials = $request->validate([
             'email' => 'required|email',
-            'password' => 'required|string'
+            'password' => 'required|string' // Now receives bcrypt hash
         ]);
-
+        $user = User::where('email', $credentials['email'])->first();
         try {
-            // Call the stored procedure
-            $result = DB::select('CALL LoginUser(?, ?)', [
-                $credentials['email'],
-                $credentials['password']
+            // Call stored procedure to get user by email
+            $result = DB::select('CALL LoginUser(?)', [
+                $credentials['email']
             ]);
 
-            // Check if authentication succeeded
-            if (!empty($result) && $result[0]->id !== null) {
-                $user = User::find($result[0]->id);
-                
-                // Manually log in the user
-                Auth::login($user);
-                
-                return response()->json([
-                    'message' => 'Login successful',
-                    'user' => $user
-                ]);
+            if (empty($result)) {
+                return response()->json(['message' => 'Invalid credentials'], 401);
             }
 
-            return response()->json(['message' => 'Invalid credentials'], 401);
+            $userData = $result[0];
+            $user = User::find($userData->id);
+            $token = $user->createToken('auth-token')->plainTextToken;
+
+            return response()->json([
+                'token' => $token,
+                'user' => $user
+            ]);
 
         } catch (\Exception $e) {
             return response()->json([
