@@ -208,3 +208,24 @@ END //
 =======
 CALL GetActiveOrders()
 >>>>>>> origin/main
+
+DELIMITER //
+CREATE PROCEDURE GetOrdersForTableById(IN p_table_id INT)
+BEGIN
+    SELECT 
+        GROUP_CONCAT(menu_items.name ORDER BY menu_items.name SEPARATOR ', ') AS menu_items
+    FROM orders
+    JOIN order_items ON orders.id = order_items.order_id
+    JOIN menu_items ON order_items.menu_item_id = menu_items.id
+    WHERE orders.status = 'cooking'
+      AND orders.table_id = p_table_id
+    GROUP BY orders.table_id;
+END //
+
+DELIMITER //
+CREATE PROCEDURE SetTableOccupancyStatus(IN p_table_id INT, IN p_occupied BOOLEAN)
+BEGIN
+    UPDATE `tables`
+    SET is_avalable = p_occupied
+    WHERE id = p_table_id;
+END //
