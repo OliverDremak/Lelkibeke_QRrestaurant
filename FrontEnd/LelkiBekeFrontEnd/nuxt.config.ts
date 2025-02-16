@@ -13,5 +13,13 @@ export default defineNuxtConfig({
   ],
   build: {
     transpile: ['bootstrap-vue']
-  }
+  },
+  runtimeConfig: {
+    public: {
+      apiBase: 'http://localhost:8000' 
+    }
+  },
+  modules: [
+    '@pinia/nuxt',
+  ]
 })
