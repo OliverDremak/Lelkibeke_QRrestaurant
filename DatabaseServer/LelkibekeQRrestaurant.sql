@@ -233,7 +233,26 @@ END //
 -- CALL CreateNewTable('T50', 'https://example.com/qr50', true);
 -- CALL ModifyTableById(4, 'T355', 'https://example.com/qr355', false);
 -- CALL DeleteTableById(4);
+DELIMITER //
+CREATE PROCEDURE GetOrdersForTableById(IN p_table_id INT)
+BEGIN
+    SELECT 
+        GROUP_CONCAT(menu_items.name ORDER BY menu_items.name SEPARATOR ', ') AS menu_items
+    FROM orders
+    JOIN order_items ON orders.id = order_items.order_id
+    JOIN menu_items ON order_items.menu_item_id = menu_items.id
+    WHERE orders.status = 'cooking'
+      AND orders.table_id = p_table_id
+    GROUP BY orders.table_id;
+END //
 
+DELIMITER //
+CREATE PROCEDURE SetTableOccupancyStatus(IN p_table_id INT, IN p_occupied BOOLEAN)
+BEGIN
+    UPDATE `tables`
+    SET is_avalable = p_occupied
+    WHERE id = p_table_id;
+END //
 
 DELIMITER //
 
@@ -266,14 +285,6 @@ BEGIN
 END //
 
 DELIMITER ;
--- Mukodik
--- CALL sendOrder(
---     1, -- user_id
---     3, -- table_id
---     29.99, -- total_price
---     '[{"menu_item_id": 2, "quantity": 1, "notes": "Extra cheese"},
---       {"menu_item_id": 5, "quantity": 2, "notes": "No onions"}]' -- order items JSON
--- );
 
 
 -- LOGIN / REGISTER functions
@@ -329,3 +340,4 @@ DELIMITER ;
 
 CALL RegisterUser('john@example.com', 'password123', 'John Doe', NULL); -- Mukodik
 CALL LoginUser('john@example.com', 'password123'); -- Mukodik
+
