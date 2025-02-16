@@ -2,15 +2,30 @@ CREATE DATABASE LelkibekeQR
 	CHARACTER SET utf8
 	COLLATE utf8_hungarian_ci;
 
-CREATE TABLE IF NOT EXISTS `users` (
-    `id` INT AUTO_INCREMENT NOT NULL UNIQUE,
-    `email` VARCHAR(255) NOT NULL,
-    `password` VARCHAR(255) NOT NULL,
+CREATE TABLE `users` (
+    `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
     `name` VARCHAR(255) NOT NULL,
-    `role` ENUM('admin', 'user', 'waiter') NOT NULL,
-    PRIMARY KEY (`id`),
-    UNIQUE (`email`)
+    `email` VARCHAR(255) NOT NULL UNIQUE,
+    `password` VARCHAR(255) NOT NULL,
+    `role` VARCHAR(255),
+    `remember_token` VARCHAR(100) DEFAULT NULL,
+    `created_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
+
+CREATE TABLE `personal_access_tokens` (
+    `id` bigint unsigned NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    `tokenable_type` varchar(255) NOT NULL,
+    `tokenable_id` bigint unsigned NOT NULL,
+    `name` varchar(255) NOT NULL,
+    `token` varchar(64) NOT NULL UNIQUE,
+    `abilities` text DEFAULT NULL,
+    `last_used_at` timestamp NULL DEFAULT NULL,
+    `expires_at` timestamp NULL DEFAULT NULL,
+    `created_at` timestamp NULL DEFAULT NULL,
+    `updated_at` timestamp NULL DEFAULT NULL
+);
+
 
 CREATE TABLE IF NOT EXISTS `tables` (
 	`id` int AUTO_INCREMENT NOT NULL UNIQUE,
@@ -32,7 +47,7 @@ CREATE TABLE IF NOT EXISTS `menu_items` (
 
 CREATE TABLE IF NOT EXISTS `orders` (
 	`id` int AUTO_INCREMENT NOT NULL UNIQUE,
-	`user_id` int NOT NULL,
+	`user_id` BIGINT UNSIGNED NOT NULL,
 	`table_id` int NOT NULL,
 	`status` enum('cooking', 'done') NOT NULL,
 	`total_price` text NOT NULL,
@@ -66,6 +81,10 @@ ALTER TABLE `order_items` ADD CONSTRAINT `order_items_fk1` FOREIGN KEY (`order_i
 
 ALTER TABLE `order_items` ADD CONSTRAINT `order_items_fk2` FOREIGN KEY (`menu_item_id`) REFERENCES `menu_items`(`id`);
 ALTER TABLE `menu_items` ADD CONSTRAINT `menu_items_fk1` FOREIGN KEY (`category_id`) REFERENCES `category`(`id`);
+
+
+ALTER TABLE `personal_access_tokens` MODIFY `tokenable_id` BIGINT UNSIGNED NOT NULL;
+ALTER TABLE `personal_access_tokens` ADD CONSTRAINT `personal_access_tokens_user_id_fk` FOREIGN KEY (`tokenable_id`) REFERENCES `users`(`id`) ON DELETE CASCADE;
 
 -- Insert into users
 INSERT INTO users (email, password, name, role) VALUES
@@ -216,7 +235,6 @@ END //
 -- CALL DeleteTableById(4);
 
 
-
 DELIMITER //
 
 CREATE PROCEDURE sendOrder(
@@ -258,3 +276,56 @@ DELIMITER ;
 -- );
 
 
+-- LOGIN / REGISTER functions
+
+
+DELIMITER $$
+
+CREATE PROCEDURE RegisterUser(
+    IN p_email VARCHAR(255), 
+    IN p_password VARCHAR(255), 
+    IN p_name VARCHAR(255),
+    IN p_role ENUM('admin', 'user', 'waiter') -- Role is REQUIRED (no default in table)
+)
+BEGIN
+    DECLARE hashed_password VARCHAR(255);
+    DECLARE default_role ENUM('admin', 'user', 'waiter') DEFAULT 'user';
+
+    SET hashed_password = SHA2(p_password, 256);
+    
+    INSERT INTO users (name, email, password, role) -- Match your table's columns
+    VALUES (
+        p_name, 
+        p_email, 
+        hashed_password, 
+        COALESCE(p_role, default_role) -- Use provided role or default to 'user'
+    );
+
+    SELECT LAST_INSERT_ID() AS user_id;
+END$$
+
+DELIMITER ;
+
+
+
+
+DELIMITER $$
+CREATE PROCEDURE LoginUser(
+    IN p_email VARCHAR(255)
+)
+BEGIN
+    SELECT 
+        id, 
+        name, 
+        role, 
+        password 
+    FROM users 
+    WHERE email = p_email;
+END$$
+DELIMITER ;
+
+
+
+
+CALL RegisterUser('john@example.com', 'password123', 'John Doe', NULL); -- Mukodik
+CALL LoginUser('john@example.com', 'password123'); -- Mukodik

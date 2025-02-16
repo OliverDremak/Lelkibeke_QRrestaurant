@@ -20,7 +20,7 @@
 </template>
   
   <script setup lang="ts">
-  import { useRouter } from 'vue-router'
+  import { useRouter } from 'vue-router' 
   import { ref } from 'vue';
 import ButtonComponet from './ButtonComponet.vue';
 
@@ -31,7 +31,7 @@ const toggleNavbar = () => {
 
   
   const router = useRouter()
-  
+  // TODO: Show if the user is logged in
   const goToLogin = () => {
     router.push('/login')
   }

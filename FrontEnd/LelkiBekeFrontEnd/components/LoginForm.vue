@@ -5,7 +5,10 @@
           <div class="card">
             <div class="card-body">
               <h3 class="card-title text-center">Login</h3>
-              <form @submit.prevent="handleLogin">
+              <form @submit.prevent="login">
+                <div v-if="errorMessage" class="alert alert-danger">
+                  {{ errorMessage }}
+                </div>
                 <div class="form-group">
                   <label for="email">Email</label>
                   <input
@@ -47,24 +50,47 @@
   </template>
   
   <script setup lang="ts">
-  import { ref } from 'vue'
-  import { useRouter } from 'vue-router'
-  
-  const email = ref('')
-  const password = ref('')
-  const rememberMe = ref(false)
-  const router = useRouter()
-  
-  const handleLogin = () => {
-    // Add your login logic here (e.g., API call)
-    // For demonstration, we'll just redirect to the home page
-    if (email.value && password.value) {
-      router.push('/')
-    } else {
-      alert('Please enter your email and password')
+
+interface LoginResponse {
+  user: {
+    id: string;
+    name: string;
+    email: string;
+    // Add other user properties as needed
+  };
+  // Add other response properties as needed
+}
+const email = ref('');
+const password = ref('');
+const errorMessage = ref('');
+const rememberMe = ref(false); // TODO: Implement remember me functionality
+
+const login = async () => {
+  try {
+    const { data, error } = await useFetch<LoginResponse>('/api/login', {
+      method: 'POST',
+      body: {
+        email: email.value,
+        password: password.value,
+        remember_me: rememberMe.value
+      }
+    });
+
+    if (error.value) {
+      errorMessage.value = error.value.data?.message || 'Login failed';
+      return;
     }
+
+    if (data.value) {
+      // Simple session storage (lasts until browser closes)
+      sessionStorage.setItem('user', JSON.stringify(data.value.user));
+      await navigateTo('/menu');
+    }
+  } catch (err) {
+    errorMessage.value = 'Connection error';
   }
-  </script>
+};
+</script>
   
   <style scoped>
   .container {
