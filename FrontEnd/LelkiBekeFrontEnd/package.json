@@ -11,12 +11,18 @@
   },
   "dependencies": {
     "@nuxtjs/axios": "^5.13.6",
+    "@pinia/nuxt": "^0.10.1",
     "@zxing/browser": "^0.1.5",
     "bootstrap": "^5.3.3",
     "bootstrap-icons": "^1.11.3",
     "bootstrap-vue": "^2.23.1",
     "nuxt": "^3.15.3",
+    "pinia": "^3.0.1",
     "vue": "latest",
+    "vue-cryptojs": "^2.4.7",
     "vue-router": "latest"
+  },
+  "devDependencies": {
+    "@types/crypto-js": "^4.2.2"
   }
 }

@@ -56,33 +56,47 @@ class UserController extends Controller
 
     public function login(Request $request)
     {
+        // Bemeneti adatok validálása
         $credentials = $request->validate([
             'email' => 'required|email',
-            'password' => 'required|string' // Now receives bcrypt hash
+            'password' => 'required|string'
         ]);
-        $user = User::where('email', $credentials['email'])->first();
+
         try {
-            // Call stored procedure to get user by email
-            $result = DB::select('CALL LoginUser(?)', [
-                $credentials['email']
-            ]);
+            // Tárolt eljárás meghívása
+            $result = DB::select('CALL LoginUser(?)', [$credentials['email']]);
 
             if (empty($result)) {
-                return response()->json(['message' => 'Invalid credentials'], 401);
+                return response()->json(['message' => 'Hibás e-mail vagy jelszó'], 401);
             }
 
+            // Az első találat kinyerése
             $userData = $result[0];
+
+            // Jelszó SHA-256 ellenőrzése
+            $hashedPassword = hash('sha256', $request->password);
+            if ($hashedPassword !== $userData->password) {
+                return response()->json(['error' => 'Hibás e-mail vagy jelszó'], 401);
+            }
+
+            // Felhasználó keresése az ORM-ben
             $user = User::find($userData->id);
+
+            // Token generálása
             $token = $user->createToken('auth-token')->plainTextToken;
 
             return response()->json([
+                'message' => 'Sikeres bejelentkezés',
                 'token' => $token,
-                'user' => $user
+                'user' => [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'role' => $user->role
+                ]
             ]);
-
         } catch (\Exception $e) {
             return response()->json([
-                'message' => 'Login failed',
+                'message' => 'Bejelentkezés sikertelen',
                 'error' => $e->getMessage()
             ], 500);
         }
