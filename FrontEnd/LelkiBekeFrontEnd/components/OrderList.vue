@@ -1,51 +1,52 @@
 <template>
-    <div>
-      <h2 class="text-center mb-4">Orders for {{ table.table_number }}</h2>
-  
+  <div class="order-list mt-4">
+    <h2 class="text-center mb-4">Orders for Selected Table</h2>
+    <div v-if="orders.length">
       <div v-for="order in orders" :key="order.id" class="card mb-3">
         <div class="card-body">
-          <h5 class="card-title">Order ID: {{ order.id }}</h5>
-          <p class="card-text">
-            <strong>Status:</strong>
-            <span :class="{
-              'text-warning': order.status === 'pending',
-              'text-success': order.status === 'served',
-              'text-danger': order.status === 'cancelled'
-            }">
-              {{ order.status }}
-            </span>
-          </p>
-          <p class="card-text"><strong>Total Price:</strong> ${{ order.total_price }}</p>
-          <p class="card-text"><strong>Ordered At:</strong> {{ order.created_at }}</p>
-  
-          <!-- Order Items -->
-          <OrderDetails :order="order" @update-status="updateOrderStatus" />
+          <h5 class="card-title">Order #{{ order.id }}</h5>
+          <p class="card-text">Items:</p>
+          <ul>
+            <li v-for="item in order.items" :key="item.id">{{ item.name }} - {{ item.quantity }}</li>
+          </ul>
         </div>
       </div>
     </div>
-  </template>
-  
-  <script>
-  import OrderDetails from './OrderDetails.vue';
-  
-  export default {
-    components: {
-      OrderDetails,
+    <div v-else>
+      <p class="text-center">No orders for this table.</p>
+    </div>
+  </div>
+</template>
+
+<script>
+import { ref, watch } from 'vue';
+
+export default {
+  props: {
+    orders: {
+      type: Array,
+      required: true,
     },
-    props: {
-      table: {
-        type: Object,
-        required: true,
-      },
-      orders: {
-        type: Array,
-        required: true,
-      },
-    },
-    methods: {
-      updateOrderStatus(orderId, status) {
-        this.$emit('update-status', orderId, status);
-      },
-    },
-  };
-  </script>
+  },
+  setup(props) {
+    const orders = ref(props.orders);
+
+    watch(() => props.orders, (newOrders) => {
+      orders.value = newOrders;
+    });
+
+    return {
+      orders,
+    };
+  },
+};
+</script>
+
+<style scoped>
+.order-list {
+  margin-top: 20px;
+}
+.card {
+  margin-bottom: 10px;
+}
+</style>

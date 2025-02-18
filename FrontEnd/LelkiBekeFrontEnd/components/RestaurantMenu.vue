@@ -60,6 +60,7 @@
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import ButtonComponet from './ButtonComponet.vue';
 const { data } = useFetch('http://localhost:8000/menu');
+console.log(data);
 
 const mainCourses = ref(data);
 const isWide = ref(false);
