@@ -148,7 +148,11 @@ BEGIN
   JOIN category ON menu_items.category_id = category.id;
 END //
 
-
+DELIMITER //
+CREATE PROCEDURE GetTables()
+BEGIN
+    SELECT * FROM tables;
+END //
 
 DELIMITER //
 CREATE PROCEDURE GetActiveOrders()
