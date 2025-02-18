@@ -42,7 +42,7 @@ class MenuItemController extends Controller
         $price = $request->price;
         $imageURL = $request->image_url;
 
-        $result = DB::select('CALL CreateNewMenuItem(?, ?, ?, ?, ?, ?)', [
+        $result = DB::select('CALL ModifyMenuItemById(?, ?, ?, ?, ?, ?)', [
             $menuItemId,
             $categoryId,
             $name,
