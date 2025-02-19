@@ -140,7 +140,7 @@ const handleCheckout = async () => {
     order_items: cart.value.map(item => ({
       menu_item_id: item.id,
       quantity: item.quantity,
-      notes: item.notes || '' // Add any notes if applicable
+      notes: item.notes || '' // Add notes field to menu items (e.g. { name: 'Pizza', notes: 'No cheese'
     }))
   };
 
@@ -162,7 +162,11 @@ const handleCheckout = async () => {
     const responseData = await response.json();
     if (responseData.order_id) {
       alert('Order placed successfully!');
-      // Reset cart state if needed
+      // Navigate to another page. If using Vue Router, you could use:
+      // this.$router.push('/thank-you');
+      // Otherwise, you can use:
+      window.location.href = '/thankyou';
+      window.localStorage.removeItem('cart');
     }
   } catch (error) {
     console.error('Checkout error:', error);
