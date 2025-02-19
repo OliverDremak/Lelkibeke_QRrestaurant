@@ -7,8 +7,21 @@ use Illuminate\Support\Facades\DB;
 
 class OrderController extends Controller
 {
+    // {
+    //     "user_id": 2,
+    //     "table_id": 2,
+    //     "total_price": 100.00,
+    //     "order_items": [
+    //       {"menu_item_id": 1, "quantity": 2, "notes": "No onions"},
+    //       {"menu_item_id": 3, "quantity": 1, "notes": "Extra cheese"}
+    //     ]
+    //   }
     public function sendOrder(Request $request) {
-        $userId = $request->user_id; // Vagy a bejelentkezett felhasználó ID-ja
+        // A headerben lévő token ellenörzése
+        // if (!$request->user()->tokenCan('order:place')) {
+        //     return response()->json(['error' => 'Unauthorized'], 401);
+        // }
+        $userId = $request->user_id; 
         $tableId = $request->table_id;
         $totalPrice = $request->total_price;
 

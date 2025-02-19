@@ -132,10 +132,44 @@ const toggleCart = () => {
   isCartExpanded.value = !isCartExpanded.value;
 };
 
-const handleCheckout = () => {
-  // Handle checkout logic here
-  console.log('Checkout:', cartTotal);
+const handleCheckout = async () => {
+  const orderData = {
+    user_id: 2, // Replace with actual user ID
+    table_id: 2, // Replace with actual table ID
+    total_price: cartTotal.value,
+    order_items: cart.value.map(item => ({
+      menu_item_id: item.id,
+      quantity: item.quantity,
+      notes: item.notes || '' // Add any notes if applicable
+    }))
+  };
+
+  try {
+    const response = await fetch('http://localhost:8000/api/sendOrder', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(orderData)
+    });
+
+    // Check if the response status is OK (status in the range 200-299)
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Error placing order');
+    }
+
+    const responseData = await response.json();
+    if (responseData.order_id) {
+      alert('Order placed successfully!');
+      // Reset cart state if needed
+    }
+  } catch (error) {
+    console.error('Checkout error:', error);
+    alert('Error placing order: ' + error.message);
+  }
 };
+
 
 const filterByCategory = (category) => {
   selectedCategory.value = category;
