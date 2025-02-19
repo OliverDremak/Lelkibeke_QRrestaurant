@@ -1,16 +1,19 @@
 <template>
-  <div class="container-fluid p-4">
-    <h1 class="text-center mb-4 display-4 text-primary">Waiter Dashboard</h1>
+  <div class="container mt-5">
+    <h1 class="text-center mb-4">Waiter Dashboard</h1>
 
     <!-- Table List -->
-    <TableList :tables="tables" @select-table="selectTable" />
+    <TableList :tables="tables" @select-table="selectTable" @refresh-tables="fetchTables" />
 
-    <!-- Selected Table and Orders -->
-    <div v-if="selectedTable" class="selected-table mt-4 p-3">
-      <h2 class="text-center text-white">Table #{{ selectedTable.table_number }}</h2>
-      <OrderList :orders="selectedTableOrders" v-if="selectedTableOrders.length" />
-      <p v-else class="text-center text-white">No active orders for this table.</p>
+    <!-- Selected Table Details -->
+    <div v-if="selectedTable" class="mt-4">
+      <h2 class="text-center mb-4">Selected Table: {{ selectedTable.table_number }}</h2>
+      <p class="text-center">{{ selectedTable.is_available === 1 ? 'Available' : 'Occupied' }}</p>
     </div>
+
+    <!-- Orders for Selected Table -->
+    <OrderList :orders="selectedTableOrders" v-if="selectedTableOrders.length"/>
+    <p v-else class="text-center">No orders for this table.</p>
   </div>
 </template>
 
@@ -27,8 +30,8 @@ export default {
   },
   setup() {
     const tables = ref([]);
-    const selectedTableOrders = ref([]);
     const selectedTable = ref(null);
+    const selectedTableOrders = ref([]);
 
     const fetchTables = async () => {
       try {
@@ -39,19 +42,15 @@ export default {
       }
     };
 
-    const fetchOrdersForTable = async (tableId) => {
+    const selectTable = async (tableId) => {
       try {
+        const table = tables.value.find(t => t.id === tableId);
+        selectedTable.value = table;
         const response = await axios.get(`http://localhost:8000/api/ordersByTableId/${tableId}`);
-        return response.data;
+        selectedTableOrders.value = response.data;
       } catch (error) {
-        console.error('Error fetching orders:', error);
-        return [];
+        console.error('Error fetching orders for table:', error);
       }
-    };
-
-    const selectTable = async (table) => {
-      selectedTable.value = table;
-      selectedTableOrders.value = await fetchOrdersForTable(table.id);
     };
 
     onMounted(() => {
@@ -60,23 +59,17 @@ export default {
 
     return {
       tables,
-      selectedTableOrders,
       selectedTable,
+      selectedTableOrders,
       selectTable,
+      fetchTables,
     };
   },
 };
 </script>
 
 <style scoped>
-.container-fluid {
-  background-color: #222;
-  min-height: 100vh;
-  color: white;
-  font-family: 'Arial', sans-serif;
-}
-
-h1 {
-  font-weight: bold;
+.container {
+  margin-top: 20px;
 }
 </style>
