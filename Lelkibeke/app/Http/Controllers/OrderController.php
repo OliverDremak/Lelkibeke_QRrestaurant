@@ -46,4 +46,20 @@ class OrderController extends Controller
 
         return response()->json($result);
     }
+
+    public function setOrderStatus($order_id, $status) {
+        if (!in_array($status, ['cooking', 'done'])) {
+            return response()->json(['error' => 'Invalid status'], 400);
+        }
+    
+        try {
+            DB::statement('CALL SetOrderStatusById(?, ?)', [
+                $order_id,
+                $status // Ensure status is passed as a string
+            ]);
+            return response()->json(['message' => 'Order status updated successfully']);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to update order status', 'details' => $e->getMessage()], 500);
+        }
+    }
 }

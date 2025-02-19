@@ -3,7 +3,7 @@ import { useRoute, useRouter } from 'vue-router';
 const auth = useAuthStore()
 
 definePageMeta({
-  requiresAuth: true
+  requiresAuth: false
 })
 
 const route = useRoute();
