@@ -127,6 +127,51 @@ INSERT INTO order_items (order_id, menu_item_id, quantity, notes) VALUES
 (1, 3, 1, 'No onions'),
 (3, 5, 1, 'Gluten-free pasta');
 
+-- Add more tables
+INSERT INTO tables (table_number, qr_code_url, is_avalable) VALUES
+('T4', 'https://example.com/qr4', true),
+('T5', 'https://example.com/qr5', false),
+('T6', 'https://example.com/qr6', true);
+
+-- Add more menu items
+INSERT INTO menu_items (category_id, name, description, price, image_url) VALUES
+(1, 'Hawaiian Pizza', 'Pizza with ham and pineapple', 2700, 'https://example.com/hawaiian.jpg'),
+(2, 'Veggie Burger', 'Vegetarian burger with fresh veggies', 2100, 'https://example.com/veggieburger.jpg'),
+(3, 'Fettuccine Alfredo', 'Creamy pasta with parmesan cheese', 2400, 'https://example.com/fettuccine.jpg'),
+(4, 'Iced Tea', 'Refreshing iced tea', 500, 'https://example.com/icedtea.jpg');
+
+-- Insert the order
+INSERT INTO orders (user_id, table_id, status, total_price, created_at)
+VALUES (2, 4, 'cooking', '4800', NOW());
+
+-- Insert order items
+INSERT INTO order_items (order_id, menu_item_id, quantity, notes)
+VALUES 
+(LAST_INSERT_ID(), 7, 1, 'Extra pineapple'),
+(LAST_INSERT_ID(), 8, 1, 'No mayo');
+
+-- Insert the order
+INSERT INTO orders (user_id, table_id, status, total_price, created_at)
+VALUES (3, 5, 'cooking', '3400', NOW());
+
+-- Insert order items
+INSERT INTO order_items (order_id, menu_item_id, quantity, notes)
+VALUES 
+(LAST_INSERT_ID(), 9, 1, 'Extra cheese'),
+(LAST_INSERT_ID(), 10, 2, 'No sugar');
+
+-- Insert the order
+INSERT INTO orders (user_id, table_id, status, total_price, created_at)
+VALUES (4, 6, 'cooking', '4500', NOW());
+
+-- Insert order items
+INSERT INTO order_items (order_id, menu_item_id, quantity, notes)
+VALUES 
+(LAST_INSERT_ID(), 1, 1, 'Extra basil'),
+(LAST_INSERT_ID(), 4, 1, 'No lettuce');
+
+
+
 
 DELIMITER //
 CREATE PROCEDURE GetUsers()
