@@ -53,15 +53,19 @@ class TableController extends Controller
     }
 
     public function setTableOccupancyStatus(Request $request){
-        $tableId = $request->id;
-        $isAvaible = $request->is_avaible;
+        try {
+            $tableId = $request->id;
+            $isAvaible = $request->is_available;
 
-        $result = DB::select('CALL SetTableOccupancyStatus(?, ?)', [
-            $tableId,
-            $isAvaible
-        ]);
+            $result = DB::select('CALL SetTableOccupancyStatus(?, ?)', [
+                $tableId,
+                $isAvaible
+            ]);
 
-        return response()->json($result);
+            return response()->json($result);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
     }
 
 

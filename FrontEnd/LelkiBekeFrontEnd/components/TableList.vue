@@ -6,14 +6,14 @@
       class="col-md-3 mb-3"
     >
       <div
-        :class="['card', 'text-center', 'shadow-sm', 'border-0', table.is_avalable === 1 ? 'bg-success text-white' : 'bg-danger text-white']"
+        :class="['card', 'text-center', 'shadow-sm', 'border-0', table.is_available === 1 ? 'bg-success text-white' : 'bg-danger text-white']"
         @click="$emit('select-table', table)"
         style="cursor: pointer;"
       >
         <div class="card-body p-3">
           <h5 class="card-title mb-2">{{ table.table_number }}</h5>
           <p class="card-text small mb-0">
-            {{ table.is_avalable === 1 ? 'Available' : 'Occupied' }}
+            {{ table.is_available === 1 ? 'Available' : 'Occupied' }}
           </p>
         </div>
       </div>

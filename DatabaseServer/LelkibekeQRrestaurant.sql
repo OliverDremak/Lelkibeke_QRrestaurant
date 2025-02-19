@@ -31,7 +31,7 @@ CREATE TABLE IF NOT EXISTS `tables` (
 	`id` int AUTO_INCREMENT NOT NULL UNIQUE,
 	`table_number` varchar(255) NOT NULL,
 	`qr_code_url` text NOT NULL,
-	`is_avalable` boolean NOT NULL,
+	`is_available` boolean NOT NULL,
 	PRIMARY KEY (`id`)
 );
 
@@ -94,7 +94,7 @@ INSERT INTO users (email, password, name, role) VALUES
 ('waiter1@example.com', 'hashedpassword4', 'Michael Scott', 'waiter');
 
 -- Insert into tables
-INSERT INTO tables (table_number, qr_code_url, is_avalable) VALUES
+INSERT INTO tables (table_number, qr_code_url, is_available) VALUES
 ('T1', 'https://example.com/qr1', true),
 ('T2', 'https://example.com/qr2', false),
 ('T3', 'https://example.com/qr3', true);
@@ -128,7 +128,7 @@ INSERT INTO order_items (order_id, menu_item_id, quantity, notes) VALUES
 (3, 5, 1, 'Gluten-free pasta');
 
 -- Add more tables
-INSERT INTO tables (table_number, qr_code_url, is_avalable) VALUES
+INSERT INTO tables (table_number, qr_code_url, is_available) VALUES
 ('T4', 'https://example.com/qr4', true),
 ('T5', 'https://example.com/qr5', false),
 ('T6', 'https://example.com/qr6', true);
@@ -253,7 +253,7 @@ END //
 DELIMITER //
 CREATE PROCEDURE CreateNewTable(IN p_table_number VARCHAR(255), IN p_qr_code_url TEXT, IN p_is_available BOOLEAN)
 BEGIN
-    INSERT INTO `tables` (table_number, qr_code_url, is_avalable)
+    INSERT INTO `tables` (table_number, qr_code_url, is_available)
     VALUES (p_table_number, p_qr_code_url, p_is_available);
 END //
 
@@ -263,7 +263,7 @@ BEGIN
     UPDATE `tables`
     SET table_number = p_table_number,
         qr_code_url = p_qr_code_url,
-        is_avalable = p_is_available
+        is_available = p_is_available
     WHERE id = p_table_id;
 END //
 
@@ -323,7 +323,7 @@ DELIMITER //
 CREATE PROCEDURE SetTableOccupancyStatus(IN p_table_id INT, IN p_occupied BOOLEAN)
 BEGIN
     UPDATE `tables`
-    SET is_avalable = p_occupied
+    SET is_available = p_occupied
     WHERE id = p_table_id;
 END //
 
