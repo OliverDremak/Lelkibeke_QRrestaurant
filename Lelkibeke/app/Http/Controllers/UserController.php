@@ -79,7 +79,7 @@ class UserController extends Controller
                 return response()->json(['error' => 'Hibás e-mail vagy jelszó'], 401);
             }
 
-            // Felhasználó keresése az ORM-ben
+            // Felhasználó keresése az 
             $user = User::find($userData->id);
 
             // Token generálása

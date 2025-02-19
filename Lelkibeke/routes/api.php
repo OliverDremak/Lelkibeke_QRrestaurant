@@ -28,3 +28,7 @@ Route::post('/deleteTable/{id}', [TableController::class, 'deleteTableById']);
 Route::post('/newMenuItem/{category_id}/{name}//{description}/{price}/{image_url}', [MenuItemController::class, 'createNewMenuItem']);
 Route::post('/modifyMenuItem/{id}/{category_id}/{name}/{description}/{price}/{image_url}', [MenuItemController::class, 'modifyMenuItemById']);
 Route::post('/deleteMenuItem/{id}', [MenuItemController::class, 'deleteMenuItemById']);
+
+
+// OrderController
+Route::post('/sendOrder', [OrderController::class, 'sendOrder']);
