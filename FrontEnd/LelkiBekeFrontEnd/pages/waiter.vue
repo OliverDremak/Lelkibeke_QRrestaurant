@@ -76,13 +76,6 @@ export default {
   font-family: 'Arial', sans-serif;
 }
 
-.selected-table {
-  background: linear-gradient(135deg, #ff9800, #ff5722);
-  border-radius: 12px;
-  text-align: center;
-  padding: 20px;
-}
-
 h1 {
   font-weight: bold;
 }
