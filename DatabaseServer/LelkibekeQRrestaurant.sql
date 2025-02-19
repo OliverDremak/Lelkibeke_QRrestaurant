@@ -238,17 +238,41 @@ END //
 -- CALL ModifyTableById(4, 'T355', 'https://example.com/qr355', false);
 -- CALL DeleteTableById(4);
 DELIMITER //
+
 CREATE PROCEDURE GetOrdersForTableById(IN p_table_id INT)
 BEGIN
     SELECT 
-        GROUP_CONCAT(menu_items.name ORDER BY menu_items.name SEPARATOR ', ') AS menu_items
+        orders.id AS order_id,
+        orders.created_at AS order_date,
+        orders.status,
+        orders.total_price,
+        menu_items.name AS menu_item_name,
+        order_items.quantity,
+        order_items.notes
     FROM orders
     JOIN order_items ON orders.id = order_items.order_id
     JOIN menu_items ON order_items.menu_item_id = menu_items.id
     WHERE orders.status = 'cooking'
       AND orders.table_id = p_table_id
-    GROUP BY orders.table_id;
+    ORDER BY orders.created_at, orders.id, menu_items.name;
 END //
+
+DELIMITER ;
+
+
+DELIMITER //
+
+CREATE PROCEDURE SetOrderStatusById(
+    IN p_order_id INT,
+    IN p_status ENUM('done', 'cooking')
+)
+BEGIN
+    UPDATE `orders`
+    SET status = p_status
+    WHERE id = p_order_id;
+END//
+
+
 
 DELIMITER //
 CREATE PROCEDURE SetTableOccupancyStatus(IN p_table_id INT, IN p_occupied BOOLEAN)
