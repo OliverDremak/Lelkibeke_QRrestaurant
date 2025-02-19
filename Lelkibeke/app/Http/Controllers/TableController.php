@@ -32,7 +32,7 @@ class TableController extends Controller
         $qrCodeUrl = $request->qr_code_url;
         $isAvaible = $request->is_avaible;
 
-        $result = DB::select('CALL ModifyTableById(?, ?, ?, ?, ?, ?)', [
+        $result = DB::select('CALL ModifyTableById(?, ?, ?, ?)', [
             $tableId,
             $tableNumber,
             $qrCodeUrl,
