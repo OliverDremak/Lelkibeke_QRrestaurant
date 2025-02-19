@@ -4,10 +4,13 @@
 
     <!-- Table List -->
     <TableList :tables="tables" @select-table="selectTable" />
-    <OrderList :orders="selectedTableOrders" v-if="selectedTableOrders.length" />
 
-    <!-- Orders for Selected Table -->
-
+    <!-- Selected Table and Orders -->
+    <div v-if="selectedTable">
+      <h2 class="text-center">Selected Table: {{ selectedTable.id }}</h2>
+      <OrderList :orders="selectedTableOrders" v-if="selectedTableOrders.length" />
+      <p v-else class="text-center">No orders active for this table.</p>
+    </div>
   </div>
 </template>
 
@@ -48,7 +51,9 @@ export default {
 
     const selectTable = async (table) => {
       selectedTable.value = table;
+      console.log('Selected Table:', selectedTable.value);
       selectedTableOrders.value = await fetchOrdersForTable(table.id);
+      console.log('Selected Table Orders:', selectedTableOrders.value);
     };
 
     onMounted(() => {
@@ -58,6 +63,7 @@ export default {
     return {
       tables,
       selectedTableOrders,
+      selectedTable,
       selectTable,
     };
   },

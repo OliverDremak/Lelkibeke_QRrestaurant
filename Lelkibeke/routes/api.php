@@ -15,3 +15,4 @@ Route::post('/setOccupancyStatus/{id}/{is_avaible}', [TableController::class, 's
 Route::get('/tables', [TableController::class, 'getTables']);
 Route::get('/ordersByTableId/{id}', [OrderController::class, 'getOrdersForTableById']);
 Route::get('/allOreredItems', [OrderController::class, 'getAllOrderedItems']);
+Route::post('/setOrderStatus/{order_id}/{status}', [OrderController::class, 'setOrderStatus']); 
