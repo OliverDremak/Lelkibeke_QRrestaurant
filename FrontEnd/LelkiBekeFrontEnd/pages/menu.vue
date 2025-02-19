@@ -1,17 +1,15 @@
 <script setup lang="ts">
-import { useRoute, useRouter } from 'vue-router';
+const auth = useAuthStore()
 
-const route = useRoute();
-const router = useRouter();
-
-const goToLogin = () => {
-  router.push('/login');
-};
+definePageMeta({
+  requiresAuth: false
+})
 </script>
 
 <template>
   <div>
     <Navbar />
+    <h1>{{ auth.user?.name }}</h1>
     <RestaurantMenu />
     <Footer />
   </div>

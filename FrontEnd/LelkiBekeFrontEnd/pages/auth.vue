@@ -13,7 +13,8 @@ const isLogin = ref(true)
     }
     
     if (auth.user) {
-      navigateTo('/')
+      navigateTo('/menu')
+      window.location.reload()
     }
   }
 
