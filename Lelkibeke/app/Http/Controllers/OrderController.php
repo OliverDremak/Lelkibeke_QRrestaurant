@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\DB;
 class OrderController extends Controller
 {
     public function sendOrder(Request $request) {
+        //Token ellenőrzése
         $userId = auth()->id(); // Vagy a bejelentkezett felhasználó ID-ja
         $tableId = $request->table_id;
         $totalPrice = $request->total_price;

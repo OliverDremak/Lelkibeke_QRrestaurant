@@ -17,11 +17,11 @@ class MenuItemController extends Controller
     }
 
     public function createNewMenuItem(Request $request){
-        $categoryId = $request->category_id;
-        $name = $request->name;
-        $description = $request->description;
-        $price = $request->price;
-        $imageURL = $request->image_url;
+        $categoryId = $request->input('category_id');
+        $name = $request->input('name');
+        $description = $request->input('description');
+        $price = $request->input('price');
+        $imageURL = $request->input('image_url');
 
         $result = DB::select('CALL CreateNewMenuItem(?, ?, ?, ?, ?)', [
             $categoryId,
@@ -35,12 +35,12 @@ class MenuItemController extends Controller
     }
 
     public function modifyMenuItemById(Request $request){
-        $menuItemId = $request->id;
-        $categoryId = $request->category_id;
-        $name = $request->name;
-        $description = $request->description;
-        $price = $request->price;
-        $imageURL = $request->image_url;
+        $menuItemId = $request->input('id');
+        $categoryId = $request->input('category_id');
+        $name = $request->input('name');
+        $description = $request->input('description');
+        $price = $request->input('price');
+        $imageURL = $request->input('image_url');
 
         $result = DB::select('CALL ModifyMenuItemById(?, ?, ?, ?, ?, ?)', [
             $menuItemId,
@@ -55,12 +55,24 @@ class MenuItemController extends Controller
     }
 
     public function deleteMenuItemById(Request $request){
-        $menuItemId = $request->id;
+        try {
+            $menuItemId = $request->input('id');
 
-        $result = DB::select('CALL DeleteMenuItemById(?)', [
-            $menuItemId
-        ]);
+            // Debug log (ezt ellenőrizheted a laravel.log fájlban)
+            \Log::info("Deleting menu item with ID: " . $menuItemId);
 
-        return response()->json($result);
+            $result = DB::select('CALL DeleteMenuItemById(?)', [
+                $menuItemId
+            ]);
+
+            return response()->json([
+                'message' => 'Item deleted successfully',
+                'result' => $result
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error("Error deleting menu item: " . $e->getMessage());
+            return response()->json(['error' => 'Failed to delete menu item'], 500);
+        }
     }
 }
