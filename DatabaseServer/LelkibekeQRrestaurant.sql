@@ -31,7 +31,7 @@ CREATE TABLE IF NOT EXISTS `tables` (
 	`id` int AUTO_INCREMENT NOT NULL UNIQUE,
 	`table_number` varchar(255) NOT NULL,
 	`qr_code_url` text NOT NULL,
-	`is_avalable` boolean NOT NULL,
+	`is_available` boolean NOT NULL,
 	PRIMARY KEY (`id`)
 );
 
@@ -94,7 +94,7 @@ INSERT INTO users (email, password, name, role) VALUES
 ('waiter1@example.com', 'hashedpassword4', 'Michael Scott', 'waiter');
 
 -- Insert into tables
-INSERT INTO tables (table_number, qr_code_url, is_avalable) VALUES
+INSERT INTO tables (table_number, qr_code_url, is_available) VALUES
 ('T1', 'https://example.com/qr1', true),
 ('T2', 'https://example.com/qr2', false),
 ('T3', 'https://example.com/qr3', true);
@@ -126,6 +126,51 @@ INSERT INTO order_items (order_id, menu_item_id, quantity, notes) VALUES
 (1, 1, 1, 'Extra cheese'),
 (1, 3, 1, 'No onions'),
 (3, 5, 1, 'Gluten-free pasta');
+
+-- Add more tables
+INSERT INTO tables (table_number, qr_code_url, is_available) VALUES
+('T4', 'https://example.com/qr4', true),
+('T5', 'https://example.com/qr5', false),
+('T6', 'https://example.com/qr6', true);
+
+-- Add more menu items
+INSERT INTO menu_items (category_id, name, description, price, image_url) VALUES
+(1, 'Hawaiian Pizza', 'Pizza with ham and pineapple', 2700, 'https://example.com/hawaiian.jpg'),
+(2, 'Veggie Burger', 'Vegetarian burger with fresh veggies', 2100, 'https://example.com/veggieburger.jpg'),
+(3, 'Fettuccine Alfredo', 'Creamy pasta with parmesan cheese', 2400, 'https://example.com/fettuccine.jpg'),
+(4, 'Iced Tea', 'Refreshing iced tea', 500, 'https://example.com/icedtea.jpg');
+
+-- Insert the order
+INSERT INTO orders (user_id, table_id, status, total_price, created_at)
+VALUES (2, 4, 'cooking', '4800', NOW());
+
+-- Insert order items
+INSERT INTO order_items (order_id, menu_item_id, quantity, notes)
+VALUES 
+(LAST_INSERT_ID(), 7, 1, 'Extra pineapple'),
+(LAST_INSERT_ID(), 8, 1, 'No mayo');
+
+-- Insert the order
+INSERT INTO orders (user_id, table_id, status, total_price, created_at)
+VALUES (3, 5, 'cooking', '3400', NOW());
+
+-- Insert order items
+INSERT INTO order_items (order_id, menu_item_id, quantity, notes)
+VALUES 
+(LAST_INSERT_ID(), 9, 1, 'Extra cheese'),
+(LAST_INSERT_ID(), 10, 2, 'No sugar');
+
+-- Insert the order
+INSERT INTO orders (user_id, table_id, status, total_price, created_at)
+VALUES (4, 6, 'cooking', '4500', NOW());
+
+-- Insert order items
+INSERT INTO order_items (order_id, menu_item_id, quantity, notes)
+VALUES 
+(LAST_INSERT_ID(), 1, 1, 'Extra basil'),
+(LAST_INSERT_ID(), 4, 1, 'No lettuce');
+
+
 
 
 DELIMITER //
@@ -208,7 +253,7 @@ END //
 DELIMITER //
 CREATE PROCEDURE CreateNewTable(IN p_table_number VARCHAR(255), IN p_qr_code_url TEXT, IN p_is_available BOOLEAN)
 BEGIN
-    INSERT INTO `tables` (table_number, qr_code_url, is_avalable)
+    INSERT INTO `tables` (table_number, qr_code_url, is_available)
     VALUES (p_table_number, p_qr_code_url, p_is_available);
 END //
 
@@ -218,7 +263,7 @@ BEGIN
     UPDATE `tables`
     SET table_number = p_table_number,
         qr_code_url = p_qr_code_url,
-        is_avalable = p_is_available
+        is_available = p_is_available
     WHERE id = p_table_id;
 END //
 
@@ -238,23 +283,47 @@ END //
 -- CALL ModifyTableById(4, 'T355', 'https://example.com/qr355', false);
 -- CALL DeleteTableById(4);
 DELIMITER //
+
 CREATE PROCEDURE GetOrdersForTableById(IN p_table_id INT)
 BEGIN
     SELECT 
-        GROUP_CONCAT(menu_items.name ORDER BY menu_items.name SEPARATOR ', ') AS menu_items
+        orders.id AS order_id,
+        orders.created_at AS order_date,
+        orders.status,
+        orders.total_price,
+        menu_items.name AS menu_item_name,
+        order_items.quantity,
+        order_items.notes
     FROM orders
     JOIN order_items ON orders.id = order_items.order_id
     JOIN menu_items ON order_items.menu_item_id = menu_items.id
     WHERE orders.status = 'cooking'
       AND orders.table_id = p_table_id
-    GROUP BY orders.table_id;
+    ORDER BY orders.created_at, orders.id, menu_items.name;
 END //
+
+DELIMITER ;
+
+
+DELIMITER //
+
+CREATE PROCEDURE SetOrderStatusById(
+    IN p_order_id INT,
+    IN p_status ENUM('done', 'cooking')
+)
+BEGIN
+    UPDATE `orders`
+    SET status = p_status
+    WHERE id = p_order_id;
+END//
+
+
 
 DELIMITER //
 CREATE PROCEDURE SetTableOccupancyStatus(IN p_table_id INT, IN p_occupied BOOLEAN)
 BEGIN
     UPDATE `tables`
-    SET is_avalable = p_occupied
+    SET is_available = p_occupied
     WHERE id = p_table_id;
 END //
 

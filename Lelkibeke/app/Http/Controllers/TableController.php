@@ -52,16 +52,23 @@ class TableController extends Controller
         return response()->json($result);
     }
 
-    public function setTableOccupancyStatus(Request $request){
-        $tableId = $request->id;
-        $isAvaible = $request->is_avaible;
+    public function setTableOccupancyStatus($id, $isAvailable)
+    {
+        try {
+            // Ensure $isAvailable is not null and is a valid boolean value
+            if ($isAvailable === 'true') {
+                $isAvailable = 1;
+            } elseif ($isAvailable === 'false') {
+                $isAvailable = 0;
+            } else {
+                return response()->json(['error' => 'Invalid value for is_available'], 400);
+            }
 
-        $result = DB::select('CALL SetTableOccupancyStatus(?, ?)', [
-            $tableId,
-            $isAvaible
-        ]);
-
-        return response()->json($result);
+            DB::statement('CALL SetTableOccupancyStatus(?, ?)', [$id, $isAvailable]);
+            return response()->json(['message' => 'Table occupancy status updated successfully']);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to update table occupancy status', 'details' => $e->getMessage()], 500);
+        }
     }
 
 

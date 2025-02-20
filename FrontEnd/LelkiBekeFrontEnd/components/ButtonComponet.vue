@@ -49,27 +49,7 @@
   </script>
   
   <style scoped>
-  .glow-button {
-    position: relative;
-    padding: 0.5rem 1.5rem;
-    font-size: 1rem;
-    color: #fff;
-    background-color: #ffbd00;
-    border: none;
-    border-radius: 20px;
-    cursor: pointer;
-    overflow: hidden;
-    transition: background-color 0.3s ease;
-  }
-  
-  .glow-button:hover {
-    background-color: #f7c642;
-  }
-  
-  .glow-button .text {
-    position: relative;
-    z-index: 2;
-  }
+  @import url("~/assets/css/main.css");
   
   .glow-button .glow {
     position: absolute;

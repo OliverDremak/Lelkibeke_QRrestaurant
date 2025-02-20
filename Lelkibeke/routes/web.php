@@ -13,9 +13,7 @@ Route::get('/', function () {
 Route::get('/users', [UserController::class, 'getUsers']);
 Route::get('/menu', [MenuItemController::class, 'getMenu']);
 Route::get('/activeOrder', [OrderController::class, 'getActiveOrders']);
-Route::get('/allOreredItem', [OrderController::class, 'getAllOrderedItems']);
-Route::get('/ordersByTableId/{id}', [OrderController::class, 'getOrdersForTableById']);
-Route::get('/tables', [TableController::class, 'getTables']);
+
 
 
 

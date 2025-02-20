@@ -1,42 +1,65 @@
 <template>
-    <div class="row">
+  <div class="row">
+    <div
+      v-for="table in tables"
+      :key="table.id"
+      class="col-md-3 mb-3"
+    >
       <div
-        v-for="table in tables"
-        :key="table.id"
-        class="col-md-3 mb-3"
+        :class="['card', 'text-center', 'shadow-sm', 'border-0', table.is_available === 1 ? 'bg-success text-white' : 'bg-danger text-white']"
+        style="cursor: pointer;"
+        @click="selectTable(table.id)"
       >
-        <div
-          :class="['card', 'text-center', { 'bg-danger text-white': !table.is_available }]"
-          @click="$emit('select-table', table.id)"
-          style="cursor: pointer;"
-        >
-          <div class="card-body">
-            <h5 class="card-title">{{ table.table_number }}</h5>
-            <p class="card-text">
-              {{ table.is_available ? 'Available' : 'Occupied' }}
-            </p>
-          </div>
+        <div class="card-body p-3">
+          <h5 class="card-title mb-2">{{ table.table_number }}</h5>
+          <p class="card-text small mb-0">
+            {{ table.is_available === 1 ? 'Available' : 'Occupied' }}
+          </p>
+          <button
+            class="btn btn-sm btn-light mt-2"
+            @click.stop="toggleOccupancy(table)"
+          >
+            {{ table.is_available === 1 ? 'Set Occupied' : 'Set Available' }}
+          </button>
         </div>
       </div>
     </div>
-  </template>
-  
-  <script>
-  export default {
-    props: {
-      tables: {
-        type: Array,
-        required: true,
-      },
+  </div>
+</template>
+
+<script>
+import axios from 'axios';
+
+export default {
+  props: {
+    tables: {
+      type: Array,
+      required: true,
     },
-  };
-  </script>
-  
-  <style scoped>
-  .card {
-    transition: transform 0.2s;
-  }
-  .card:hover {
-    transform: scale(1.05);
-  }
-  </style>
+  },
+  methods: {
+    async toggleOccupancy(table) {
+      const newStatus = table.is_available === 1 ? false : true;
+      try {
+        await axios.post(`http://localhost:8000/api/setOccupancyStatus/${table.id}/${newStatus}`);
+        table.is_available = newStatus;
+        this.$emit('refresh-tables');
+      } catch (error) {
+        console.error('Error setting table occupancy status:', error);
+      }
+    },
+    selectTable(tableId) {
+      this.$emit('select-table', tableId);
+    },
+  },
+};
+</script>
+
+<style scoped>
+.card {
+  border-radius: 8px;
+}
+.btn-light {
+  color: black;
+}
+</style>

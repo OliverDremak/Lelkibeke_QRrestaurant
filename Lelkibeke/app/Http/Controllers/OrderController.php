@@ -7,14 +7,26 @@ use Illuminate\Support\Facades\DB;
 
 class OrderController extends Controller
 {
+    // {
+    //     "user_id": 2,
+    //     "table_id": 2,
+    //     "total_price": 100.00,
+    //     "order_items": [
+    //       {"menu_item_id": 1, "quantity": 2, "notes": "No onions"},
+    //       {"menu_item_id": 3, "quantity": 1, "notes": "Extra cheese"}
+    //     ]
+    //   }
     public function sendOrder(Request $request) {
-        //Token ellenőrzése
-        $userId = auth()->id(); // Vagy a bejelentkezett felhasználó ID-ja
+        // A headerben lévő token ellenörzése
+        // if (!$request->user()->tokenCan('order:place')) {
+        //     return response()->json(['error' => 'Unauthorized'], 401);
+        // }
+        $userId = $request->user_id; 
         $tableId = $request->table_id;
         $totalPrice = $request->total_price;
 
         // JSON formátumú rendelési tételek konvertálása
-        $orderItems = json_encode($request->items);
+        $orderItems = json_encode($request->order_items);
 
         $result = DB::select('CALL sendOrder(?, ?, ?, ?)', [
             $userId,
@@ -46,5 +58,21 @@ class OrderController extends Controller
         ]);
 
         return response()->json($result);
+    }
+
+    public function setOrderStatus($order_id, $status) {
+        if (!in_array($status, ['cooking', 'done'])) {
+            return response()->json(['error' => 'Invalid status'], 400);
+        }
+    
+        try {
+            DB::statement('CALL SetOrderStatusById(?, ?)', [
+                $order_id,
+                $status // Ensure status is passed as a string
+            ]);
+            return response()->json(['message' => 'Order status updated successfully']);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to update order status', 'details' => $e->getMessage()], 500);
+        }
     }
 }
