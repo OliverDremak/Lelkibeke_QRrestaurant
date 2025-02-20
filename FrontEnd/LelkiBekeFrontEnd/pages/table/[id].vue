@@ -10,6 +10,8 @@
 <script setup>
 import { useRoute } from 'vue-router';
 import { useFetch } from '#app'; 
+import axios from 'axios';
+import { onMounted } from 'vue';
 
 const route = useRoute();
 const tableId = route.params.id;
@@ -32,4 +34,11 @@ if (error.value) {
   console.error('Error fetching table data:', error.value);
 }
 
+onMounted(async () => {
+  try {
+    await axios.post(`http://localhost:8000/api/table-scanned/${tableId}`);
+  } catch (err) {
+    console.error('Error posting table scanned:', err);
+  }
+});
 </script>
