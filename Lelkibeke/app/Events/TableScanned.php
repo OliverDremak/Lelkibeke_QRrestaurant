@@ -15,12 +15,16 @@ class TableScanned implements ShouldBroadcastNow
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
+    public $tableId;
+
     /**
      * Create a new event instance.
+     *
+     * @param int $tableId
      */
-    public function __construct()
+    public function __construct(int $tableId)
     {
-        //
+        $this->tableId = $tableId;
     }
 
     /**
@@ -32,6 +36,18 @@ class TableScanned implements ShouldBroadcastNow
     {
         return [
             new Channel('tables'),
+        ];
+    }
+
+    /**
+     * Get the data to broadcast.
+     *
+     * @return array
+     */
+    public function broadcastWith(): array
+    {
+        return [
+            'tableId' => $this->tableId,
         ];
     }
 }
