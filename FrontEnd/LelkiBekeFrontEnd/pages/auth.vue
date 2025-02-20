@@ -104,7 +104,7 @@ button {
 }
 
 .toggle-button:hover{
-  color: #9E7E5E;
+  color: burlywood;
 }
 
 

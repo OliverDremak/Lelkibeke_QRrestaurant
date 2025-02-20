@@ -12,10 +12,6 @@ const router = useRouter();
 
 <template>
   <div>
-      <h1>Welcome {{ auth.user?.name }}</h1>
-      <button @click="auth.logout">Logout</button>
-    </div>
-  <div>
     <Navbar />
     <QRreaded/>
     <Footer/>

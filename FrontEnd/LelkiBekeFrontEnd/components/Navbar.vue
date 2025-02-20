@@ -5,16 +5,18 @@
       <button class="navbar-toggler" @click="toggleNavbar">
         <span class="navbar-toggler-icon"></span>
       </button>
-      <div :class="{'collapse navbar-collapse': !isNavbarOpen, 'navbar-collapse': isNavbarOpen}" id="navbarNav">
-        <ul class="navbar-nav ms-auto">
-          <li class="nav-item m-2">
-            <ButtonComponet @click="goToRegister" text="Register" class="w-100"/>
-          </li>            
-          <li class="nav-item m-2">             
-            <ButtonComponet @click="goToLogin" text="Login" class="w-100"/>
-          </li>
-        </ul>
-      </div>
+      <transition name="fade">
+        <div v-show="isNavbarOpen" class="navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav ms-auto">
+            <li class="nav-item m-2 text-center">
+              <ButtonComponet @click="goToRegister" text="Register" class="w-100"/>
+            </li>            
+            <li class="nav-item m-2 text-center">             
+              <ButtonComponet @click="goToLogin" text="Login" class="w-100"/>
+            </li>
+          </ul>
+        </div>
+      </transition>
     </div>
   </nav>
 </template>
@@ -29,6 +31,10 @@ const toggleNavbar = () => {
   isNavbarOpen.value = !isNavbarOpen.value;
 };
 
+
+
+
+
   
   const router = useRouter()
   // TODO: Show if the user is logged in
@@ -40,8 +46,14 @@ const toggleNavbar = () => {
   }
   </script>
   
-  <style scoped>
-  .navbar {
-    margin-bottom: 20px;
-  }
+<style scoped>
+.fade-enter-active, .fade-leave-active {
+  transition: opacity 0.5s ease-in-out;
+}
+.fade-leave-to {
+  opacity: 0;
+}
+.fade-enter-to {
+  opacity: 1;
+}
   </style>
