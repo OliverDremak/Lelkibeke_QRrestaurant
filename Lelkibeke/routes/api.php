@@ -25,9 +25,6 @@ Route::post('/newTable/{table_number}/{qr_code_url}/{is_avaible}', [TableControl
 Route::post('/modifyTable/{id}/{table_number}/{qr_code_url}/{is_avaible}', [TableController::class, 'modifyTableById']);
 Route::post('/deleteTable/{id}', [TableController::class, 'deleteTableById']);
 
-Route::get('/tablescanned/{table_id}', function () {
-    broadcast(new \App\Events\TableScanned());
-});
 Route::post('/table-scanned/{tableId}', TableqrScannedController::class);
 
 // MenuItemController
