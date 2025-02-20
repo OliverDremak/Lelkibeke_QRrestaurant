@@ -21,7 +21,7 @@ test('sendOrder should create a new order', function () {
         ]);
 
     // Send a request
-    $response = $this->postJson('/api/orders/send', [
+    $response = $this->postJson('/api/sendOrder', [
         'table_id' => 1,
         'total_price' => 20.5,
         'items' => [['item_id' => 1, 'qty' => 2]]
