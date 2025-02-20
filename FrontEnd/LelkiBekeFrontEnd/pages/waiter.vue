@@ -22,6 +22,9 @@ import { ref, onMounted } from 'vue';
 import TableList from '@/components/TableList.vue';
 import OrderList from '@/components/OrderList.vue';
 import axios from 'axios';
+import Echo from '/Users/korsoserik/suli/Lelkibeke_QRrestaurant/Lelkibeke/resources/js/echo.js';
+
+
 
 export default {
   components: {
@@ -54,6 +57,13 @@ export default {
     };
 
     onMounted(() => {
+      // Subscribe to the "tables" channel and listen for TableScanned event
+        Echo.channel('tables')
+          .listen('TableScanned', (event) => {
+            console.log('📢 Table Scanned Event Received:', event);
+            console.log('✅ Table ID:', event.tableId);
+          });
+
       fetchTables();
     });
 

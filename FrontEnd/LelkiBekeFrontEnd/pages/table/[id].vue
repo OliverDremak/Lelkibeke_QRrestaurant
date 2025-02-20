@@ -3,33 +3,44 @@
     <Navbar />
     <h1>Table {{ tableId }}</h1>
     <RestaurantMenu />
-    <Footer />
+    <Footer/>
   </div>
 </template>
 
 <script setup>
 import { useRoute } from 'vue-router';
 import { useFetch } from '#app'; 
+import Echo from 'laravel-echo';
 
-const route = useRoute();
-const tableId = route.params.id;
 
-const { data: table, error, refresh } = useFetch(`/api/tables/${tableId}`);
 
-const setOccupancy = async (status) => {
+const handleQrcodescanned = (tableId) => {
+
+  console.log('Qr code scanned', tableId);
+};
+
+// const { data: table, error, refresh } = useFetch(`/api/tables/${tableId}`);
+
+import { onMounted } from 'vue';
+import axios from 'axios';
+
+onMounted(() => {
   try {
-    await $fetch(`/api/setOccupancyStatus/${tableId}/${status ? 1 : 0}`, {
-      method: 'POST',
-    });
-    // Refresh the table data to reflect the new occupancy status
-    refresh();
-  } catch (err) {
-    console.error('Error setting occupancy status:', err);
-  }
-}
+    const route = useRoute();
+    const tableId = route.params.id;
+    console.log('Table id:', tableId);
 
-if (error.value) {
-  console.error('Error fetching table data:', error.value);
-}
+    axios.post(`http://localhost:8000/api/table-scanned/${tableId}`)
+      .then(() => {
+      console.log('Table scanned successfully ', tableId);
+      })
+      .catch(error => {
+      console.error('Error scanning table', error);
+      });
+  } catch (error) {
+    console.error('Unexpected error', error);
+  }
+});
+
 
 </script>

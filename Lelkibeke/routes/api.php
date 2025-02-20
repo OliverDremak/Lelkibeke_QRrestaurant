@@ -5,6 +5,7 @@ use App\Http\Controllers\TableController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\OrderController;
+use App\Http\Controllers\TableqrScannedController;
 
 Route::get('/users', [UserController::class, 'getUsers']);
 
@@ -24,11 +25,12 @@ Route::post('/newTable/{table_number}/{qr_code_url}/{is_avaible}', [TableControl
 Route::post('/modifyTable/{id}/{table_number}/{qr_code_url}/{is_avaible}', [TableController::class, 'modifyTableById']);
 Route::post('/deleteTable/{id}', [TableController::class, 'deleteTableById']);
 
+Route::post('/table-scanned/{tableId}', TableqrScannedController::class);
+
 // MenuItemController
 Route::post('/newMenuItem/{category_id}/{name}//{description}/{price}/{image_url}', [MenuItemController::class, 'createNewMenuItem']);
 Route::post('/modifyMenuItem/{id}/{category_id}/{name}/{description}/{price}/{image_url}', [MenuItemController::class, 'modifyMenuItemById']);
 Route::post('/deleteMenuItem/{id}', [MenuItemController::class, 'deleteMenuItemById']);
-
 
 // OrderController
 Route::post('/sendOrder', [OrderController::class, 'sendOrder']);
