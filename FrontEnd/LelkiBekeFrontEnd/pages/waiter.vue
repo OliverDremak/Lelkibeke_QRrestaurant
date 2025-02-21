@@ -3,19 +3,6 @@
     <h1 class="text-center mb-4">Waiter Dashboard</h1>
 
     <!-- WebSocket Notification -->
-    <div v-if="scannedTableId" class="fixed top-4 right-4 p-4 bg-white border rounded-lg shadow-lg z-50">
-      <div class="flex items-center gap-2">
-        <span class="text-sm font-semibold">
-          New scan detected for Table #{{ scannedTableId }}
-        </span>
-        <button 
-          @click="scannedTableId = null"
-          class="text-gray-500 hover:text-gray-700"
-        >
-          ✕
-        </button>
-      </div>
-    </div>
 
     <ClientOnly>
       <!-- Table List -->
