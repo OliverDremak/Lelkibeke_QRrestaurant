@@ -81,7 +81,7 @@ onMounted(() => {
 const props = defineProps({
   tableId: {
     type: Number,
-    required: false, // Default value if tableId is not provided
+    required: false,
   },
 });
 
@@ -142,7 +142,7 @@ const toggleCart = () => {
 const handleCheckout = async () => {
   const orderData = {
     user_id: 2, // Replace with actual user ID
-    table_id: props.tableId, // Replace with actual table ID
+    table_id: props.tableId,
     total_price: cartTotal.value,
     order_items: cart.value.map(item => ({
       menu_item_id: item.id,
@@ -169,9 +169,7 @@ const handleCheckout = async () => {
     const responseData = await response.json();
     if (responseData.order_id) {
       alert('Order placed successfully!');
-      // Navigate to another page. If using Vue Router, you could use:
-      // this.$router.push('/thank-you');
-      // Otherwise, you can use:
+      
       window.location.href = '/thankyou';
       window.localStorage.removeItem('cart');
     }

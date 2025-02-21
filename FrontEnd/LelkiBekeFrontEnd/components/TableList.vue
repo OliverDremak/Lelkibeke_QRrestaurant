@@ -66,6 +66,8 @@ export default {
     };
 
     onMounted(() => {
+      if (import.meta.server) return;
+
       $ws.channel('tables')
         .listen('TableScanned', (e) => {
           const scannedTable = props.tables.find((table) => table.id === e.tableId);

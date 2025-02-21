@@ -2,9 +2,6 @@
   <div class="container mt-5">
     <h1 class="text-center mb-4">Waiter Dashboard</h1>
 
-    <!-- WebSocket Notification -->
-
-    <ClientOnly>
       <!-- Table List -->
       <TableList :tables="tables" @select-table="selectTable" @refresh-tables="fetchTables" />
 
@@ -17,7 +14,6 @@
       <!-- Orders for Selected Table -->
       <OrderList :orders="selectedTableOrders" v-if="selectedTableOrders.length"/>
       <p v-else class="text-center">No orders for this table.</p>
-    </ClientOnly>
   </div>
 </template>
 
@@ -28,11 +24,9 @@ import TableList from '@/components/TableList.vue';
 import OrderList from '@/components/OrderList.vue';
 import axios from 'axios';
 
-const { $ws } = useNuxtApp();
 const tables = ref([]);
 const selectedTable = ref(null);
 const selectedTableOrders = ref([]);
-const scannedTableId = ref(null); // Track scanned table IDs
 
 const fetchTables = async () => {
   try {
@@ -55,17 +49,6 @@ const selectTable = async (tableId) => {
 };
 
 onMounted(() => {
-  $ws.channel('tables')
-    .listen('TableScanned', (e) => {
-      console.log('TableScanned event:', e.tableId);
-      scannedTableId.value = e.tableId;
-      
-      // Clear notification after 5 seconds
-      setTimeout(() => {
-        scannedTableId.value = null;
-      }, 5000);
-    });
-    
   fetchTables();
 });
 </script>
