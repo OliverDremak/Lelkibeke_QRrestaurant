@@ -8,11 +8,24 @@ use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Support\Facades\Hash;
+use OpenApi\Annotations as OA;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use Tymon\JWTAuth\Exceptions\JWTException;
 
 class UserController extends Controller
 {
+     /**
+     * @OA\Get(
+     *     path="/api/users",
+     *     summary="Retrieve all users",
+     *     tags={"User"},
+     *     @OA\Response(
+     *         response=200,
+     *         description="List of users",
+     *         @OA\JsonContent(type="array", @OA\Items(type="object"))
+     *     )
+     * )
+     */
     public function getUsers()
     {
         // Tárolt eljárás meghívása
@@ -21,7 +34,31 @@ class UserController extends Controller
         // Visszaküldjük a lekérdezett adatokat JSON formátumban
         return response()->json($users);
     }
-
+    /**
+     * @OA\Post(
+     *     path="/api/register",
+     *     summary="Register a new user",
+     *     tags={"User"},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"name", "email", "password"},
+     *             @OA\Property(property="name", type="string"),
+     *             @OA\Property(property="email", type="string", format="email"),
+     *             @OA\Property(property="password", type="string", format="password"),
+     *             @OA\Property(property="role", type="string", enum={"admin", "user", "waiter"})
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=201,
+     *         description="User registered successfully"
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Validation error"
+     *     )
+     * )
+     */
     public function register(Request $request)
     {
         $validated = $request->validate([
@@ -55,6 +92,29 @@ class UserController extends Controller
         }
     }
 
+    /**
+     * @OA\Post(
+     *     path="/api/login",
+     *     summary="User login",
+     *     tags={"User"},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"email", "password"},
+     *             @OA\Property(property="email", type="string", format="email"),
+     *             @OA\Property(property="password", type="string", format="password")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Successful login, returns user details and token"
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Invalid credentials"
+     *     )
+     * )
+     */
     public function login(Request $request)
     {
         $credentials = $request->validate([
@@ -74,6 +134,7 @@ class UserController extends Controller
             if (!Hash::check($request->password, $userData->password)) {
                 return response()->json(['error' => 'Hibás e-mail vagy jelszó'], 401);
             }
+
 
             $user = User::find($userData->id);
             $token = JWTAuth::fromUser($user);
@@ -95,16 +156,17 @@ class UserController extends Controller
         }
     }
 
-    public function getUser()
-    {
-        try {
-            $user = JWTAuth::parseToken()->authenticate();
-            return response()->json($user);
-        } catch (JWTException $e) {
-            return response()->json(['error' => 'Token invalid'], 401);
-        }
-    }
-
+     /**
+     * @OA\Post(
+     *     path="/api/logout",
+     *     summary="User logout",
+     *     tags={"User"},
+     *     @OA\Response(
+     *         response=200,
+     *         description="User logged out successfully"
+     *     )
+     * )
+     */
     public function logout()
     {
         try {
