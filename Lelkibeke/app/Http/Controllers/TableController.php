@@ -7,12 +7,48 @@ use Illuminate\Support\Facades\DB;
 
 class TableController extends Controller
 {
+    /**
+     * @OA\Get(
+     *     path="/api/tables",
+     *     summary="Retrieve all tables",
+     *     tags={"Tables"},
+     *     @OA\Response(
+     *         response=200,
+     *         description="List of tables",
+     *         @OA\JsonContent(type="array", @OA\Items(type="object"))
+     *     )
+     * )
+     */
     public function getTables()
     {
         $tables = DB::select('CALL GetTables()');
         return response()->json($tables);
     }
 
+    /**
+     * @OA\Post(
+     *     path="/api/newTable",
+     *     summary="Create a new table",
+     *     tags={"Tables"},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"table_number", "qr_code_url", "is_available"},
+     *             @OA\Property(property="table_number", type="integer"),
+     *             @OA\Property(property="qr_code_url", type="string"),
+     *             @OA\Property(property="is_available", type="boolean")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=201,
+     *         description="Table created successfully"
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Validation error"
+     *     )
+     * )
+     */
     public function createNewTable(Request $request)
     {
         $request->validate([
@@ -30,6 +66,31 @@ class TableController extends Controller
         return response()->json($result);
     }
 
+    /**
+     * @OA\Post(
+     *     path="/api/modifyTable",
+     *     summary="Modify an existing table",
+     *     tags={"Tables"},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"id", "table_number", "qr_code_url", "is_available"},
+     *             @OA\Property(property="id", type="integer"),
+     *             @OA\Property(property="table_number", type="integer"),
+     *             @OA\Property(property="qr_code_url", type="string"),
+     *             @OA\Property(property="is_available", type="boolean")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Table modified successfully"
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Validation error"
+     *     )
+     * )
+     */
     public function modifyTableById(Request $request)
     {
         $request->validate([
@@ -49,6 +110,28 @@ class TableController extends Controller
         return response()->json($result);
     }
 
+    /**
+     * @OA\Post(
+     *     path="/api/deleteTable",
+     *     summary="Delete a table",
+     *     tags={"Tables"},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"id"},
+     *             @OA\Property(property="id", type="integer")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Table deleted successfully"
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Validation error"
+     *     )
+     * )
+     */
     public function deleteTableById(Request $request)
     {
         $request->validate([
@@ -62,6 +145,29 @@ class TableController extends Controller
         return response()->json($result);
     }
 
+    /**
+     * @OA\Post(
+     *     path="/api/setOccupancyStatus",
+     *     summary="Set occupancy status of a table",
+     *     tags={"Tables"},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"id", "is_available"},
+     *             @OA\Property(property="id", type="integer"),
+     *             @OA\Property(property="is_available", type="boolean")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Occupancy status updated successfully"
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Validation error"
+     *     )
+     * )
+     */
     public function setTableOccupancyStatus(Request $request)
     {
         $request->validate([

@@ -8,9 +8,23 @@ use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Support\Facades\Hash;
+use OpenApi\Annotations as OA;
+
 
 class UserController extends Controller
 {
+     /**
+     * @OA\Get(
+     *     path="/api/users",
+     *     summary="Retrieve all users",
+     *     tags={"User"},
+     *     @OA\Response(
+     *         response=200,
+     *         description="List of users",
+     *         @OA\JsonContent(type="array", @OA\Items(type="object"))
+     *     )
+     * )
+     */
     public function getUsers()
     {
         // Tárolt eljárás meghívása
@@ -19,7 +33,31 @@ class UserController extends Controller
         // Visszaküldjük a lekérdezett adatokat JSON formátumban
         return response()->json($users);
     }
-
+    /**
+     * @OA\Post(
+     *     path="/api/register",
+     *     summary="Register a new user",
+     *     tags={"User"},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"name", "email", "password"},
+     *             @OA\Property(property="name", type="string"),
+     *             @OA\Property(property="email", type="string", format="email"),
+     *             @OA\Property(property="password", type="string", format="password"),
+     *             @OA\Property(property="role", type="string", enum={"admin", "user", "waiter"})
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=201,
+     *         description="User registered successfully"
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Validation error"
+     *     )
+     * )
+     */
     public function register(Request $request)
     {
         $validated = $request->validate([
@@ -29,12 +67,12 @@ class UserController extends Controller
             'role' => 'nullable|in:admin,user,waiter'
         ]);
 
-        try {            
+        try {
             DB::statement('CALL RegisterUser(?, ?, ?, ?)', [
                 $validated['email'],
                 $validated['password'],
                 $validated['name'],
-                $validated['role'] ?? 'user' 
+                $validated['role'] ?? 'user'
             ]);
 
             $user = User::where('email', $validated['email'])->first();
@@ -54,6 +92,29 @@ class UserController extends Controller
         }
     }
 
+    /**
+     * @OA\Post(
+     *     path="/api/login",
+     *     summary="User login",
+     *     tags={"User"},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"email", "password"},
+     *             @OA\Property(property="email", type="string", format="email"),
+     *             @OA\Property(property="password", type="string", format="password")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Successful login, returns user details and token"
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Invalid credentials"
+     *     )
+     * )
+     */
     public function login(Request $request)
     {
         // Bemeneti adatok validálása
@@ -79,7 +140,7 @@ class UserController extends Controller
                 return response()->json(['error' => 'Hibás e-mail vagy jelszó'], 401);
             }
 
-            // Felhasználó keresése az 
+            // Felhasználó keresése az
             $user = User::find($userData->id);
 
             // Token generálása
@@ -101,7 +162,17 @@ class UserController extends Controller
             ], 500);
         }
     }
-
+    /**
+     * @OA\Post(
+     *     path="/api/logout",
+     *     summary="User logout",
+     *     tags={"User"},
+     *     @OA\Response(
+     *         response=200,
+     *         description="User logged out successfully"
+     *     )
+     * )
+     */
     public function logout(Request $request)
     {
         Auth::logout();
