@@ -15,7 +15,8 @@ Route::post('/login', [UserController::class, 'login']);
 Route::post('/logout', [UserController::class, 'logout']);
 
 // TableController
-Route::post('/setOccupancyStatus', [TableController::class, 'setTableOccupancyStatus']);
+Route::post('/setOccupancyStatus/{id}/{is_avaible}', [TableController::class, 'setTableOccupancyStatus']);
+
 Route::get('/tables', [TableController::class, 'getTables']);
 Route::get('/ordersByTableId/{id}', [OrderController::class, 'getOrdersForTableById']);
 Route::get('/allOrderedItems', [OrderController::class, 'getAllOrderedItems']);
