@@ -59,7 +59,7 @@
 <script setup>
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import ButtonComponet from './ButtonComponet.vue';
-const { data } = useFetch('http://localhost:8000/menu');
+const { data } = useFetch('http://localhost:8000/api/menu');
 console.log(data);
 
 const mainCourses = ref(data);

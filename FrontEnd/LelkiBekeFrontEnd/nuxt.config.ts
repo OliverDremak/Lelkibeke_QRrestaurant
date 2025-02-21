@@ -1,6 +1,12 @@
 export default defineNuxtConfig({
   devtools: { enabled: true },
 
+  runtimeConfig: {
+      public: {
+        reverbKey: process.env.REVERB_KEY, // Exposes REVERB_KEY to client code
+      },
+    },
+
   css: [
     'bootstrap/dist/css/bootstrap.min.css', 
     'bootstrap-icons/font/bootstrap-icons.css'

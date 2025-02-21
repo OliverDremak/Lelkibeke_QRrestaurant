@@ -13,9 +13,13 @@ export default defineNuxtPlugin(() => {
 
   window.Pusher = Pusher;
   
+  const config = useRuntimeConfig();
+
+  console.log('REVERB_KEY:', config.public.reverbKey);
+
   const ws =new Echo({
     broadcaster: 'reverb',
-    key: 'oevgiouibc6ohhmnpuab',
+    key: config.public.reverbKey,
     wsHost: 'localhost',
     wsPort: 8080,
     wssPort: 443,
