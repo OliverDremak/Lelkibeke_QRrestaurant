@@ -9,7 +9,8 @@ use Illuminate\Support\Facades\Auth;
 use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Support\Facades\Hash;
 use OpenApi\Annotations as OA;
-
+use Tymon\JWTAuth\Facades\JWTAuth;
+use Tymon\JWTAuth\Exceptions\JWTException;
 
 class UserController extends Controller
 {
@@ -70,19 +71,18 @@ class UserController extends Controller
         try {
             DB::statement('CALL RegisterUser(?, ?, ?, ?)', [
                 $validated['email'],
-                $validated['password'],
+                Hash::make($validated['password']),
                 $validated['name'],
                 $validated['role'] ?? 'user'
             ]);
 
             $user = User::where('email', $validated['email'])->first();
-            $token = $user->createToken('auth-token')->plainTextToken;
+            $token = JWTAuth::fromUser($user);
 
             return response()->json([
                 'token' => $token,
                 'user' => $user
             ], 201);
-
         } catch (\Exception $e) {
             $statusCode = method_exists($e, 'getStatusCode') ? $e->getStatusCode() : 500;
             return response()->json([
@@ -117,34 +117,27 @@ class UserController extends Controller
      */
     public function login(Request $request)
     {
-        // Bemeneti adatok validálása
         $credentials = $request->validate([
             'email' => 'required|email',
             'password' => 'required|string'
         ]);
 
         try {
-            // Tárolt eljárás meghívása
             $result = DB::select('CALL LoginUser(?)', [$credentials['email']]);
 
             if (empty($result)) {
                 return response()->json(['message' => 'Hibás e-mail vagy jelszó'], 401);
             }
 
-            // Az első találat kinyerése
             $userData = $result[0];
 
-            // Jelszó SHA-256 ellenőrzése
-            $hashedPassword = hash('sha256', $request->password);
-            if ($hashedPassword !== $userData->password) {
+            if (!Hash::check($request->password, $userData->password)) {
                 return response()->json(['error' => 'Hibás e-mail vagy jelszó'], 401);
             }
 
-            // Felhasználó keresése az
-            $user = User::find($userData->id);
 
-            // Token generálása
-            $token = $user->createToken('auth-token')->plainTextToken;
+            $user = User::find($userData->id);
+            $token = JWTAuth::fromUser($user);
 
             return response()->json([
                 'message' => 'Sikeres bejelentkezés',
@@ -162,7 +155,8 @@ class UserController extends Controller
             ], 500);
         }
     }
-    /**
+
+     /**
      * @OA\Post(
      *     path="/api/logout",
      *     summary="User logout",
@@ -173,9 +167,14 @@ class UserController extends Controller
      *     )
      * )
      */
-    public function logout(Request $request)
+    public function logout()
     {
-        Auth::logout();
-        return response()->json(['message' => 'Logged out successfully']);
+        try {
+            $token = JWTAuth::getToken();
+            JWTAuth::invalidate($token);
+            return response()->json(['message' => 'Successfully logged out']);
+        } catch (JWTException $e) {
+            return response()->json(['error' => 'Could not log out'], 500);
+        }
     }
 }
