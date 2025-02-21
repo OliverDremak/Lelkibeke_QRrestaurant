@@ -80,6 +80,11 @@ export default {
             }, 60000);
           }
         });
+      $ws.channel('orders')
+        .listen('OrderSent', (e) => {
+          console.log('Order received for table ID:', e.tableId);
+          selectTable(e.tableId);
+        });
     });
 
     onBeforeUnmount(() => {

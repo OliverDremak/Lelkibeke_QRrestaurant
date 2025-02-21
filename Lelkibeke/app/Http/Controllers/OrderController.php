@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use App\Events\OrderSent;
 
 class OrderController extends Controller
 {
@@ -34,6 +35,8 @@ class OrderController extends Controller
             $totalPrice,
             $orderItems
         ]);
+
+        broadcast(new OrderSent($tableId));
 
         return response()->json([
             'message' => $result[0]->message ?? 'Order created successfully!',

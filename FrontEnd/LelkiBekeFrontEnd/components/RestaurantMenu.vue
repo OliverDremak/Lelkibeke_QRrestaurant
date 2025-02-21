@@ -78,6 +78,13 @@ onMounted(() => {
   window.addEventListener("resize", handleResize);
 });
 
+const props = defineProps({
+  tableId: {
+    type: Number,
+    required: false, // Default value if tableId is not provided
+  },
+});
+
 onUnmounted(() => {
   window.removeEventListener("resize", handleResize);
 });
@@ -135,7 +142,7 @@ const toggleCart = () => {
 const handleCheckout = async () => {
   const orderData = {
     user_id: 2, // Replace with actual user ID
-    table_id: 2, // Replace with actual table ID
+    table_id: props.tableId, // Replace with actual table ID
     total_price: cartTotal.value,
     order_items: cart.value.map(item => ({
       menu_item_id: item.id,

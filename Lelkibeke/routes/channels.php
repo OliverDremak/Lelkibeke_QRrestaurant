@@ -9,3 +9,7 @@ Broadcast::channel('App.Models.User.{id}', function ($user, $id) {
 Broadcast::channel('tables',function(){
     
 });
+
+Broadcast::channel('orders',function(){
+    
+});
