@@ -187,7 +187,7 @@ export default {
   background: #fff;
   border-radius: 0.3rem;
   box-shadow: 0 3px 9px rgba(0, 0, 0, 0.5);
-  color: black; /* Change text color to black */
+  color: black;
 }
 
 .modal-header {

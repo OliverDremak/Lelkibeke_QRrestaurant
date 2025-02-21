@@ -2,34 +2,26 @@
   <div>
     <Navbar />
     <h1>Table {{ tableId }}</h1>
-    <RestaurantMenu />
-    <Footer />
+    <RestaurantMenu :table-id="tableId"/>
+    <Footer/>
   </div>
 </template>
 
 <script setup>
 import { useRoute } from 'vue-router';
 import { useFetch } from '#app'; 
+import axios from 'axios';
+import { onMounted } from 'vue';
 
 const route = useRoute();
-const tableId = route.params.id;
+const tableId = parseInt(route.params.id,10);
+console.log(tableId);
 
-const { data: table, error, refresh } = useFetch(`/api/tables/${tableId}`);
-
-const setOccupancy = async (status) => {
+onMounted(async () => {
   try {
-    await $fetch(`/api/setOccupancyStatus/${tableId}/${status ? 1 : 0}`, {
-      method: 'POST',
-    });
-    // Refresh the table data to reflect the new occupancy status
-    refresh();
+    await axios.post(`http://localhost:8000/api/table-scanned/${tableId}`);
   } catch (err) {
-    console.error('Error setting occupancy status:', err);
+    console.error('Error posting table scanned:', err);
   }
-}
-
-if (error.value) {
-  console.error('Error fetching table data:', error.value);
-}
-
+});
 </script>
