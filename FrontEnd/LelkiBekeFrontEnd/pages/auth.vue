@@ -1,5 +1,6 @@
 <script setup lang="ts">
-const isLogin = ref(true)
+  const route = useRoute()
+  const isLogin = ref(!route.query.register)
   const name = ref('')
   const email = ref('')
   const password = ref('')
@@ -12,9 +13,8 @@ const isLogin = ref(true)
       await auth.register(name.value, email.value, password.value)
     }
     
-    if (auth.user) {
-      navigateTo('/menu')
-      window.location.reload()
+    if (auth.token) {  // Changed from auth.user to auth.token
+      navigateTo('/table/1')
     }
   }
 
@@ -93,8 +93,6 @@ button {
   cursor: pointer;
   transition: opacity 0.25s ease, background-color 0.25s ease; /* Smooth transition */
 }
-
-
 
 .toggle-button {
   margin-top: 1rem;
