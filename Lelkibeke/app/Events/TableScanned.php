@@ -47,7 +47,7 @@ class TableScanned implements ShouldBroadcastNow
     public function broadcastWith(): array
     {
         return [
-            'tableId' => $this->tableId,
+            'tableId' => (int)$this->tableId, // Ensure tableId is cast to integer
         ];
     }
 }
