@@ -51,6 +51,7 @@ export default {
     const scannedTableId = ref(null);
 
     const toggleOccupancy = async (table) => {
+      console.log('Toggling occupancy status for table:', table);
       const newStatus = table.is_available === 1 ? false : true;
       try {
         await axios.post(`http://localhost:8000/api/setOccupancyStatus/${table.id}/${newStatus}`);
@@ -67,11 +68,11 @@ export default {
 
     onMounted(() => {
       if (import.meta.server) return;
-
+      console.log('Listening for table events...');
       $ws.channel('tables')
         .listen('TableScanned', (e) => {
           const scannedTable = props.tables.find((table) => table.id === e.tableId);
-
+          console.log('Table scanned:', scannedTable);
           // Only set scannedTableId if the table is available
           if (scannedTable && scannedTable.is_available === 1) {
             scannedTableId.value = e.tableId;

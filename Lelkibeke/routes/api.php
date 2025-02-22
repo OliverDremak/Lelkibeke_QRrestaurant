@@ -27,6 +27,7 @@ Route::post('/modifyTable', [TableController::class, 'modifyTableById']);
 Route::post('/deleteTable', [TableController::class, 'deleteTableById']);
 Route::get('/menu', [MenuItemController::class, 'getMenu']);
 
+Route::post('/setOrderStatus/{order_id}/{status}', [OrderController::class, 'setOrderStatus']);
 Route::post('/table-scanned/{tableId}', TableqrScannedController::class);
 
 // MenuItemController

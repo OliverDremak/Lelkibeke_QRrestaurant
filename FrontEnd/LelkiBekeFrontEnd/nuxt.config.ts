@@ -22,4 +22,5 @@ export default defineNuxtConfig({
   },
 
   modules: ['@pinia/nuxt'],
+  compatibilityDate: '2025-02-22',
 });
