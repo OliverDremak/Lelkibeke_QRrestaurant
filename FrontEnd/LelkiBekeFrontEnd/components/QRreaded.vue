@@ -1,5 +1,22 @@
 <script setup lang="ts">
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
 
+const router = useRouter()
+const inputCode = ref('')
+
+const goToTable = () => {
+    if (inputCode.value.trim() === '') {
+        alert('Please enter a code.')
+        return
+    }
+    router.push(`/table/${inputCode.value}`)
+    window.location.reload()
+}
+const goToScanner = () => {
+    router.push('/QRscannerPage')
+    //window.location.reload()
+}
 </script>
 <template>
 
@@ -12,10 +29,11 @@
                 <p class="lead mb-4 text-white">Order your favorite meals from the best restaurant in town.</p>
 
                     <div class="form-floating mb-3">
-                        <input type="text" class="form-control" id="floatingInput" placeholder="">
+                        <input type="text" class="form-control" id="floatingInput" placeholder="" v-model="inputCode">
                         <label for="floatingInput">Code</label>
                     </div>
-                    <ButtonComponet text="Search" />
+                    <ButtonComponet text="Search" @click="goToTable" />
+                    <ButtonComponet text="Scan the QR code" @click="goToScanner" />
             </div>
         </div>
     </section>
