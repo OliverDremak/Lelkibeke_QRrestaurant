@@ -21,6 +21,7 @@ Route::get('/tables', [TableController::class, 'getTables']);
 Route::get('/ordersByTableId/{id}', [OrderController::class, 'getOrdersForTableById']);
 Route::get('/allOrderedItems', [OrderController::class, 'getAllOrderedItems']);
 Route::post('/setOrderStatus', [OrderController::class, 'setOrderStatus']);
+Route::post('/setOrderStatus/{order_id}/{status}', [OrderController::class, 'setOrderStatus']);
 Route::post('/newTable', [TableController::class, 'createNewTable']);
 Route::post('/modifyTable', [TableController::class, 'modifyTableById']);
 Route::post('/deleteTable', [TableController::class, 'deleteTableById']);
