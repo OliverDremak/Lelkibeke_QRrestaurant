@@ -12,7 +12,7 @@
       </div>
 
       <!-- Orders for Selected Table -->
-      <OrderList :orders="selectedTableOrders" v-if="selectedTableOrders.length"/>
+      <OrderList :orders="selectedTableOrders" v-if="selectedTableOrders.length" @order-updated="refreshOrders"/>
       <p v-else class="text-center">No orders for this table.</p>
   </div>
 </template>
@@ -37,19 +37,41 @@ const fetchTables = async () => {
   }
 };
 
-const selectTable = async (tableId) => {
+const refreshOrders = async () => {
+  if (selectedTable.value) {
+    await fetchActiveOrdersForTable(selectedTable.value.id);
+  }
+};
+
+const fetchActiveOrdersForTable = async (tableId) => {
   try {
-    const table = tables.value.find(t => t.id === tableId);
-    selectedTable.value = table;
-    const response = await axios.get(`http://localhost:8000/api/ordersByTableId/${tableId}`);
+    const response = await axios.post('http://localhost:8000/api/getActiveOrdersForTable', {
+      id: tableId
+    });
     selectedTableOrders.value = response.data;
   } catch (error) {
-    console.error('Error fetching orders for table:', error);
+    console.error('Error fetching active orders for table:', error);
+  }
+};
+
+const selectTable = async (tableId) => {
+  selectedTable.value = tables.value.find(t => t.id === tableId);
+  if (selectedTable.value) {
+    await fetchActiveOrdersForTable(tableId);
   }
 };
 
 onMounted(() => {
   fetchTables();
+  
+  const { $ws } = useNuxtApp();
+  $ws.channel('orders')
+    .listen('OrderSent', (e) => {
+      console.log('New order received for table:', e.tableId);
+      if (selectedTable.value && selectedTable.value.id === e.tableId) {
+        fetchActiveOrdersForTable(e.tableId);
+      }
+    });
 });
 </script>
 

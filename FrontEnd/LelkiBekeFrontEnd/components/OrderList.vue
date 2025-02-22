@@ -65,9 +65,17 @@ export default {
     orders: {
       type: Array,
       required: true,
+      validator: function(value) {
+        return value.every(order => 
+          order.order_id && 
+          order.menu_item_name && 
+          order.quantity !== undefined
+        );
+      }
     },
   },
-  setup(props) {
+  emits: ['order-updated'],
+  setup(props, { emit }) {
     const orders = ref(props.orders);
     const showConfirmation = ref(false);
     const selectedOrder = ref(null);
@@ -114,12 +122,16 @@ export default {
     const markAsServed = async () => {
       if (selectedOrder.value) {
         try {
-          await axios.post(`http://localhost:8000/api/setOrderStatus/${selectedOrder.value.order_id}/done`);
+          await axios.post('http://localhost:8000/api/setOrderStatus', {
+            order_id: selectedOrder.value.order_id,
+            status: 'done'
+          });
           const orderIndex = groupedOrders.value.findIndex(order => order.order_id === selectedOrder.value.order_id);
           if (orderIndex !== -1) {
             groupedOrders.value.splice(orderIndex, 1);
           }
           showConfirmation.value = false;
+          emit('order-updated');
         } catch (error) {
           console.error('Error marking order as served:', error);
         }

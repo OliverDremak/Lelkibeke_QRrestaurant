@@ -54,7 +54,10 @@ export default {
       console.log('Toggling occupancy status for table:', table);
       const newStatus = table.is_available === 1 ? false : true;
       try {
-        await axios.post(`http://localhost:8000/api/setOccupancyStatus/${table.id}/${newStatus}`);
+        await axios.post(`http://localhost:8000/api/setOccupancyStatus`, {
+          id: table.id,
+          is_available: newStatus
+        });
         table.is_available = newStatus;
         emit('refresh-tables');
       } catch (error) {
@@ -71,12 +74,15 @@ export default {
       console.log('Listening for table events...');
       $ws.channel('tables')
         .listen('TableScanned', (e) => {
-          const scannedTable = props.tables.find((table) => table.id === e.tableId);
-          console.log('Table scanned:', scannedTable);
-          // Only set scannedTableId if the table is available
+          console.log('Table scan event received:', e);
+          // Convert tableId to number to ensure consistent comparison
+          const receivedTableId = parseInt(e.tableId);
+          const scannedTable = props.tables.find((table) => table.id === receivedTableId);
+          console.log('Matched table:', scannedTable);
+          
           if (scannedTable && scannedTable.is_available === 1) {
-            scannedTableId.value = e.tableId;
-
+            scannedTableId.value = receivedTableId; // Fixed: Use .value on the ref
+            
             // Reset after 1 minute
             setTimeout(() => {
               scannedTableId.value = null;
@@ -86,7 +92,7 @@ export default {
       $ws.channel('orders')
         .listen('OrderSent', (e) => {
           console.log('Order received for table ID:', e.tableId);
-          selectTable(e.tableId);
+          selectTable(e.tableId); // This will trigger parent component to fetch orders
         });
     });
 

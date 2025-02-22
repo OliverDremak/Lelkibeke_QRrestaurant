@@ -55,6 +55,10 @@ class OrderController extends Controller
     }
 
     public function getOrdersForTableById(Request $request) {
+        $request->validate([
+            'id' => 'required|integer'
+        ]);
+
         $tableId = $request->id;
         $result = DB::select('CALL GetOrdersForTableById(?)', [
             $tableId
@@ -63,15 +67,29 @@ class OrderController extends Controller
         return response()->json($result);
     }
 
-    public function setOrderStatus($order_id, $status) {
-        if (!in_array($status, ['cooking', 'done'])) {
-            return response()->json(['error' => 'Invalid status'], 400);
-        }
-    
+    public function getActiveOrdersForTableById(Request $request) {
+        $request->validate([
+            'id' => 'required|integer'
+        ]);
+
+        $tableId = $request->id;
+        $result = DB::select('CALL GetActiveOrdersForTableById(?)', [
+            $tableId
+        ]);
+
+        return response()->json($result);
+    }
+
+    public function setOrderStatus(Request $request) {
+        $request->validate([
+            'order_id' => 'required|integer',
+            'status' => 'required|in:cooking,done'
+        ]);
+        
         try {
             DB::statement('CALL SetOrderStatusById(?, ?)', [
-                $order_id,
-                $status // Ensure status is passed as a string
+                $request->order_id,
+                $request->status
             ]);
             return response()->json(['message' => 'Order status updated successfully']);
         } catch (\Exception $e) {

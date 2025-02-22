@@ -10,24 +10,26 @@ class TableqrScannedController extends Controller
     /**
      * Handle the incoming request.
      */
-    public function __invoke($tableId)
+    public function __invoke(Request $request)
     {
-        // Validate the tableId
-        if (!is_numeric($tableId)) {
-            return response()->json(['error' => 'Invalid tableId'], 400);
-        }
-
-        // Broadcast the event
-        try {
-            broadcast(new TableScanned($tableId));
-        } catch (\Exception $e) {
-            return response()->json(['error' => 'Failed to broadcast event', 'details' => $e->getMessage()], 500);
-        }
-
-        return response()->json([
-            'message' => 'QR code scanned successfully',
-            'tableId' => $tableId
+        $request->validate([
+            'tableId' => 'required|numeric'
         ]);
+
+        try {
+            $tableId = (int)$request->tableId; // Cast to integer
+            broadcast(new TableScanned($tableId));
+            
+            return response()->json([
+                'message' => 'QR code scanned successfully',
+                'tableId' => $tableId
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Failed to broadcast event',
+                'details' => $e->getMessage()
+            ], 500);
+        }
     }
 }
 
