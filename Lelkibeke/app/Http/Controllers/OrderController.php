@@ -18,11 +18,12 @@ class OrderController extends Controller
     //     ]
     //   }
     public function sendOrder(Request $request) {
-        // A headerben lévő token ellenörzése
-        // if (!$request->user()->tokenCan('order:place')) {
-        //     return response()->json(['error' => 'Unauthorized'], 401);
-        // }
-        $userId = $request->user_id; 
+        $user = auth('api')->user();
+        if (!$user) {
+            return response()->json(['error' => 'Unauthorized'], 401);
+        }
+
+        $userId = $user->id;
         $tableId = $request->table_id;
         $totalPrice = $request->total_price;
 
