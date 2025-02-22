@@ -1,14 +1,19 @@
 <template>
   <div class="menu-container container">
-    <div class="category-buttons">
-      <button @click="filterByCategory('')" :class="{ active: selectedCategory === '' }">
-        All
-      </button>
-      <button v-for="category in uniqueCategories" :key="category" @click="filterByCategory(category)"
-        :class="{ active: selectedCategory === category }">
-        {{ category }}
-      </button>
+    <div class="category-container-wrapper">
+      <button class="scroll-button left" @click="scrollLeft">‹</button>
+      <div ref="categoryContainer" class="category-buttons">
+        <button @click="filterByCategory('')" :class="{ active: selectedCategory === '' }">
+          All
+        </button>
+        <button v-for="category in uniqueCategories" :key="category" @click="filterByCategory(category)"
+          :class="{ active: selectedCategory === category }">
+          {{ category }}
+        </button>
+      </div>
+      <button class="scroll-button right" @click="scrollRight">›</button>
     </div>
+
 
     <div class="main-content row">
       <!-- Menu Section -->
@@ -16,6 +21,7 @@
         <h2>Main Courses</h2>
         <div class="menu-grid">
           <div v-for="item in filteredMainCourses" :key="item.id" class="menu-item">
+            <img class="menu-item-image" src="https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fimages.deliveryhero.io%2Fimage%2Ffd-hu%2FLH%2Fhvmf-hero.jpg&f=1&nofb=1&ipt=3f262fe518822ce6b005b76e32553af53eb53e599d9891c6a15efd23cad0747e&ipo=images" alt="">
             <h3>{{ item.name }} ({{ item.category_name }})</h3>
             <p>{{ item.description }}</p>
             <p class="price">{{ item.price }}ft</p>
@@ -78,6 +84,22 @@ const menuClass = computed(() => ({
 const handleResize = () => {
   isWide.value = window.innerWidth >= 1000;
 };
+
+// Új: a kategória konténer görgetéséhez
+const categoryContainer = ref(null);
+
+const scrollLeft = () => {
+  if (categoryContainer.value) {
+    categoryContainer.value.scrollBy({ left: -150, behavior: 'smooth' });
+  }
+};
+
+const scrollRight = () => {
+  if (categoryContainer.value) {
+    categoryContainer.value.scrollBy({ left: 150, behavior: 'smooth' });
+  }
+};
+
 
 onMounted(() => {
   handleResize();
@@ -199,7 +221,6 @@ watch(cart, (newCart) => {
 <style scoped>
 @import url("~/assets/css/main.css");
 
-
 .trash .svg-icon {
   filter: brightness(0) saturate(100%) invert(30%) sepia(100%) saturate(1000%) hue-rotate(0deg);
 }
@@ -216,7 +237,6 @@ button:hover .svg-icon {
   display: flex;
   justify-content: center;
   gap: 2px;
-
 }
 
 .quantitybuttons *,
@@ -233,31 +253,91 @@ button:hover .svg-icon {
   padding: 20px;
 }
 
+/* Kategória választó stílusok */
 .category-buttons {
   display: flex;
   gap: 10px;
   margin-bottom: 20px;
   overflow-x: auto;
   white-space: nowrap;
+  scroll-behavior: smooth;
+  padding: 0 40px;
 }
 
 .category-buttons button {
   padding: 10px 20px;
   cursor: pointer;
   border: none;
-  background-color: #f0f0f0;
-  border-radius: 5px;
-  transition: background-color 0.3s;
+  border-radius: 30px;
+  background: linear-gradient(145deg, #ffffff, #e6e6e6);
+  transition: all 0.3s ease;
   white-space: nowrap;
-}
-
-.category-buttons button.active {
-  background-color: #007bff;
-  color: white;
+  font-weight: bold;
+  color: #333;
 }
 
 .category-buttons button:hover {
-  background-color: #e0e0e0;
+  transform: translateY(-2px);
+  background: linear-gradient(145deg, #e6e6e6, #ffffff);
+  box-shadow: 2px 2px 5px #bebebe, -2px -2px 5px #ffffff;
+}
+
+.category-buttons button.active {
+  background: linear-gradient(145deg, #dd6013, #ffbd00);
+  color: white;
+  box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.menu-item-image {
+  width: 100%;
+  height: 150px;
+  object-fit: cover;
+  border-radius: 8px;
+  margin-bottom: 15px;
+}
+
+.category-container-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.category-buttons {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.category-buttons::-webkit-scrollbar {
+  display: none;
+}
+
+.scroll-button {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(255, 255, 255, 0.8);
+  border: none;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  font-size: 20px;
+  color: #333;
+  cursor: pointer;
+  display: none;
+}
+
+.scroll-button.left {
+  left: 5px;
+}
+
+.scroll-button.right {
+  right: 5px;
+}
+
+@media (max-width: 768px) {
+  .scroll-button {
+    display: block;
+  }
 }
 
 .main-content {
@@ -267,23 +347,74 @@ button:hover .svg-icon {
   width: 100%;
 }
 
-.menu-section {
-  margin-bottom: 20px;
+.menu-item {
+  border: 1px solid #e0e0e0;
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 12px;
+  width: calc(33.333% - 20px);
+  box-sizing: border-box;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.menu-item:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+}
+
+.menu-item h3 {
+  font-size: 1.25rem;
+  margin-bottom: 10px;
+  color: #333;
+}
+
+.menu-item p {
+  font-size: 0.9rem;
+  color: #666;
+  margin-bottom: 15px;
+}
+
+.menu-item .price {
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: #dd6013;
+  margin-bottom: 15px;
+}
+
+.menu-item button {
+  background: linear-gradient(145deg, #dd6013, #ffbd00);
+  border: none;
+  border-radius: 25px;
+  padding: 10px 20px;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.menu-item button:hover {
+  background: linear-gradient(145deg, #ffbd00, #dd6013);
+  transform: scale(1.05);
 }
 
 .menu-grid {
   display: flex;
   flex-wrap: wrap;
   gap: 20px;
+  justify-content: center;
 }
 
-.menu-item {
-  border: 1px solid #ddd;
-  background-color: #ddd;
-  padding: 20px;
-  border-radius: 5px;
-  width: calc(33.333% - 20px);
-  box-sizing: border-box;
+@media (max-width: 1200px) {
+  .menu-item {
+    width: calc(50% - 20px);
+  }
+}
+
+@media (max-width: 999px) {
+  .menu-item {
+    width: calc(33.333% - 20px);
+  }
 }
 
 @media (max-width: 768px) {
@@ -304,7 +435,7 @@ button:hover .svg-icon {
   padding: 1rem;
   border-radius: 15px;
   max-height: max-content;
-  box-shadow: 9px 9px 12px #b2b2b3, inset 0 0 7px rgba(0, 0, 0, 0.3)
+  box-shadow: 9px 9px 12px #b2b2b3, inset 0 0 7px rgba(0, 0, 0, 0.3);
 }
 
 .cart-item {
@@ -322,7 +453,7 @@ button:hover .svg-icon {
   margin-top: 10px;
 }
 
-@media (max-width: 1000px) {
+@media (max-width: 999px) {
   .cart-section {
     position: fixed;
     bottom: 0;
