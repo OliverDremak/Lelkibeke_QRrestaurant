@@ -1,5 +1,6 @@
 <script setup lang="ts">
-const isLogin = ref(true)
+  const route = useRoute()
+  const isLogin = ref(!route.query.register)
   const name = ref('')
   const email = ref('')
   const password = ref('')
@@ -13,8 +14,10 @@ const isLogin = ref(true)
     }
     
     if (auth.user) {
-      navigateTo('/menu')
-      window.location.reload()
+      navigateTo('/table/1').then(() => {
+        window.location.reload()
+      })
+      //window.location.reload()
     }
   }
 

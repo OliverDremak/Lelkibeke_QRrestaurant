@@ -39,10 +39,10 @@ const toggleNavbar = () => {
   const router = useRouter()
   // TODO: Show if the user is logged in
   const goToLogin = () => {
-    router.push('/login')
+    router.push('/auth')
   }
   const goToRegister = () => {
-    router.push('/register')
+    router.push('/auth?register=true')
   }
   </script>
   

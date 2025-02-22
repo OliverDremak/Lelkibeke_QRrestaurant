@@ -49,6 +49,7 @@ export const useAuthStore = defineStore('auth', {
           
           this.token = token
           this.user = user
+          console.log(token)
           localStorage.setItem('token', token)
         } catch (error: any) {
           this.error = error.response?.data?.message || 'Registration failed'
