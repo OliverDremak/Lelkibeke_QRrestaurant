@@ -11,7 +11,7 @@ const goToTable = () => {
         return
     }
     router.push(`/table/${inputCode.value}`)
-    window.location.reload()
+    //window.location.reload()
 }
 const goToScanner = () => {
     router.push('/QRscannerPage')
@@ -33,7 +33,7 @@ const goToScanner = () => {
                         <label for="floatingInput">Code</label>
                     </div>
                     <ButtonComponet text="Search" @click="goToTable" />
-                    <ButtonComponet text="Scan the QR code" @click="goToScanner" />
+                    <ButtonComponet text="Scan the QR code" @click="goToScanner"/>
             </div>
         </div>
     </section>

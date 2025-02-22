@@ -14,7 +14,6 @@ const router = useRouter();
   <div>
     <Navbar />
     <QRreaded/>
-    <QrScanner/>
     <Footer/>
   </div>
 </template>
