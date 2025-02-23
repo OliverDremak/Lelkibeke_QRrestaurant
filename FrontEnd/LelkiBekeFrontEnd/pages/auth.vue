@@ -14,9 +14,7 @@
     }
     
     if (auth.user) {
-      navigateTo('/table/1').then(() => {
-        window.location.reload()
-      })
+      navigateTo('/table/1')
       //window.location.reload()
     }
   }
