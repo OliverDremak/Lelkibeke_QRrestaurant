@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\TableqrScannedController;
+use App\Http\Controllers\StatController;
 
 Route::get('/users', [UserController::class, 'getUsers']);
 
@@ -26,7 +27,10 @@ Route::post('/setOrderStatus', [OrderController::class, 'setOrderStatus']);
 Route::post('/newTable', [TableController::class, 'createNewTable']);
 Route::post('/modifyTable', [TableController::class, 'modifyTableById']);
 Route::post('/deleteTable', [TableController::class, 'deleteTableById']);
-Route::get('/menu', [MenuItemController::class, 'getMenu']);
+
+Route::middleware(['throttle:20,1'])->group(function () {
+    Route::get('/menu', [MenuItemController::class, 'getMenu']);
+});
 
 Route::post('/table-scanned', [TableqrScannedController::class, '__invoke']);
 
@@ -39,4 +43,8 @@ Route::post('/deleteMenuItem', [MenuItemController::class, 'deleteMenuItemById']
 // OrderController
 Route::post('/sendOrder', [OrderController::class, 'sendOrder']);
 Route::get('/allActiveOrders', [OrderController::class, 'getAllActiveOrders']);
+
+Route::get('/salesDaily', [StatController::class, 'getDailySales']);
+Route::get('/salesTop-items', [StatController::class, 'getTopSellingItems']);
+Route::get('/salesSummary', [StatController::class, 'getSalesSummary']);
 

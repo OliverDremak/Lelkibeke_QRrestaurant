@@ -170,6 +170,115 @@
                 }
             }
         },
+        "/api/salesDaily": {
+            "get": {
+                "tags": [
+                    "Sales"
+                ],
+                "summary": "Retrieve daily sales",
+                "description": "Returns daily sales aggregated by sale date.",
+                "operationId": "30cd6ea9498c5c81e41f06d3c19e34c8",
+                "responses": {
+                    "200": {
+                        "description": "Daily sales data retrieved successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "properties": {
+                                            "sale_date": {
+                                                "type": "string",
+                                                "example": "2025-02-21"
+                                            },
+                                            "total_sales": {
+                                                "type": "number",
+                                                "format": "float",
+                                                "example": 1250.75
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/salesTop-items": {
+            "get": {
+                "tags": [
+                    "Sales"
+                ],
+                "summary": "Retrieve top selling items",
+                "description": "Returns the top 10 selling menu items with the total quantity sold.",
+                "operationId": "cce09ac33e2606a652c6ed20449d84a6",
+                "responses": {
+                    "200": {
+                        "description": "Top selling items data retrieved successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "properties": {
+                                            "menu_item": {
+                                                "type": "string",
+                                                "example": "Cheeseburger"
+                                            },
+                                            "total_sold": {
+                                                "type": "integer",
+                                                "example": 150
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/salesSummary": {
+            "get": {
+                "tags": [
+                    "Sales"
+                ],
+                "summary": "Retrieve sales summary",
+                "description": "Returns the total number of orders, total revenue, and average order value.",
+                "operationId": "e792a8a7803861a38f7fe2b11fbe0da9",
+                "responses": {
+                    "200": {
+                        "description": "Sales summary data retrieved successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "total_orders": {
+                                            "type": "integer",
+                                            "example": 200
+                                        },
+                                        "total_revenue": {
+                                            "type": "number",
+                                            "format": "float",
+                                            "example": 35000.5
+                                        },
+                                        "average_order_value": {
+                                            "type": "number",
+                                            "format": "float",
+                                            "example": 175
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/tables": {
             "get": {
                 "tags": [
@@ -495,6 +604,10 @@
         {
             "name": "Menu",
             "description": "Menu"
+        },
+        {
+            "name": "Sales",
+            "description": "Sales"
         },
         {
             "name": "Tables",

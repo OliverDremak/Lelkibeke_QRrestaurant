@@ -11,6 +11,8 @@ use Illuminate\Support\Facades\Hash;
 use OpenApi\Annotations as OA;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use Tymon\JWTAuth\Exceptions\JWTException;
+use Tymon\JWTAuth\Contracts\JWTSubject;
+use Illuminate\Support\Facades\Log;
 
 class UserController extends Controller
 {
@@ -71,7 +73,7 @@ class UserController extends Controller
         try {
             DB::statement('CALL RegisterUser(?, ?, ?, ?)', [
                 $validated['email'],
-                Hash::make($validated['password']),
+                $validated['password'],
                 $validated['name'],
                 $validated['role'] ?? 'user'
             ]);
@@ -130,10 +132,13 @@ class UserController extends Controller
             }
 
             $userData = $result[0];
+            Log::info($userData->password);
+            Log::info(hash('sha256', $request->password));
 
-            if (!Hash::check($request->password, $userData->password)) {
+            if (hash('sha256', $request->password) !== $userData->password) {
                 return response()->json(['error' => 'Hibás e-mail vagy jelszó'], 401);
             }
+            
 
 
             $user = User::find($userData->id);
