@@ -37,7 +37,5 @@ Route::post('/modifyMenuItem', [MenuItemController::class, 'modifyMenuItemById']
 Route::post('/deleteMenuItem', [MenuItemController::class, 'deleteMenuItemById']);
 
 // OrderController
-Route::middleware('auth:api')->group(function () {
-    Route::post('/sendOrder', [OrderController::class, 'sendOrder']);
-});
+Route::post('/sendOrder', [OrderController::class, 'sendOrder']);
 

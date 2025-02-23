@@ -25,23 +25,13 @@ class User extends Authenticatable implements JWTSubject
         'remember_token',
     ];
 
-    /**
-     * Get the identifier that will be stored in the subject claim of the JWT.
-     *
-     * @return mixed
-     */
     public function getJWTIdentifier()
     {
-        return $this->getKey();
+        return $this->getKey(); // Az alapértelmezett azonosító mező (ID)
     }
 
-    /**
-     * Return a key value array, containing any custom claims to be added to the JWT.
-     *
-     * @return array
-     */
     public function getJWTCustomClaims()
     {
-        return [];
+        return []; // Ha egyedi adatokat szeretnél a tokenbe, itt adhatod meg
     }
 }

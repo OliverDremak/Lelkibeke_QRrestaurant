@@ -13,8 +13,11 @@
       await auth.register(name.value, email.value, password.value)
     }
     
-    if (auth.token) {  // Changed from auth.user to auth.token
-      navigateTo('/table/1')
+    if (auth.user) {
+      navigateTo('/table/1').then(() => {
+        window.location.reload()
+      })
+      //window.location.reload()
     }
   }
 
@@ -93,6 +96,8 @@ button {
   cursor: pointer;
   transition: opacity 0.25s ease, background-color 0.25s ease; /* Smooth transition */
 }
+
+
 
 .toggle-button {
   margin-top: 1rem;
