@@ -27,49 +27,52 @@
     </div>
 
     <!-- Wrap orders in transition-group -->
-    <TransitionGroup name="fade-list">
-      <div v-for="order in filteredAndSortedOrders" 
-           :key="order.order_id" 
-           class="order-row"
-           :class="getOrderAgeClass(order.order_date)">
-        <div class="order-header">
-          <div class="order-meta">
-            <span class="order-id">#{{ order.order_id }}</span>
-            <div class="order-status-group">
-              <span class="time-passed" :class="getOrderAgeClass(order.order_date)">
-                {{ getOrderAge(order.order_date) }}m
-              </span>
-              <span v-if="showTableInfo" class="table-number">T{{ order.table_id }}</span>
-              <span class="order-time">{{ formatTime(order.order_date) }}</span>
+    <div class="orders-container">
+      <!-- Remove TransitionGroup and use a simple div -->
+      <div class="orders-list">
+        <div v-for="order in filteredAndSortedOrders" 
+             :key="order.order_id" 
+             class="order-row"
+             :class="getOrderAgeClass(order.order_date)">
+          <div class="order-header">
+            <div class="order-meta">
+              <span class="order-id">#{{ order.order_id }}</span>
+              <div class="order-status-group">
+                <span class="time-passed" :class="getOrderAgeClass(order.order_date)">
+                  {{ getOrderAge(order.order_date) }}m
+                </span>
+                <span v-if="showTableInfo" class="table-number">T{{ order.table_id }}</span>
+                <span class="order-time">{{ formatTime(order.order_date) }}</span>
+              </div>
             </div>
           </div>
-        </div>
 
-        <div class="items-container">
-          <div class="items-grid">
-            <div v-for="(item, index) in order.items" 
-                 :key="`${order.order_id}-${index}`"
-                 class="item-row">
-              <span class="item-quantity">{{ item.quantity }}×</span>
-              <span class="item-name">{{ item.menu_item_name }}</span>
-              <span v-if="item.notes && item.notes !== 'null'" 
-                    class="item-notes">
-                "{{ item.notes }}"
-              </span>
+          <div class="items-container">
+            <div class="items-grid">
+              <div v-for="(item, index) in order.items" 
+                   :key="`${order.order_id}-${index}`"
+                   class="item-row">
+                <span class="item-quantity">{{ item.quantity }}×</span>
+                <span class="item-name">{{ item.menu_item_name }}</span>
+                <span v-if="item.notes && item.notes !== 'null'" 
+                      class="item-notes">
+                  "{{ item.notes }}"
+                </span>
+              </div>
             </div>
           </div>
-        </div>
 
-        <div class="action-container">
-          <button v-if="order.status !== 'done'"
-                  class="serve-button"
-                  :class="getOrderAgeClass(order.order_date)"
-                  @click.stop="confirmMarkAsServed(order)">
-            Mark as Served
-          </button>
+          <div class="action-container">
+            <button v-if="order.status !== 'done'"
+                    class="serve-button"
+                    :class="getOrderAgeClass(order.order_date)"
+                    @click.stop="confirmMarkAsServed(order)">
+              Mark as Served
+            </button>
+          </div>
         </div>
       </div>
-    </TransitionGroup>
+    </div>
   </div>
   <div v-else class="empty-state">No active orders</div>
 
@@ -942,24 +945,22 @@ const handleFilterClick = (status) => {
   margin-bottom: 0.5rem;
 }
 
-/* Update transition styles for smoother animations */
+/* Remove all transition related styles */
 .fade-list-enter-active,
-.fade-list-leave-active {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.fade-list-enter-from {
-  opacity: 0;
-  transform: translateY(-20px);
-}
-
-.fade-list-leave-to {
-  opacity: 0;
-  transform: translateX(30px);
-  position: absolute;
-}
-
+.fade-list-leave-active,
+.fade-list-enter-from,
+.fade-list-leave-to,
 .fade-list-move {
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: none;
+}
+
+.orders-container {
+  position: relative;
+  min-height: 100px;
+}
+
+.orders-list {
+  position: relative;
+  width: 100%;
 }
 </style>
