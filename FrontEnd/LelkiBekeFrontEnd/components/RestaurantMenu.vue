@@ -160,14 +160,23 @@ const toggleCart = () => {
 };
 
 const handleCheckout = async () => {
+  const auth = useAuthStore();
+  const token = auth.token;
+  console.log('Retrieved token:', token);
+
+  if (!token) {
+    alert('Please login first');
+    await navigateTo('/auth');
+    return;
+  }
+
   const orderData = {
-    user_id: 2, // Replace with actual user ID
     table_id: props.tableId,
     total_price: cartTotal.value,
     order_items: cart.value.map(item => ({
       menu_item_id: item.id,
       quantity: item.quantity,
-      notes: item.notes || '' // Add notes field to menu items (e.g. { name: 'Pizza', notes: 'No cheese'
+      notes: item.notes || ''
     }))
   };
 
@@ -175,30 +184,41 @@ const handleCheckout = async () => {
     const response = await fetch('http://localhost:8000/api/sendOrder', {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+        'Accept': 'application/json'
       },
       body: JSON.stringify(orderData)
     });
 
-    // Check if the response status is OK (status in the range 200-299)
+    console.log('Response status:', response.status);
+
     if (!response.ok) {
       const errorData = await response.json();
+      if (response.status === 401) {
+        localStorage.removeItem('token');
+        await navigateTo('/auth');
+        return;
+      }
       throw new Error(errorData.message || 'Error placing order');
     }
 
     const responseData = await response.json();
     if (responseData.order_id) {
       alert('Order placed successfully!');
-      
-      window.location.href = '/thankyou';
-      window.localStorage.removeItem('cart');
+      localStorage.removeItem('cart');
+      await navigateTo('/thankyou');
     }
   } catch (error) {
     console.error('Checkout error:', error);
-    alert('Error placing order: ' + error.message);
+    if (error.message.includes('Unauthorized')) {
+      localStorage.removeItem('token');
+      await navigateTo('/auth');
+    } else {
+      alert('Error placing order: ' + error.message);
+    }
   }
 };
-
 
 const filterByCategory = (category) => {
   selectedCategory.value = category;

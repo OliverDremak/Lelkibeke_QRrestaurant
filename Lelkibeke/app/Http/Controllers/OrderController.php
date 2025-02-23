@@ -18,30 +18,36 @@ class OrderController extends Controller
     //     ]
     //   }
     public function sendOrder(Request $request) {
-        // A headerben lévő token ellenörzése
-        // if (!$request->user()->tokenCan('order:place')) {
-        //     return response()->json(['error' => 'Unauthorized'], 401);
-        // }
-        $userId = $request->user_id; 
+        $user = auth('api')->user();
+        if (!$user) {
+            return response()->json(['error' => 'Unauthorized'], 401);
+        }
+
+        $userId = $user->id;  // Get user ID from authenticated user
         $tableId = $request->table_id;
         $totalPrice = $request->total_price;
-
-        // JSON formátumú rendelési tételek konvertálása
         $orderItems = json_encode($request->order_items);
 
-        $result = DB::select('CALL sendOrder(?, ?, ?, ?)', [
-            $userId,
-            $tableId,
-            $totalPrice,
-            $orderItems
-        ]);
+        try {
+            $result = DB::select('CALL sendOrder(?, ?, ?, ?)', [
+                $userId,
+                $tableId,
+                $totalPrice,
+                $orderItems
+            ]);
 
-        broadcast(new OrderSent($tableId));
+            broadcast(new OrderSent($tableId));
 
-        return response()->json([
-            'message' => $result[0]->message ?? 'Order created successfully!',
-            'order_id' => $result[0]->order_id ?? null
-        ]);
+            return response()->json([
+                'message' => $result[0]->message ?? 'Order created successfully!',
+                'order_id' => $result[0]->order_id ?? null
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Failed to create order',
+                'details' => $e->getMessage()
+            ], 500);
+        }
     }
 
     public function getActiveOrders() {
