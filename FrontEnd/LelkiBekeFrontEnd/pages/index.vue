@@ -13,6 +13,7 @@ const router = useRouter();
 <template>
   <div>
     <Navbar />
+    <PopularItems />
     <QRreaded/>
     <Footer/>
   </div>
