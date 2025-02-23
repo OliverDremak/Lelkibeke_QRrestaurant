@@ -18,30 +18,36 @@ class OrderController extends Controller
     //     ]
     //   }
     public function sendOrder(Request $request) {
-        // A headerben lévő token ellenörzése
-        // if (!$request->user()->tokenCan('order:place')) {
-        //     return response()->json(['error' => 'Unauthorized'], 401);
-        // }
-        $userId = $request->user_id; 
+        $user = auth('api')->user();
+        if (!$user) {
+            return response()->json(['error' => 'Unauthorized'], 401);
+        }
+
+        $userId = $user->id;  // Get user ID from authenticated user
         $tableId = $request->table_id;
         $totalPrice = $request->total_price;
-
-        // JSON formátumú rendelési tételek konvertálása
         $orderItems = json_encode($request->order_items);
 
-        $result = DB::select('CALL sendOrder(?, ?, ?, ?)', [
-            $userId,
-            $tableId,
-            $totalPrice,
-            $orderItems
-        ]);
+        try {
+            $result = DB::select('CALL sendOrder(?, ?, ?, ?)', [
+                $userId,
+                $tableId,
+                $totalPrice,
+                $orderItems
+            ]);
 
-        broadcast(new OrderSent($tableId));
+            broadcast(new OrderSent($tableId));
 
-        return response()->json([
-            'message' => $result[0]->message ?? 'Order created successfully!',
-            'order_id' => $result[0]->order_id ?? null
-        ]);
+            return response()->json([
+                'message' => $result[0]->message ?? 'Order created successfully!',
+                'order_id' => $result[0]->order_id ?? null
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Failed to create order',
+                'details' => $e->getMessage()
+            ], 500);
+        }
     }
 
     public function getActiveOrders() {
@@ -55,6 +61,10 @@ class OrderController extends Controller
     }
 
     public function getOrdersForTableById(Request $request) {
+        $request->validate([
+            'id' => 'required|integer'
+        ]);
+
         $tableId = $request->id;
         $result = DB::select('CALL GetOrdersForTableById(?)', [
             $tableId
@@ -63,15 +73,29 @@ class OrderController extends Controller
         return response()->json($result);
     }
 
-    public function setOrderStatus($order_id, $status) {
-        if (!in_array($status, ['cooking', 'done'])) {
-            return response()->json(['error' => 'Invalid status'], 400);
-        }
-    
+    public function getActiveOrdersForTableById(Request $request) {
+        $request->validate([
+            'id' => 'required|integer'
+        ]);
+
+        $tableId = $request->id;
+        $result = DB::select('CALL GetActiveOrdersForTableById(?)', [
+            $tableId
+        ]);
+
+        return response()->json($result);
+    }
+
+    public function setOrderStatus(Request $request) {
+        $request->validate([
+            'order_id' => 'required|integer',
+            'status' => 'required|in:cooking,done'
+        ]);
+        
         try {
             DB::statement('CALL SetOrderStatusById(?, ?)', [
-                $order_id,
-                $status // Ensure status is passed as a string
+                $request->order_id,
+                $request->status
             ]);
             return response()->json(['message' => 'Order status updated successfully']);
         } catch (\Exception $e) {

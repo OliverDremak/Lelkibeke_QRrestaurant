@@ -19,7 +19,9 @@ console.log(tableId);
 
 onMounted(async () => {
   try {
-    await axios.post(`http://localhost:8000/api/table-scanned/${tableId}`);
+    await axios.post('http://localhost:8000/api/table-scanned', {
+      tableId: tableId
+    });
   } catch (err) {
     console.error('Error posting table scanned:', err);
   }

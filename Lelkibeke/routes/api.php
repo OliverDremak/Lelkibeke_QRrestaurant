@@ -16,18 +16,20 @@ Route::post('/login', [UserController::class, 'login']);
 Route::post('/logout', [UserController::class, 'logout']);
 
 // TableController
-Route::post('/setOccupancyStatus/{id}/{is_avaible}', [TableController::class, 'setTableOccupancyStatus']);
+Route::post('/setOccupancyStatus', [TableController::class, 'setTableOccupancyStatus']);
 
 Route::get('/tables', [TableController::class, 'getTables']);
-Route::get('/ordersByTableId/{id}', [OrderController::class, 'getOrdersForTableById']);
+Route::post('/getOrdersForTable', [OrderController::class, 'getOrdersForTableById']);
+Route::post('/getActiveOrdersForTable', [OrderController::class, 'getActiveOrdersForTableById']);
+
 Route::get('/allOrderedItems', [OrderController::class, 'getAllOrderedItems']);
 Route::post('/setOrderStatus', [OrderController::class, 'setOrderStatus']);
 Route::post('/newTable', [TableController::class, 'createNewTable']);
 Route::post('/modifyTable', [TableController::class, 'modifyTableById']);
 Route::post('/deleteTable', [TableController::class, 'deleteTableById']);
+Route::get('/menu', [MenuItemController::class, 'getMenu']);
 
-
-Route::post('/table-scanned/{tableId}', TableqrScannedController::class);
+Route::post('/table-scanned', [TableqrScannedController::class, '__invoke']);
 
 // MenuItemController
 
