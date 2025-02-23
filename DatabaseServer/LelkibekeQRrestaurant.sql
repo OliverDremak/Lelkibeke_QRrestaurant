@@ -71,8 +71,14 @@ CREATE TABLE IF NOT EXISTS `category` (
 	PRIMARY KEY (`id`)
 );
 
-
-
+CREATE TABLE IF NOT EXISTS `opening_hours` (
+    `id` int AUTO_INCREMENT NOT NULL UNIQUE,
+    `day_of_week` varchar(20) NOT NULL,
+    `open_time` time,
+    `close_time` time,
+    `is_closed` boolean DEFAULT false,
+    PRIMARY KEY (`id`)
+);
 
 ALTER TABLE `orders` ADD CONSTRAINT `orders_fk1` FOREIGN KEY (`user_id`) REFERENCES `users`(`id`);
 
@@ -123,9 +129,9 @@ INSERT INTO orders (user_id, table_id, status, total_price, created_at) VALUES
 
 -- Insert into order_items
 INSERT INTO order_items (order_id, menu_item_id, quantity, notes) VALUES
-(1, 1, 1, 'Extra cheese'),
-(1, 3, 1, 'No onions'),
-(3, 5, 1, 'Gluten-free pasta');
+(1, 1, 'Extra cheese'),
+(1, 3, 'No onions'),
+(3, 5, 'Gluten-free pasta');
 
 -- Add more tables
 INSERT INTO tables (table_number, qr_code_url, is_available) VALUES
@@ -170,8 +176,15 @@ VALUES
 (LAST_INSERT_ID(), 1, 1, 'Extra basil'),
 (LAST_INSERT_ID(), 4, 1, 'No lettuce');
 
-
-
+-- Insert default opening hours
+INSERT INTO `opening_hours` (day_of_week, open_time, close_time, is_closed) VALUES
+('Monday', '09:00:00', '18:00:00', false),
+('Tuesday', '09:00:00', '18:00:00', false),
+('Wednesday', '09:00:00', '18:00:00', false),
+('Thursday', '09:00:00', '18:00:00', false),
+('Friday', '09:00:00', '18:00:00', false),
+('Saturday', '10:00:00', '16:00:00', false),
+('Sunday', NULL, NULL, true);
 
 DELIMITER //
 CREATE PROCEDURE GetUsers()
@@ -303,7 +316,6 @@ BEGIN
 END //
 
 DELIMITER ;
-
 
 DELIMITER //
 
@@ -495,6 +507,42 @@ BEGIN
     JOIN menu_items ON order_items.menu_item_id = menu_items.id
     WHERE orders.status = 'cooking'
     ORDER BY orders.created_at DESC;
+END //
+
+DELIMITER ;
+
+DELIMITER //
+
+CREATE PROCEDURE GetOpeningHours()
+BEGIN
+    SELECT * FROM opening_hours ORDER BY 
+        CASE day_of_week
+            WHEN 'Monday' THEN 1
+            WHEN 'Tuesday' THEN 2
+            WHEN 'Wednesday' THEN 3
+            WHEN 'Thursday' THEN 4
+            WHEN 'Friday' THEN 5
+            WHEN 'Saturday' THEN 6
+            WHEN 'Sunday' THEN 7
+        END;
+END //
+
+DELIMITER ;
+
+DELIMITER //
+
+CREATE PROCEDURE UpdateOpeningHours(
+    IN p_day_of_week VARCHAR(20),
+    IN p_open_time TIME,
+    IN p_close_time TIME,
+    IN p_is_closed BOOLEAN
+)
+BEGIN
+    UPDATE opening_hours 
+    SET open_time = p_open_time,
+        close_time = p_close_time,
+        is_closed = p_is_closed
+    WHERE day_of_week = p_day_of_week;
 END //
 
 DELIMITER ;
