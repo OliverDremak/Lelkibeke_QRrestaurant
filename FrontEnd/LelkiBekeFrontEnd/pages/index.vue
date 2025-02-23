@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useRoute, useRouter } from 'vue-router';
+import PopularItems from '~/components/PopularItems.vue';
 const auth = useAuthStore()
 
 definePageMeta({
