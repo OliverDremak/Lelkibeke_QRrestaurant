@@ -546,3 +546,32 @@ BEGIN
 END //
 
 DELIMITER ;
+
+CREATE TABLE IF NOT EXISTS `contact_messages` (
+    `id` int AUTO_INCREMENT NOT NULL UNIQUE,
+    `name` varchar(255) NOT NULL,
+    `email` varchar(255) NOT NULL,
+    `message` text NOT NULL,
+    `created_at` timestamp DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`)
+);
+
+DELIMITER //
+
+CREATE PROCEDURE CreateContactMessage(
+    IN p_name VARCHAR(255),
+    IN p_email VARCHAR(255),
+    IN p_message TEXT
+)
+BEGIN
+    INSERT INTO contact_messages (name, email, message)
+    VALUES (p_name, p_email, p_message);
+    SELECT LAST_INSERT_ID() as message_id;
+END //
+
+CREATE PROCEDURE GetAllContactMessages()
+BEGIN
+    SELECT * FROM contact_messages ORDER BY created_at DESC;
+END //
+
+DELIMITER ;
