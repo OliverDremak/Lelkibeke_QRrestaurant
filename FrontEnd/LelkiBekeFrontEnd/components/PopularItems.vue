@@ -36,7 +36,7 @@ onMounted(() => {
           <div class="chunky-content">
             <div class="chunky-number">#{{'0' + (index + 1)}}</div>
             <h3 class="chunky-name">{{ item.menu_item }}</h3>
-            <div class="chunky-sales">{{ item.total_sold }} orders</div>
+            <div class="chunky-sales">{{ item.menu_item_desc}} orders</div>
           </div>
         </div>
       </div>
@@ -80,6 +80,7 @@ onMounted(() => {
 .chunky-content {
   padding: 1.5rem;
   background: white;
+  border-radius: 7px;
   position: relative;
   transition: transform 0.3s;
 }
