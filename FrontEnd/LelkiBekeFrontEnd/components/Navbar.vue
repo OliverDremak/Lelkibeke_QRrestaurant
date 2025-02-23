@@ -8,12 +8,22 @@
       <transition name="fade">
         <div v-show="isNavbarOpen" class="navbar-collapse" id="navbarNav">
           <ul class="navbar-nav ms-auto">
-            <li class="nav-item m-2 text-center">
-              <ButtonComponet @click="goToRegister" text="Register" class="w-100"/>
-            </li>            
-            <li class="nav-item m-2 text-center">             
-              <ButtonComponet @click="goToLogin" text="Login" class="w-100"/>
-            </li>
+            <!-- Show these buttons only when user is NOT logged in -->
+            <template v-if="!auth.token">
+              <li class="nav-item m-2 text-center">
+                <ButtonComponet @click="goToRegister" text="Register" class="w-100"/>
+              </li>            
+              <li class="nav-item m-2 text-center">             
+                <ButtonComponet @click="goToLogin" text="Login" class="w-100"/>
+              </li>
+            </template>
+            <!-- Show logout when user is logged in -->
+            <template v-else>
+              <li class="nav-item m-2 text-center">
+                <span class="me-3">Welcome, {{ auth.user?.name }}</span>
+                <ButtonComponet @click="handleLogout" text="Logout" class="w-100"/>
+              </li>
+            </template>
           </ul>
         </div>
       </transition>
@@ -21,30 +31,33 @@
   </nav>
 </template>
   
-  <script setup lang="ts">
-  import { useRouter } from 'vue-router' 
-  import { ref } from 'vue';
+<script setup lang="ts">
+import { useRouter } from 'vue-router' 
+import { ref } from 'vue';
 import ButtonComponet from './ButtonComponet.vue';
+import { useAuthStore } from '~/stores/auth';
 
+const auth = useAuthStore();
+const router = useRouter();
 const isNavbarOpen = ref(false);
+
 const toggleNavbar = () => {
   isNavbarOpen.value = !isNavbarOpen.value;
 };
 
+const goToLogin = () => {
+  router.push('/auth')
+};
 
+const goToRegister = () => {
+  router.push('/auth?register=true')
+};
 
-
-
-  
-  const router = useRouter()
-  // TODO: Show if the user is logged in
-  const goToLogin = () => {
-    router.push('/auth')
-  }
-  const goToRegister = () => {
-    router.push('/auth?register=true')
-  }
-  </script>
+const handleLogout = async () => {
+  await auth.logout();
+  router.push('/auth');
+};
+</script>
   
 <style scoped>
 .fade-enter-active, .fade-leave-active {
