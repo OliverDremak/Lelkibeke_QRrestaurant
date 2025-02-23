@@ -1,6 +1,9 @@
 <script setup>
-import { ref, reactive, onMounted } from 'vue';
+import { ref, reactive, onMounted, watch } from 'vue';
 import axios from 'axios';
+import { useAuthStore } from '~/stores/auth';
+
+const auth = useAuthStore();
 
 const profiles = ref([
   {
@@ -32,14 +35,25 @@ const openGithub = (username) => {
   window.open(`https://github.com/${username}`, '_blank');
 };
 
+
 const contactForm = reactive({
-  name: '',
-  email: '',
+  name: auth.user ? auth.user.name : '',
+  email: auth.user ? auth.user.email : '',
   message: ''
 });
 
-const submitContactForm = () => {
-  console.log('Contact Form Submitted:', contactForm);
+const submitContactForm = async () => {
+  try {
+    await axios.post('http://localhost:8000/api/contact-messages', contactForm);
+    alert('Message sent successfully!');
+    // Reset form
+    contactForm.name = auth.user ? auth.user.name : '';
+    contactForm.email = auth.user ? auth.user.email : '';
+    contactForm.message = '';
+  } catch (error) {
+    console.error('Error sending message:', error);
+    alert('Failed to send message. Please try again.');
+  }
 };
 
 const fetchOpeningHours = async () => {
@@ -50,6 +64,16 @@ const fetchOpeningHours = async () => {
     console.error('Error fetching opening hours:', error);
   }
 };
+
+watch(() => auth.user, (newUser) => {
+  if (newUser) {
+    contactForm.name = newUser.name;
+    contactForm.email = newUser.email;
+  } else {
+    contactForm.name = '';
+    contactForm.email = '';
+  }
+});
 
 onMounted(fetchOpeningHours);
 </script>
@@ -89,10 +113,10 @@ onMounted(fetchOpeningHours);
           <p>If you have any questions or feedback, feel free to reach out to us!</p>
           <form @submit.prevent="submitContactForm">
             <div class="mb-3">
-              <input type="text" class="form-control" v-model="contactForm.name" placeholder="Your Name" required>
+              <input type="text" class="form-control" v-model="contactForm.name" placeholder="Your Name" required :readonly="auth.user !== null">
             </div>
             <div class="mb-3">
-              <input type="email" class="form-control" v-model="contactForm.email" placeholder="Your Email" required>
+              <input type="email" class="form-control" v-model="contactForm.email" placeholder="Your Email" required :readonly="auth.user !== null">
             </div>
             <div class="mb-3">
               <textarea class="form-control" v-model="contactForm.message" placeholder="Your Message" rows="3" required></textarea>
