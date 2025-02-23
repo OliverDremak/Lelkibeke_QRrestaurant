@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\TableqrScannedController;
+use App\Http\Controllers\StatController;
 
 Route::get('/users', [UserController::class, 'getUsers']);
 
@@ -36,4 +37,8 @@ Route::post('/deleteMenuItem', [MenuItemController::class, 'deleteMenuItemById']
 
 // OrderController
 Route::post('/sendOrder', [OrderController::class, 'sendOrder']);
+
+Route::get('/salesDaily', [StatController::class, 'getDailySales']);
+Route::get('/salesTop-items', [StatController::class, 'getTopSellingItems']);
+Route::get('/salesSummary', [StatController::class, 'getSalesSummary']);
 

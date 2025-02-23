@@ -3,12 +3,13 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class StatController extends Controller
 {
         /**
      * @OA\Get(
-     *     path="/sales/daily",
+     *     path="/api/salesDaily",
      *     summary="Retrieve daily sales",
      *     description="Returns daily sales aggregated by sale date.",
      *     tags={"Sales"},
@@ -27,13 +28,17 @@ class StatController extends Controller
      */
     public function getDailySales()
     {
-        $dailySales = DB::select('CALL GetDailySales()');
-        return response()->json($dailySales);
+        try {
+            $dailySales = DB::select('CALL GetDailySales()');
+            return response()->json($dailySales);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
     }
 
     /**
      * @OA\Get(
-     *     path="/sales/top-items",
+     *     path="/api/salesTop-items",
      *     summary="Retrieve top selling items",
      *     description="Returns the top 10 selling menu items with the total quantity sold.",
      *     tags={"Sales"},
@@ -58,7 +63,7 @@ class StatController extends Controller
 
     /**
      * @OA\Get(
-     *     path="/sales/summary",
+     *     path="/api/salesSummary",
      *     summary="Retrieve sales summary",
      *     description="Returns the total number of orders, total revenue, and average order value.",
      *     tags={"Sales"},
