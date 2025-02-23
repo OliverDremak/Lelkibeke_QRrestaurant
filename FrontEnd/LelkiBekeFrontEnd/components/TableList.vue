@@ -59,7 +59,6 @@ export default {
   setup(props, { emit }) {
     const { $ws } = useNuxtApp();
     const scannedTableIds = ref([]);
-    const tableNotifications = ref({});
     const tableOrders = ref({});  // Tracks number of new orders per table
 
     const toggleOccupancy = async (table) => {
@@ -75,20 +74,6 @@ export default {
       } catch (error) {
         console.error('Error setting table occupancy status:', error);
       }
-    };
-
-    const addTableNotification = (tableId) => {
-      if (!tableNotifications.value[tableId]) {
-        tableNotifications.value[tableId] = [];
-      }
-      tableNotifications.value[tableId].push({
-        id: Date.now(),
-        timestamp: new Date()
-      });
-    };
-
-    const clearTableNotifications = (tableId) => {
-      tableNotifications.value[tableId] = [];
     };
 
     const addTableOrder = (tableId) => {
@@ -142,8 +127,8 @@ export default {
         .listen('OrderSent', (e) => {
           console.log('Order received for table ID:', e.tableId);
           addTableOrder(e.tableId);
-          // This will trigger parent component to fetch orders
-          if (selectedTableId.value === e.tableId) {
+          // Fix: Access selectedTableId through props
+          if (props.selectedTableId === e.tableId) {
             selectTable(e.tableId);
           }
         });
@@ -156,7 +141,6 @@ export default {
     return {
       scannedTableIds,
       toggleOccupancy,
-      tableNotifications,
       tableOrders,
       selectTable,
     };
@@ -353,45 +337,6 @@ export default {
   100% {
     box-shadow: 0 0 0 0 rgba(241, 196, 15, 0);
   }
-}
-
-.notification-bubbles {
-  position: absolute;
-  top: -10px;
-  right: -10px;
-  z-index: 10;
-}
-
-.notification-bubble {
-  position: absolute;
-  background: #ff4757;
-  color: white;
-  padding: 4px 8px;
-  border-radius: 12px;
-  font-size: 0.8rem;
-  font-weight: bold;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-  white-space: nowrap;
-  animation: pop-in 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-}
-
-@keyframes pop-in {
-  0% {
-    transform: scale(0);
-    opacity: 0;
-  }
-  100% {
-    transform: scale(1);
-    opacity: 1;
-  }
-}
-
-.notification-pop-enter-active {
-  animation: pop-in 0.3s;
-}
-
-.notification-pop-leave-active {
-  animation: pop-in 0.3s reverse;
 }
 
 .order-bubble {

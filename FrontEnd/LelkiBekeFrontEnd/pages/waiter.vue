@@ -1,8 +1,5 @@
 <template>
   <div class="waiter-dashboard">
-    <WaiterNotifications ref="notifications" />
-    
-    <NotificationStack ref="notificationStack" />
     
     <!-- Scroll to top button -->
     <transition name="fade">
@@ -58,17 +55,15 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, watch } from 'vue';
 import { useNuxtApp } from '#app';
 import TableList from '@/components/TableList.vue';
 import OrderList from '@/components/OrderList.vue';
-import NotificationStack from '@/components/NotificationStack.vue';
 import axios from 'axios';
 
 const tables = ref([]);
 const selectedTable = ref(null);
 const selectedTableOrders = ref([]);
-const notificationStack = ref(null);
 const showAllOrders = ref(false);
 const allOrders = ref([]);
 const ordersSection = ref(null);
@@ -95,7 +90,6 @@ const fetchActiveOrdersForTable = async (tableId) => {
     const response = await axios.post('http://localhost:8000/api/getActiveOrdersForTable', {
       id: tableId
     });
-    console.log('Fetched table orders:', response.data); // Add this debug log
     selectedTableOrders.value = response.data;
   } catch (error) {
     console.error('Error fetching active orders for table:', error);
@@ -122,20 +116,22 @@ const toggleAllOrders = async () => {
   showAllOrders.value = !showAllOrders.value;
   if (showAllOrders.value) {
     await fetchAllOrders();
-    // Wait for orders to load then scroll
-    setTimeout(() => {
-      ordersSection.value?.scrollIntoView({ 
-        behavior: 'smooth',
-        block: 'start'
-      });
-    }, 100);
+  } else if (selectedTable.value) {
+    await fetchActiveOrdersForTable(selectedTable.value.id);
   }
+  
+  // Scroll after data is loaded
+  setTimeout(() => {
+    ordersSection.value?.scrollIntoView({ 
+      behavior: 'smooth',
+      block: 'start'
+    });
+  }, 100);
 };
 
 const fetchAllOrders = async () => {
   try {
     const response = await axios.get('http://localhost:8000/api/allActiveOrders');
-    console.log('Fetched orders:', response.data); // Add this debug log
     allOrders.value = response.data;
   } catch (error) {
     console.error('Error fetching all orders:', error);
@@ -165,22 +161,26 @@ const scrollToTop = () => {
   });
 };
 
+// Modify the websocket listener to ensure immediate updates
 onMounted(() => {
   fetchTables();
-  fetchAllOrders(); // Fetch initial orders
+  fetchAllOrders();
   
   const { $ws } = useNuxtApp();
   $ws.channel('orders')
-    .listen('OrderSent', (e) => {
-      if (notificationStack.value) {
-        notificationStack.value.addNotification(e.tableId);
-        // Refresh orders without scrolling
+    .listen('OrderSent', async (e) => {
+      try {
         if (showAllOrders.value) {
-          fetchAllOrders();
+          const response = await axios.get('http://localhost:8000/api/allActiveOrders');
+          allOrders.value = response.data;
+        } else if (selectedTable.value?.id === e.tableId) {
+          const response = await axios.post('http://localhost:8000/api/getActiveOrdersForTable', {
+            id: e.tableId
+          });
+          selectedTableOrders.value = response.data;
         }
-        if (selectedTable.value?.id === e.tableId) {
-          fetchActiveOrdersForTable(e.tableId);
-        }
+      } catch (error) {
+        console.error('Error updating orders:', error);
       }
     });
 
@@ -195,6 +195,7 @@ onMounted(() => {
     showScrollTop.value = window.scrollY > tableListTop.value + 200; // Show after scrolling past tables
   });
 });
+
 </script>
 
 <style scoped>
