@@ -10,9 +10,7 @@ const goToTable = () => {
         alert('Please enter a code.')
         return
     }
-    router.push(`/table/${inputCode.value}`).then(() => {
-        window.location.reload()
-    })
+    router.push(`/table/${inputCode.value}`)
 }
 const goToScanner = () => {
     router.push('/QRscannerPage')

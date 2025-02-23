@@ -32,13 +32,14 @@
 </template>
   
 <script setup lang="ts">
-import { useRouter } from 'vue-router' 
+import { useRouter, useRoute } from 'vue-router' 
 import { ref } from 'vue';
 import ButtonComponet from './ButtonComponet.vue';
 import { useAuthStore } from '~/stores/auth';
 
 const auth = useAuthStore();
 const router = useRouter();
+const route = useRoute();
 const isNavbarOpen = ref(false);
 
 const toggleNavbar = () => {
@@ -46,11 +47,13 @@ const toggleNavbar = () => {
 };
 
 const goToLogin = () => {
-  router.push('/auth')
+  const currentPath = route.fullPath;
+  router.push(`/auth?redirect=${encodeURIComponent(currentPath)}`);
 };
 
 const goToRegister = () => {
-  router.push('/auth?register=true')
+  const currentPath = route.fullPath;
+  router.push(`/auth?register=true&redirect=${encodeURIComponent(currentPath)}`);
 };
 
 const handleLogout = async () => {
