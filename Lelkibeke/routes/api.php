@@ -42,6 +42,7 @@ Route::post('/deleteMenuItem', [MenuItemController::class, 'deleteMenuItemById']
 
 // OrderController
 Route::post('/sendOrder', [OrderController::class, 'sendOrder']);
+Route::get('/allActiveOrders', [OrderController::class, 'getAllActiveOrders']);
 
 Route::get('/salesDaily', [StatController::class, 'getDailySales']);
 Route::get('/salesTop-items', [StatController::class, 'getTopSellingItems']);

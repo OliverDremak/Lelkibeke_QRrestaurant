@@ -1,56 +1,64 @@
 <template>
   <div class="menu-container container">
-    <div class="category-buttons">
-      <button 
-        @click="filterByCategory('')"
-        :class="{ active: selectedCategory === '' }"
-      >
-        All
-      </button>
-      <button 
-        v-for="category in uniqueCategories" 
-        :key="category" 
-        @click="filterByCategory(category)"
-        :class="{ active: selectedCategory === category }"
-      >
-        {{ category }}
-      </button>
+    <div v-if="loading" class="text-center mt-4">
+      <p>Loading menu items...</p>
     </div>
-
-    <div class="main-content">
-      <!-- Menu Section -->
-      <div class="menu-section" :class="menuClass">
-        <h2>Main Courses</h2>
-        <div class="menu-grid">
-          <div v-for="item in filteredMainCourses" :key="item.id" class="menu-item">
-            <h3>{{ item.name }} ({{ item.category_name }})</h3>
-            <p>{{ item.description }}</p>
-            <p class="price">{{ item.price }}ft</p>
-            <ButtonComponet @click="addToCart(item)" text="Add to cart"/>
-          </div>
-        </div>
+    <div v-else-if="!mainCourses.length" class="text-center mt-4">
+      <p>No menu items available</p>
+    </div>
+    <div v-else class="menu-content">
+      <div class="category-buttons">
+        <button 
+          @click="filterByCategory('')"
+          :class="{ active: selectedCategory === '' }"
+        >
+          All
+        </button>
+        <button 
+          v-for="category in uniqueCategories" 
+          :key="category" 
+          @click="filterByCategory(category)"
+          :class="{ active: selectedCategory === category }"
+        >
+          {{ category }}
+        </button>
       </div>
 
-      <div class="cart-section col-4" :class="{ expanded: isCartExpanded }">
-        <h2>Your Order</h2>
-        <div v-if="cart.length === 0">Your cart is empty</div>
-        <div v-else>
-          <div v-for="(cartItem, index) in cart" :key="index" class="cart-item">
-            <span>{{ cartItem.name }} (x{{ cartItem.quantity }})</span>
-            <span>{{ (cartItem.price * cartItem.quantity).toFixed(2) }}ft</span>
-            <button @click="decreaseQuantity(index)">&#9664;</button>
-            <button @click="increaseQuantity(index)">&#9654;</button>
-            <button @click="removeFromCart(index)"><i class="bi bi-trash3"></i></button>
+      <div class="main-content">
+        <!-- Menu Section -->
+        <div class="menu-section" :class="menuClass">
+          <h2>Main Courses</h2>
+          <div class="menu-grid">
+            <div v-for="item in filteredMainCourses" :key="item.id" class="menu-item">
+              <h3>{{ item.name }} ({{ item.category_name }})</h3>
+              <p>{{ item.description }}</p>
+              <p class="price">{{ item.price }}ft</p>
+              <ButtonComponet @click="addToCart(item)" text="Add to cart"/>
+            </div>
           </div>
-          <hr>
-          <div class="total">
-            <span>Total: {{ cartTotal }}ft</span>
-          </div>
-          <ButtonComponet @click="handleCheckout" text="Checkout"/>
         </div>
-        <button class="toggle-cart" @click="toggleCart">
-          {{ isCartExpanded ? '▼' : '▲' }}
-        </button>
+
+        <div class="cart-section col-4" :class="{ expanded: isCartExpanded }">
+          <h2>Your Order</h2>
+          <div v-if="cart.length === 0">Your cart is empty</div>
+          <div v-else>
+            <div v-for="(cartItem, index) in cart" :key="index" class="cart-item">
+              <span>{{ cartItem.name }} (x{{ cartItem.quantity }})</span>
+              <span>{{ (cartItem.price * cartItem.quantity).toFixed(2) }}ft</span>
+              <button @click="decreaseQuantity(index)">&#9664;</button>
+              <button @click="increaseQuantity(index)">&#9654;</button>
+              <button @click="removeFromCart(index)"><i class="bi bi-trash3"></i></button>
+            </div>
+            <hr>
+            <div class="total">
+              <span>Total: {{ cartTotal }}ft</span>
+            </div>
+            <ButtonComponet @click="handleCheckout" text="Checkout"/>
+          </div>
+          <button class="toggle-cart" @click="toggleCart">
+            {{ isCartExpanded ? '▼' : '▲' }}
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -59,10 +67,11 @@
 <script setup>
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import ButtonComponet from './ButtonComponet.vue';
-const { data } = useFetch('http://localhost:8000/api/menu');
-console.log(data);
+import axios from 'axios';
 
-const mainCourses = ref(data);
+const mainCourses = ref([]);
+const loading = ref(true);
+
 const isWide = ref(false);
 const menuClass = computed(() => ({
   "menu-section": true,
@@ -73,9 +82,19 @@ const handleResize = () => {
 isWide.value = window.innerWidth >= 1000;
 };
 
-onMounted(() => {
+onMounted(async () => {
   handleResize();
   window.addEventListener("resize", handleResize);
+  try {
+    console.log('RestaurantMenu mounting with tableId:', props.tableId);
+    const response = await axios.get('http://localhost:8000/api/menu');
+    console.log('Menu data received:', response.data);
+    mainCourses.value = response.data;
+  } catch (error) {
+    console.error('Error loading menu:', error);
+  } finally {
+    loading.value = false;
+  }
 });
 
 const props = defineProps({
@@ -96,6 +115,7 @@ if (typeof window !== 'undefined') {
 const isCartExpanded = ref(false);
 const selectedCategory = ref('');
 const filteredMainCourses = computed(() => {
+  console.log('Filtering courses:', mainCourses.value);
   return selectedCategory.value
     ? mainCourses.value.filter(item => item.category_name === selectedCategory.value)
     : mainCourses.value;

@@ -102,4 +102,9 @@ class OrderController extends Controller
             return response()->json(['error' => 'Failed to update order status', 'details' => $e->getMessage()], 500);
         }
     }
+
+    public function getAllActiveOrders() {
+        $result = DB::select('CALL GetAllActiveOrders()');
+        return response()->json($result);
+    }
 }
