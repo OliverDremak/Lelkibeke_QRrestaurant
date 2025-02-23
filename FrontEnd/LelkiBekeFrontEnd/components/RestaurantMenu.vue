@@ -140,7 +140,8 @@ const toggleCart = () => {
 };
 
 const handleCheckout = async () => {
-  const token = localStorage.getItem('token');
+  const auth = useAuthStore();
+  const token = auth.token;
   console.log('Retrieved token:', token);
 
   if (!token) {
