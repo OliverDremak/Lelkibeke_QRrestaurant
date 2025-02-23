@@ -6,6 +6,11 @@
   const password = ref('')
   const auth = useAuthStore()
   
+  // Get redirect path from query parameters or use default
+  const redirectPath = computed(() => {
+    return (route.query.redirect as string) || '/'
+  })
+  
   const submitForm = async () => {
     if (isLogin.value) {
       await auth.login(email.value, password.value)
@@ -14,11 +19,9 @@
     }
     
     if (auth.user) {
-      navigateTo('/table/1')
-      //window.location.reload()
+      navigateTo(redirectPath.value)
     }
   }
-
 </script>
 
 <template>
