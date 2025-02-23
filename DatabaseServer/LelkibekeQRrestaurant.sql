@@ -129,9 +129,9 @@ INSERT INTO orders (user_id, table_id, status, total_price, created_at) VALUES
 
 -- Insert into order_items
 INSERT INTO order_items (order_id, menu_item_id, quantity, notes) VALUES
-(1, 1, 'Extra cheese'),
-(1, 3, 'No onions'),
-(3, 5, 'Gluten-free pasta');
+(1, 1, 1, 'Extra cheese'),    -- Added missing quantity value
+(1, 3, 1, 'No onions'),      -- Added missing quantity value
+(3, 5, 1, 'Gluten-free pasta'); -- Added missing quantity value
 
 -- Add more tables
 INSERT INTO tables (table_number, qr_code_url, is_available) VALUES
@@ -444,9 +444,7 @@ BEGIN
     WHERE orders.table_id = p_table_id
     AND orders.status = 'cooking'
     ORDER BY orders.created_at DESC;
-
-
-
+END //
 
 DELIMITER //
 
