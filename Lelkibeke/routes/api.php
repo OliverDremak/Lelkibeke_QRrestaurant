@@ -7,6 +7,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\TableqrScannedController;
 use App\Http\Controllers\StatController;
+use App\Http\Controllers\OpeningHoursController;
 
 Route::get('/users', [UserController::class, 'getUsers']);
 
@@ -47,4 +48,8 @@ Route::get('/allActiveOrders', [OrderController::class, 'getAllActiveOrders']);
 Route::get('/salesDaily', [StatController::class, 'getDailySales']);
 Route::get('/salesTop-items', [StatController::class, 'getTopSellingItems']);
 Route::get('/salesSummary', [StatController::class, 'getSalesSummary']);
+
+// Opening Hours routes
+Route::get('/opening-hours', [OpeningHoursController::class, 'getOpeningHours']);
+Route::post('/update-opening-hours', [OpeningHoursController::class, 'updateOpeningHours']);
 
