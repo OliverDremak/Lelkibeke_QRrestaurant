@@ -26,48 +26,50 @@
       </div>
     </div>
 
-    <!-- Orders List -->
-    <div v-for="order in filteredAndSortedOrders" 
-         :key="order.order_id" 
-         class="order-row"
-         :class="getOrderAgeClass(order.order_date)">
-      <div class="order-header">
-        <div class="order-meta">
-          <span class="order-id">#{{ order.order_id }}</span>
-          <div class="order-status-group">
-            <span class="time-passed" :class="getOrderAgeClass(order.order_date)">
-              {{ getOrderAge(order.order_date) }}m
-            </span>
-            <span v-if="showTableInfo" class="table-number">T{{ order.table_id }}</span>
-            <span class="order-time">{{ formatTime(order.order_date) }}</span>
+    <!-- Wrap orders in transition-group -->
+    <TransitionGroup name="fade-list">
+      <div v-for="order in filteredAndSortedOrders" 
+           :key="order.order_id" 
+           class="order-row"
+           :class="getOrderAgeClass(order.order_date)">
+        <div class="order-header">
+          <div class="order-meta">
+            <span class="order-id">#{{ order.order_id }}</span>
+            <div class="order-status-group">
+              <span class="time-passed" :class="getOrderAgeClass(order.order_date)">
+                {{ getOrderAge(order.order_date) }}m
+              </span>
+              <span v-if="showTableInfo" class="table-number">T{{ order.table_id }}</span>
+              <span class="order-time">{{ formatTime(order.order_date) }}</span>
+            </div>
           </div>
         </div>
-      </div>
 
-      <div class="items-container">
-        <div class="items-grid">
-          <div v-for="(item, index) in order.items" 
-               :key="`${order.order_id}-${index}`"
-               class="item-row">
-            <span class="item-quantity">{{ item.quantity }}×</span>
-            <span class="item-name">{{ item.menu_item_name }}</span>
-            <span v-if="item.notes && item.notes !== 'null'" 
-                  class="item-notes">
-              "{{ item.notes }}"
-            </span>
+        <div class="items-container">
+          <div class="items-grid">
+            <div v-for="(item, index) in order.items" 
+                 :key="`${order.order_id}-${index}`"
+                 class="item-row">
+              <span class="item-quantity">{{ item.quantity }}×</span>
+              <span class="item-name">{{ item.menu_item_name }}</span>
+              <span v-if="item.notes && item.notes !== 'null'" 
+                    class="item-notes">
+                "{{ item.notes }}"
+              </span>
+            </div>
           </div>
         </div>
-      </div>
 
-      <div class="action-container">
-        <button v-if="order.status !== 'done'"
-                class="serve-button"
-                :class="getOrderAgeClass(order.order_date)"
-                @click.stop="confirmMarkAsServed(order)">
-          Mark as Served
-        </button>
+        <div class="action-container">
+          <button v-if="order.status !== 'done'"
+                  class="serve-button"
+                  :class="getOrderAgeClass(order.order_date)"
+                  @click.stop="confirmMarkAsServed(order)">
+            Mark as Served
+          </button>
+        </div>
       </div>
-    </div>
+    </TransitionGroup>
   </div>
   <div v-else class="empty-state">No active orders</div>
 
@@ -85,7 +87,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, nextTick } from 'vue';
+import { ref, computed, nextTick, watch } from 'vue';
 import axios from 'axios';
 
 const props = defineProps({
@@ -107,7 +109,21 @@ const selectedOrder = ref(null);
 const currentFilter = ref('all');
 const sortOrder = ref('oldest');
 
-// Group orders by order_id
+// Clean up the watcher
+watch(
+  () => props.orders,
+  () => {
+    nextTick(() => {
+      sortOrder.value = sortOrder.value === 'oldest' ? 'newest' : 'oldest';
+      nextTick(() => {
+        sortOrder.value = sortOrder.value === 'oldest' ? 'newest' : 'oldest';
+      });
+    });
+  },
+  { deep: true }
+);
+
+// Simplify groupedOrders computed
 const groupedOrders = computed(() => {
   return props.orders.reduce((acc, order) => {
     const existingOrder = acc.find(o => o.order_id === order.order_id);
@@ -230,16 +246,6 @@ const markAsServed = async () => {
 
 const handleFilterClick = (status) => {
   currentFilter.value = status;
-  // Wait for the filtered orders to update
-  nextTick(() => {
-    if (filteredAndSortedOrders.value.length > 0) {
-      // Scroll to orders section if there are filtered orders
-      const ordersSection = document.querySelector('.orders-list');
-      if (ordersSection) {
-        ordersSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }
-    }
-  });
 };
 </script>
 
@@ -934,5 +940,26 @@ const handleFilterClick = (status) => {
   padding: 0.5rem 0;
   border-bottom: 1px solid #eee;
   margin-bottom: 0.5rem;
+}
+
+/* Update transition styles for smoother animations */
+.fade-list-enter-active,
+.fade-list-leave-active {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.fade-list-enter-from {
+  opacity: 0;
+  transform: translateY(-20px);
+}
+
+.fade-list-leave-to {
+  opacity: 0;
+  transform: translateX(30px);
+  position: absolute;
+}
+
+.fade-list-move {
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 </style>
