@@ -414,3 +414,41 @@ DELIMITER ;
 CALL RegisterUser('john@example.com', 'password123', 'John Doe', NULL); -- Mukodik
 CALL LoginUser('john@example.com', 'password123'); -- Mukodik
 
+DELIMITER //
+
+CREATE PROCEDURE GetDailySales()
+BEGIN
+    SELECT DATE(created_at) AS sale_date, 
+           SUM(CAST(total_price AS DECIMAL(10,2))) AS total_sales
+    FROM orders
+    GROUP BY sale_date
+    ORDER BY total_sales DESC;
+END //
+
+DELIMITER ;
+
+DELIMITER //
+
+CREATE PROCEDURE GetTopSellingItems()
+BEGIN
+    SELECT mi.name AS menu_item, SUM(oi.quantity) AS total_sold
+    FROM order_items oi
+    JOIN menu_items mi ON oi.menu_item_id = mi.id
+    GROUP BY mi.name
+    ORDER BY total_sold DESC
+    LIMIT 10;
+END //
+
+DELIMITER ;
+
+DELIMITER //
+
+CREATE PROCEDURE GetSalesSummary()
+BEGIN
+    SELECT COUNT(id) AS total_orders, 
+           SUM(CAST(total_price AS DECIMAL(10,2))) AS total_revenue, 
+           AVG(CAST(total_price AS DECIMAL(10,2))) AS average_order_value
+    FROM orders;
+END //
+
+DELIMITER ;
