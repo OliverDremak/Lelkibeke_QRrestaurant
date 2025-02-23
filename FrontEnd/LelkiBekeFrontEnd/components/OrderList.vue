@@ -5,7 +5,12 @@
         <div class="card-body p-3 d-flex justify-content-between align-items-start">
           <div class="flex-grow-1">
             <div class="d-flex justify-content-between align-items-center mb-2">
-              <h5 class="card-title mb-0">Order #{{ order.order_id }}</h5>
+              <h5 class="card-title mb-0">
+                Order #{{ order.order_id }}
+                <span v-if="showTableInfo" class="badge bg-info ms-2">
+                  Table {{ order.table_id }}
+                </span>
+              </h5>
               <span class="badge" :class="statusBadgeClass(order.status)">
                 {{ order.status }}
               </span>
@@ -73,6 +78,10 @@ export default {
         );
       }
     },
+    showTableInfo: {
+      type: Boolean,
+      default: false
+    }
   },
   emits: ['order-updated'],
   setup(props, { emit }) {
@@ -92,6 +101,7 @@ export default {
         } else {
           acc.push({
             order_id: order.order_id,
+            table_id: order.table_id,
             order_date: order.order_date,
             status: order.status,
             total_price: order.total_price,

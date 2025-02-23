@@ -411,8 +411,8 @@ DELIMITER ;
 
 
 
-CALL RegisterUser('john@example.com', 'password123', 'John Doe', NULL); -- Mukodik
-CALL LoginUser('john@example.com', 'password123'); -- Mukodik
+-- CALL RegisterUser('john@example.com', 'password123', 'John Doe', NULL); -- Mukodik
+-- CALL LoginUser('john@example.com', 'password123'); -- Mukodik
 
 DELIMITER //
 
@@ -436,3 +436,24 @@ END //
 
 DELIMITER ;
 
+DELIMITER //
+
+CREATE PROCEDURE GetAllActiveOrders()
+BEGIN
+    SELECT 
+        orders.id AS order_id,
+        orders.table_id,
+        orders.created_at AS order_date,
+        orders.status,
+        orders.total_price,
+        menu_items.name AS menu_item_name,
+        order_items.quantity,
+        order_items.notes
+    FROM orders
+    JOIN order_items ON orders.id = order_items.order_id
+    JOIN menu_items ON order_items.menu_item_id = menu_items.id
+    WHERE orders.status = 'cooking'
+    ORDER BY orders.created_at DESC;
+END //
+
+DELIMITER ;

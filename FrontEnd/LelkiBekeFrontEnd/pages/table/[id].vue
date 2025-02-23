@@ -1,29 +1,77 @@
 <template>
   <div>
-    <Navbar />
-    <h1>Table {{ tableId }}</h1>
-    <RestaurantMenu :table-id="tableId"/>
-    <Footer/>
+    <div v-if="error">
+      <error-page error-message="Invalid URL" />
+    </div>
+    <div v-else-if="loading" class="text-center mt-5">
+      <p>Loading... Please wait</p>
+    </div>
+    <div v-else>
+      <Navbar />
+      <div class="container mt-4">
+        <h1 class="text-center">Table {{ tableId }}</h1>
+        <RestaurantMenu :table-id="tableId"/>
+      </div>
+      <Footer/>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { useRoute } from 'vue-router';
-import { useFetch } from '#app'; 
+import { useRoute, useRouter } from 'vue-router';
+import { ref, onMounted } from 'vue';
 import axios from 'axios';
-import { onMounted } from 'vue';
+import ErrorPage from '~/components/error-page.vue';
 
 const route = useRoute();
-const tableId = parseInt(route.params.id,10);
-console.log(tableId);
+const router = useRouter();
+const loading = ref(true);
+const error = ref(false);
+const rawId = route.params.id;
+const tableId = /^\d+$/.test(rawId) ? parseInt(rawId, 10) : null;
 
 onMounted(async () => {
   try {
+    if (tableId === null) {
+      error.value = true;
+      return;
+    }
+
+    const tablesResponse = await axios.get('http://localhost:8000/api/tables');
+    const tableExists = tablesResponse.data.some(table => table.id === tableId);
+    
+    if (!tableExists) {
+      error.value = true;
+      return;
+    }
+    
     await axios.post('http://localhost:8000/api/table-scanned', {
       tableId: tableId
     });
+    
   } catch (err) {
-    console.error('Error posting table scanned:', err);
+    error.value = true;
+  } finally {
+    loading.value = false;
   }
 });
 </script>
+
+<style scoped>
+.alert {
+  margin: 20px 0;
+  padding: 15px;
+  border-radius: 4px;
+}
+
+.alert-info {
+  background-color: #e3f2fd;
+  border: 1px solid #bbdefb;
+  color: #0d47a1;
+}
+
+pre {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+</style>

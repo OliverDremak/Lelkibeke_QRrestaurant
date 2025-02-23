@@ -1,19 +1,41 @@
 <template>
   <div class="container mt-5">
+    <!-- Make sure NotificationStack is properly instantiated -->
+    <NotificationStack ref="notificationStack"></NotificationStack>
     <h1 class="text-center mb-4">Waiter Dashboard</h1>
+    
+    <!-- Show All Orders Button -->
+    <div class="text-center mb-4">
+      <button class="btn btn-primary btn-lg w-75" @click="toggleAllOrders">
+        {{ showAllOrders ? 'Show Table Orders' : 'Show All Orders' }}
+      </button>
+    </div>
 
-      <!-- Table List -->
-      <TableList :tables="tables" @select-table="selectTable" @refresh-tables="fetchTables" />
+    <!-- Table List -->
+    <TableList :tables="tables" @select-table="selectTable" @refresh-tables="fetchTables" />
 
-      <!-- Selected Table Details -->
-      <div v-if="selectedTable" class="mt-4">
-        <h2 class="text-center mb-4">Selected Table: {{ selectedTable.table_number }}</h2>
-        <p class="text-center">{{ selectedTable.is_available === 1 ? 'Available' : 'Occupied' }}</p>
-      </div>
+    <!-- Orders Section Header -->
+    <div class="mt-4 mb-4">
+      <h2 class="text-center">
+        {{ getOrdersSectionTitle() }}
+      </h2>
+    </div>
 
-      <!-- Orders for Selected Table -->
-      <OrderList :orders="selectedTableOrders" v-if="selectedTableOrders.length" @order-updated="refreshOrders"/>
-      <p v-else class="text-center">No orders for this table.</p>
+    <!-- Orders Content -->
+    <OrderList 
+      v-if="showAllOrders"
+      :orders="allOrders" 
+      :show-table-info="true"
+      @order-updated="fetchAllOrders"
+    />
+    <OrderList 
+      v-else-if="selectedTableOrders.length"
+      :orders="selectedTableOrders" 
+      @order-updated="refreshOrders"
+    />
+    <p v-else class="text-center text-muted">
+      {{ getNoOrdersMessage() }}
+    </p>
   </div>
 </template>
 
@@ -22,11 +44,15 @@ import { ref, onMounted } from 'vue';
 import { useNuxtApp } from '#app';
 import TableList from '@/components/TableList.vue';
 import OrderList from '@/components/OrderList.vue';
+import NotificationStack from '@/components/NotificationStack.vue';
 import axios from 'axios';
 
 const tables = ref([]);
 const selectedTable = ref(null);
 const selectedTableOrders = ref([]);
+const notificationStack = ref(null);
+const showAllOrders = ref(false);
+const allOrders = ref([]);
 
 const fetchTables = async () => {
   try {
@@ -57,19 +83,64 @@ const fetchActiveOrdersForTable = async (tableId) => {
 const selectTable = async (tableId) => {
   selectedTable.value = tables.value.find(t => t.id === tableId);
   if (selectedTable.value) {
+    showAllOrders.value = false; // Switch to table view when selecting a table
     await fetchActiveOrdersForTable(tableId);
   }
 };
 
+const toggleAllOrders = async () => {
+  showAllOrders.value = !showAllOrders.value;
+  if (showAllOrders.value) {
+    await fetchAllOrders();
+  }
+};
+
+const fetchAllOrders = async () => {
+  try {
+    const response = await axios.get('http://localhost:8000/api/allActiveOrders');
+    allOrders.value = response.data;
+  } catch (error) {
+    console.error('Error fetching all orders:', error);
+  }
+};
+
+const getOrdersSectionTitle = () => {
+  if (showAllOrders.value) {
+    return 'All Active Orders';
+  }
+  return selectedTable.value 
+    ? `Selected Table: ${selectedTable.value.table_number}`
+    : 'Selected Table: None';
+};
+
+const getNoOrdersMessage = () => {
+  if (!selectedTable.value) {
+    return 'No table selected';
+  }
+  return 'No orders for selected table';
+};
+
 onMounted(() => {
   fetchTables();
+  fetchAllOrders(); // Fetch initial orders
   
   const { $ws } = useNuxtApp();
   $ws.channel('orders')
     .listen('OrderSent', (e) => {
       console.log('New order received for table:', e.tableId);
-      if (selectedTable.value && selectedTable.value.id === e.tableId) {
-        fetchActiveOrdersForTable(e.tableId);
+      // Make sure notificationStack ref exists
+      if (notificationStack.value) {
+        notificationStack.value.addNotification(`New order for Table ${e.tableId}!`);
+        // Also refresh orders if we're in all orders view
+        if (showAllOrders.value) {
+          fetchAllOrders();
+        }
+        // Refresh selected table orders if it matches
+        if (selectedTable.value && selectedTable.value.id === e.tableId) {
+          fetchActiveOrdersForTable(e.tableId);
+        }
+      } else {
+        console.error('Notification stack reference not found');
       }
     });
 });
@@ -92,5 +163,20 @@ onMounted(() => {
   to {
     transform: translateX(0);
   }
+}
+
+.btn-lg {
+  padding: 1rem;
+  font-size: 1.25rem;
+  margin-bottom: 2rem;
+}
+
+h2 {
+  font-size: 1.5rem;
+  color: #666;
+}
+
+.text-muted {
+  font-size: 1.1rem;
 }
 </style>

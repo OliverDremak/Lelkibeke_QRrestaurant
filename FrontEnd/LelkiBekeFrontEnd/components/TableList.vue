@@ -9,7 +9,7 @@
         :class="[
           'card', 'text-center', 'shadow-sm', 'border-0',
           table.is_available === 1 ? 'bg-success text-white' : 'bg-danger text-white',
-          { 'bg-warning': scannedTableId === table.id }
+          { 'bg-warning': scannedTableIds.includes(table.id) }
         ]"
         style="cursor: pointer;"
         @click="selectTable(table.id)"
@@ -19,7 +19,7 @@
           <p class="card-text small mb-0">
             {{ table.is_available === 1 ? 'Available' : 'Occupied' }}
           </p>
-          <div v-if="scannedTableId === table.id" class="mt-2">
+          <div v-if="scannedTableIds.includes(table.id)" class="mt-2">
             <span class="badge bg-light text-dark">QR Scanned</span>
           </div>
           <button
@@ -48,7 +48,7 @@ export default {
   },
   setup(props, { emit }) {
     const { $ws } = useNuxtApp();
-    const scannedTableId = ref(null);
+    const scannedTableIds = ref([]);
 
     const toggleOccupancy = async (table) => {
       console.log('Toggling occupancy status for table:', table);
@@ -69,6 +69,13 @@ export default {
       emit('select-table', tableId);
     };
 
+    const removeScannedTable = (tableId) => {
+      const index = scannedTableIds.value.indexOf(tableId);
+      if (index > -1) {
+        scannedTableIds.value.splice(index, 1);
+      }
+    };
+
     onMounted(() => {
       if (import.meta.server) return;
       console.log('Listening for table events...');
@@ -81,12 +88,15 @@ export default {
           console.log('Matched table:', scannedTable);
           
           if (scannedTable && scannedTable.is_available === 1) {
-            scannedTableId.value = receivedTableId; // Fixed: Use .value on the ref
-            
-            // Reset after 1 minute
-            setTimeout(() => {
-              scannedTableId.value = null;
-            }, 60000);
+            // Add table to scanned tables if not already present
+            if (!scannedTableIds.value.includes(receivedTableId)) {
+              scannedTableIds.value.push(receivedTableId);
+              
+              // Remove this specific table from scanned tables after 1 minute
+              setTimeout(() => {
+                removeScannedTable(receivedTableId);
+              }, 60000);
+            }
           }
         });
       $ws.channel('orders')
@@ -101,7 +111,7 @@ export default {
     });
 
     return {
-      scannedTableId,
+      scannedTableIds,
       toggleOccupancy,
       selectTable,
     };
