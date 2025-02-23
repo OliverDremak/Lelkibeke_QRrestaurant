@@ -27,7 +27,10 @@ Route::post('/setOrderStatus', [OrderController::class, 'setOrderStatus']);
 Route::post('/newTable', [TableController::class, 'createNewTable']);
 Route::post('/modifyTable', [TableController::class, 'modifyTableById']);
 Route::post('/deleteTable', [TableController::class, 'deleteTableById']);
-Route::get('/menu', [MenuItemController::class, 'getMenu']);
+
+Route::middleware(['throttle:20,1'])->group(function () {
+    Route::get('/menu', [MenuItemController::class, 'getMenu']);
+});
 
 Route::post('/table-scanned', [TableqrScannedController::class, '__invoke']);
 
