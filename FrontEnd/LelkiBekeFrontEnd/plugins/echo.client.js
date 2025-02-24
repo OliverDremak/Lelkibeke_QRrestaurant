@@ -15,8 +15,6 @@ export default defineNuxtPlugin(() => {
   
   const config = useRuntimeConfig();
 
-  console.log('REVERB_KEY:', config.public.reverbKey);
-
   const ws =new Echo({
     broadcaster: 'reverb',
     key: config.public.reverbKey,
