@@ -21,7 +21,7 @@ class MenuItemControllerTest extends TestCase
                 (object) ['id' => 1, 'name' => 'Pizza', 'price' => 10.99]
             ]);
 
-        $response = $this->getJson('/menu');
+        $response = $this->withoutMiddleware()->getJson('/api/menu');
 
         $response->assertStatus(200)
                  ->assertJson([
