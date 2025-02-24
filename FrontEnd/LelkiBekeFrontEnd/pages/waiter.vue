@@ -55,11 +55,14 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch, nextTick } from 'vue';
+import { ref, onMounted, watch, nextTick, onBeforeUnmount } from 'vue';
 import { useNuxtApp } from '#app';
+import { useOrderStore } from '@/stores/orderStore';
 import TableList from '@/components/TableList.vue';
 import OrderList from '@/components/OrderList.vue';
 import axios from 'axios';
+
+const orderStore = useOrderStore();
 
 const tables = ref([]);
 const selectedTable = ref(null);
@@ -134,7 +137,12 @@ const fetchAllOrders = async () => {
   try {
     const scrollPosition = window.scrollY;
     const response = await axios.get('http://localhost:8000/api/allActiveOrders');
-    allOrders.value = response.data;
+    
+    // Update store first to maintain positions
+    orderStore.updateOrders(response.data);
+    
+    // Get sorted orders from store
+    allOrders.value = orderStore.getSortedOrders();
     
     nextTick(() => {
       window.scrollTo(0, scrollPosition);
@@ -142,6 +150,12 @@ const fetchAllOrders = async () => {
   } catch (error) {
     console.error('Error fetching all orders:', error);
   }
+};
+
+// Remove any sorting operations from other functions
+
+const getOrderTime = (orderId) => {
+  return orderStore.getElapsedTime(orderId);
 };
 
 const getOrdersSectionTitle = () => {
@@ -174,35 +188,11 @@ onMounted(() => {
   
   const { $ws } = useNuxtApp();
   $ws.channel('orders')
-    .listen('OrderSent', async (e) => {
-      try {
-        if (showAllOrders.value) {
-          const response = await axios.get('http://localhost:8000/api/allActiveOrders');
-          allOrders.value = response.data;
-        } else if (selectedTable.value?.id === e.tableId) {
-          const response = await axios.post('http://localhost:8000/api/getActiveOrdersForTable', {
-            id: e.tableId
-          });
-          selectedTableOrders.value = response.data;
-        }
-      } catch (error) {
-        console.error('Error updating orders:', error);
-      }
+    .listen('OrderSent', async () => {
+      await fetchAllOrders();
     })
-    .listen('OrderStatusChanged', async (e) => {
-      try {
-        // Update orders based on which view is active
-        if (showAllOrders.value) {
-          await fetchAllOrders();
-        } else if (selectedTable.value?.id === e.tableId) {
-          await fetchActiveOrdersForTable(e.tableId);
-        }
-        
-        // Always refresh tables to update status indicators
-        await fetchTables();
-      } catch (error) {
-        console.error('Error updating orders:', error);
-      }
+    .listen('OrderStatusChanged', async () => {
+      await fetchAllOrders();
     });
 
   // Get initial position of table list
@@ -217,6 +207,9 @@ onMounted(() => {
   });
 });
 
+onBeforeUnmount(() => {
+  orderStore.clearAll();
+});
 </script>
 
 <style scoped>

@@ -338,7 +338,16 @@ BEGIN
     UPDATE `orders`
     SET status = p_status
     WHERE id = p_order_id;
+    
+    -- Return the updated order data
+    SELECT 
+        id AS order_id,
+        status
+    FROM orders
+    WHERE id = p_order_id;
 END//
+
+DELIMITER ;
 
 DELIMITER //
 CREATE PROCEDURE SetTableOccupancyStatus(IN p_table_id INT, IN p_occupied BOOLEAN)
@@ -585,25 +594,23 @@ DELIMITER ;
 
 DELIMITER //
 
+DROP PROCEDURE IF EXISTS GetPendingOrders //
+
 CREATE PROCEDURE GetPendingOrders()
 BEGIN
-    SELECT DISTINCT
+    SELECT 
         o.id AS order_id,
         o.table_id,
         o.created_at AS order_date,
         o.status,
         o.total_price,
-        GROUP_CONCAT(
-            DISTINCT CONCAT(
-                oi.quantity, 'x ',
-                mi.name,
-                CASE 
-                    WHEN oi.notes IS NOT NULL AND oi.notes != 'null' 
-                    THEN CONCAT(' (', oi.notes, ')')
-                    ELSE ''
-                END
-            ) ORDER BY mi.name SEPARATOR ', '
-        ) as items
+        CONCAT('[', GROUP_CONCAT(
+            JSON_OBJECT(
+                'quantity', oi.quantity,
+                'menu_item_name', mi.name,
+                'notes', COALESCE(NULLIF(oi.notes, ''), 'null')
+            )
+        ), ']') as items
     FROM orders o
     JOIN order_items oi ON o.id = oi.order_id
     JOIN menu_items mi ON oi.menu_item_id = mi.id

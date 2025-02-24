@@ -135,36 +135,44 @@ class OrderController extends Controller
         try {
             $orders = DB::select('CALL GetPendingOrders()');
             
-            // Transform the orders to ensure table_id is included
+            if (!$orders) {
+                return response()->json([]);
+            }
+
             $formattedOrders = array_map(function($order) {
+                $items = json_decode($order->items, true);
                 return [
                     'order_id' => $order->order_id,
-                    'table_id' => $order->table_id, // Make sure this is included
+                    'table_id' => $order->table_id,
                     'order_date' => $order->order_date,
                     'status' => $order->status,
                     'total_price' => $order->total_price,
-                    'items' => $order->items
+                    'items' => is_array($items) ? $items : []
                 ];
             }, $orders);
-            
-            return response()->json($formattedOrders);
+
+            return response()->json(array_filter($formattedOrders));
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Failed to fetch orders', 'details' => $e->getMessage()], 500);
+            \Log::error('Error in getPendingOrders: ' . $e->getMessage());
+            return response()->json(['error' => 'Database error'], 500);
         }
     }
 
     public function updateOrderStatus(Request $request) {
-        $request->validate([
-            'order_id' => 'required|integer',
-            'status' => 'required|string|in:pending,cooking,cooked,served',
-            'table_id' => 'required|integer'
-        ]);
-        
         try {
-            // First get the order to ensure we have correct table_id
-            $order = DB::select('SELECT table_id FROM orders WHERE id = ?', [$request->order_id])[0];
-            
-            DB::statement('CALL SetOrderStatusById(?, ?)', [
+            \Log::info('Updating order status', [
+                'order_id' => $request->order_id,
+                'status' => $request->status,
+                'table_id' => $request->table_id
+            ]);
+
+            $request->validate([
+                'order_id' => 'required|integer',
+                'status' => 'required|in:pending,cooking,cooked,served',
+                'table_id' => 'required|integer'
+            ]);
+
+            DB::select('CALL SetOrderStatusById(?, ?)', [
                 $request->order_id,
                 $request->status
             ]);
@@ -172,13 +180,15 @@ class OrderController extends Controller
             broadcast(new OrderStatusChanged(
                 $request->order_id,
                 $request->status,
-                $order->table_id, // Use the fetched table_id
+                $request->table_id,
                 false
             ));
             
             return response()->json(['message' => 'Order status updated successfully']);
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Failed to update order status', 'details' => $e->getMessage()], 500);
+            \Log::error('Error updating order status: ' . $e->getMessage());
+            \Log::error($e->getTraceAsString());
+            return response()->json(['error' => 'Failed to update order status'], 500);
         }
     }
 }

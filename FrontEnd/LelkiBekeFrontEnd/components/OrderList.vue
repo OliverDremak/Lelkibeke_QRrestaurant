@@ -24,19 +24,9 @@
       </div>
       
       <div class="order-controls">
-        <div class="filter-group">
-          <button 
-            v-for="status in ['all', 'critical', 'warning', 'normal']" 
-            :key="status"
-            :class="['filter-btn', { active: currentFilter === status }]"
-            @click="handleFilterClick(status)"
-          >
-            {{ status.charAt(0).toUpperCase() + status.slice(1) }}
-          </button>
-        </div>
-        <select v-model="sortOrder" class="sort-select">
-          <option value="oldest">Oldest First</option>
+        <select v-model="sortOrder" class="sort-select" @change="handleSort">
           <option value="newest">Newest First</option>
+          <option value="oldest">Oldest First</option>
         </select>
       </div>
     </div>
@@ -46,9 +36,9 @@
       <!-- Remove TransitionGroup and use a simple div -->
       <div class="orders-list">
         <div v-for="order in filteredAndSortedOrders" 
-             :key="order.order_id" 
+             :key="`${order.order_id}-${order.sortPosition}`" 
              class="order-row"
-             :class="getOrderAgeClass(order.order_date)">
+             :class="getOrderAgeClass(getOrderAge(order.order_id))">
           <div class="order-header">
             <div class="order-meta">
               <span class="order-id">#{{ order.order_id }}</span>
@@ -56,8 +46,8 @@
                 <span class="status-badge" :class="order.status">
                   {{ order.status.toUpperCase() }}
                 </span>
-                <span class="time-passed" :class="getOrderAgeClass(order.order_date)">
-                  {{ getOrderAge(order.order_date) }}m
+                <span class="time-passed" :class="getOrderAgeClass(getOrderAge(order.order_id))">
+                  {{ getOrderAge(order.order_id) }}m
                 </span>
                 <span v-if="showTableInfo" class="table-number">T{{ order.table_id }}</span>
                 <span class="order-time">{{ formatTime(order.order_date) }}</span>
@@ -109,6 +99,9 @@
 import { ref, computed, nextTick, watch, onBeforeUnmount } from 'vue';
 import axios from 'axios';
 import ConfirmationModal from './ConfirmationModal.vue';
+import { useOrderStore } from '@/stores/orderStore';
+
+const orderStore = useOrderStore();
 
 const props = defineProps({
   orders: {
@@ -126,24 +119,7 @@ const emit = defineEmits(['order-updated']);
 // Initialize reactive refs
 const showConfirmation = ref(false);
 const selectedOrder = ref(null);
-const currentFilter = ref('all');
-const sortOrder = ref('oldest');
-
-// Remove the watch completely
-/*
-watch(
-  () => props.orders,
-  () => {
-    // Only update the sort order without forcing a re-render
-    if (sortOrder.value === 'newest') {
-      sortOrder.value = 'oldest';
-    } else {
-      sortOrder.value = 'newest';
-    }
-  },
-  { deep: true }
-);
-*/
+const sortOrder = ref('newest');
 
 // Add new watcher for smooth updates
 watch(
@@ -196,22 +172,16 @@ const groupedOrders = computed(() => {
   
   props.orders.forEach(order => {
     if (!uniqueOrders.has(order.order_id)) {
-      // Make sure we're capturing table_id here
       uniqueOrders.set(order.order_id, {
         ...order,
-        table_id: order.table_id, // Ensure this is captured from the API response
-        items: typeof order.items === 'string' ? 
-          formatItems(order) :
-          (order.items || [{
-            menu_item_name: order.menu_item_name,
-            quantity: order.quantity,
-            notes: order.notes
-          }])
+        sortPosition: orderStore.getOrderPosition(order.order_id),
+        items: Array.isArray(order.items) ? order.items : formatItems(order)
       });
     }
   });
 
-  return Array.from(uniqueOrders.values());
+  return Array.from(uniqueOrders.values())
+    .sort((a, b) => a.sortPosition - b.sortPosition);
 });
 
 // Sort orders by date
@@ -230,10 +200,15 @@ const formatTime = (dateString) => {
   });
 };
 
-const getOrderAge = (dateString) => {
-  const orderTime = new Date(dateString);
-  const now = new Date();
-  return Math.floor((now - orderTime) / 60000); // Returns minutes
+const getOrderAge = (orderId) => {
+  return orderStore.getElapsedTime(orderId);
+};
+
+const getOrderAgeClass = (minutes) => {
+  if (minutes > 20) return 'critical';
+  if (minutes > 15) return 'warning';
+  if (minutes > 10) return 'attention';
+  return 'normal';
 };
 
 const calculateAverageWaitTime = () => {
@@ -242,14 +217,6 @@ const calculateAverageWaitTime = () => {
     return sum + getOrderAge(order.order_date);
   }, 0);
   return `${Math.round(total / groupedOrders.value.length)} min`;
-};
-
-const getOrderAgeClass = (dateString) => {
-  const age = getOrderAge(dateString);
-  if (age > 20) return 'critical';
-  if (age > 15) return 'warning';
-  if (age > 10) return 'attention';
-  return 'normal';
 };
 
 const averageWaitTime = computed(() => {
@@ -263,19 +230,16 @@ const urgentOrders = computed(() => {
 });
 
 const filteredAndSortedOrders = computed(() => {
-  let orders = [...sortedOrders.value];
+  let orders = groupedOrders.value;
   
-  // Apply filter
-  if (currentFilter.value !== 'all') {
-    orders = orders.filter(order => 
-      getOrderAgeClass(order.order_date) === currentFilter.value
-    );
-  }
-  
-  // Apply sort
-  if (sortOrder.value === 'newest') {
-    orders.reverse();
-  }
+  // Sort based on order_date
+  orders = [...orders].sort((a, b) => {
+    const dateA = new Date(a.order_date);
+    const dateB = new Date(b.order_date);
+    return sortOrder.value === 'newest' ? 
+      dateB - dateA : 
+      dateA - dateB;
+  });
   
   return orders;
 });
@@ -328,8 +292,14 @@ const markAsServed = async () => {
   }
 };
 
-const handleFilterClick = (status) => {
-  currentFilter.value = status;
+const handleSort = () => {
+  const scrollPosition = window.scrollY;
+  nextTick(() => {
+    window.scrollTo({
+      top: scrollPosition,
+      behavior: 'instant'
+    });
+  });
 };
 
 const orderCounts = computed(() => {
@@ -711,13 +681,6 @@ const closeConfirmation = () => {
   background: #2980b9;
 }
 
-.sort-select {
-  margin-left: auto;
-  padding: 0.5rem;
-  border-radius: 8px;
-  border: 1px solid #dee2e6;
-}
-
 .order-row {
   cursor: pointer;
   transition: all 0.3s ease;
@@ -740,9 +703,7 @@ const closeConfirmation = () => {
   margin: 1rem 0;
 }
 
-.serve-button {
 
-}
 
 .serve-button.critical {
   background: #e74c3c;
@@ -799,14 +760,6 @@ const closeConfirmation = () => {
 .filter-btn.active {
   background: #3498db;
   color: white;
-}
-
-.sort-select {
-  padding: 0.4rem;
-  border-radius: 8px;
-  border: 1px solid #dee2e6;
-  font-size: 0.9rem;
-  background: white;
 }
 
 @media (max-width: 768px) {
@@ -1080,5 +1033,26 @@ const closeConfirmation = () => {
 /* Disable any smooth-scroll behaviors */
 * {
   scroll-behavior: auto !important;
+}
+
+.sort-select {
+  padding: 0.8rem 1.2rem;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  font-size: 1rem;
+  color: #2c3e50;
+  background-color: white;
+  cursor: pointer;
+  min-width: 150px;
+}
+
+.sort-select:hover {
+  border-color: #3498db;
+}
+
+.sort-select:focus {
+  outline: none;
+  border-color: #3498db;
+  box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
 }
 </style>

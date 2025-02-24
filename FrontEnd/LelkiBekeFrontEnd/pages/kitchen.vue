@@ -1,258 +1,334 @@
 <template>
   <div class="kitchen-dashboard">
     <header class="dashboard-header">
-      <h1>Kitchen Dashboard</h1>
-      <div class="status-filters">
-        <button 
-          v-for="status in ['all', 'pending', 'cooking']"
-          :key="status"
-          :class="['filter-btn', { active: currentFilter === status }]"
-          @click="currentFilter = status"
-        >
-          {{ status.toUpperCase() }}
-        </button>
+      <div class="header-content">
+        <h1>Kitchen Dashboard</h1>
+        <div class="order-stats">
+          <div class="stat-item" :class="{ attention: pendingOrders.length > 5 }">
+            <span class="stat-value">{{ pendingOrders.length }}</span>
+            <span class="stat-label">Pending</span>
+          </div>
+          <div class="stat-item" :class="{ attention: cookingOrders.length > 8 }">
+            <span class="stat-value">{{ cookingOrders.length }}</span>
+            <span class="stat-label">Cooking</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-value">{{ orders.length }}</span>
+            <span class="stat-label">Total Active</span>
+          </div>
+        </div>
       </div>
     </header>
 
     <div class="orders-grid">
-      <div class="order-status">
-        <h3>Pending Orders</h3>
-        <div class="orders-container">
-          <div v-for="order in pendingOrders" :key="order.order_id">
-            <div class="order-header">
-              <span class="order-id">#{{ order.order_id }}</span>
-              <span class="order-time">{{ getTimeElapsed(order.order_date) }}</span>
-            </div>
-            
-            <div class="order-items">
-              <div v-for="item in order.items" :key="item.id" class="item">
-                <span class="quantity">{{ item.quantity }}×</span>
-                <span class="name">{{ item.menu_item_name }}</span>
-                <span v-if="item.notes" class="notes">{{ item.notes }}</span>
-              </div>
-            </div>
-            
-            <div class="status-controls">
-              <button @click="updateStatus(order.order_id, 'cooking')">
-                Start Cooking
-              </button>
-            </div>
-          </div>
+      <section class="orders-column pending">
+        <h2>New Orders</h2>
+        <div class="orders-list">
+          <TransitionGroup name="order">
+            <KitchenOrderCard
+              v-for="order in pendingOrders"
+              :key="order.order_id"
+              :order="order"
+              :initial-elapsed-time="getInitialElapsedTime(order)"
+              status="pending"
+              @status-change="updateStatus"
+            />
+          </TransitionGroup>
         </div>
-      </div>
+      </section>
 
-      <div class="order-status">
-        <h3>Currently Cooking</h3>
-        <div class="orders-container">
-          <div v-for="order in cookingOrders" :key="order.order_id">
-            <div class="order-header">
-              <span class="order-id">#{{ order.order_id }}</span>
-              <span class="order-time">{{ getTimeElapsed(order.order_date) }}</span>
-            </div>
-            
-            <div class="order-items">
-              <div v-for="item in order.items" :key="item.id" class="item">
-                <span class="quantity">{{ item.quantity }}×</span>
-                <span class="name">{{ item.menu_item_name }}</span>
-                <span v-if="item.notes" class="notes">{{ item.notes }}</span>
-              </div>
-            </div>
-            
-            <div class="status-controls">
-              <button @click="updateStatus(order.order_id, 'cooked')">
-                Mark as Ready
-              </button>
-            </div>
-          </div>
+      <section class="orders-column cooking">
+        <h2>Currently Cooking</h2>
+        <div class="orders-list">
+          <TransitionGroup name="order">
+            <KitchenOrderCard
+              v-for="order in cookingOrders"
+              :key="order.order_id"
+              :order="order"
+              :initial-elapsed-time="getInitialElapsedTime(order)"
+              :initial-cooking-time="getCookingElapsedTime(order)"
+              status="cooking"
+              @status-change="updateStatus"
+            />
+          </TransitionGroup>
         </div>
-      </div>
+      </section>
     </div>
   </div>
 </template>
 
-<script>
+<script setup>
 import { ref, computed, onMounted, onBeforeUnmount, nextTick } from 'vue';
 import { useNuxtApp } from '#app';
+import KitchenOrderCard from '../components/KitchenOrderCard.vue';  // Update this path
 import axios from 'axios';
+import { useTimeStore } from '@/stores/timeStore';
+import { useOrderStore } from '@/stores/orderStore';
 
-export default {
-  setup() {
-    const { $ws } = useNuxtApp();
-    const orders = ref([]);
-    const currentFilter = ref('all');
+const timeStore = useTimeStore();
+const orderStore = useOrderStore();
+const { $ws } = useNuxtApp();
+const orders = ref([]);
+const currentFilter = ref('all');
 
-    const groupedOrders = computed(() => {
-      const filtered = currentFilter.value === 'all' 
-        ? orders.value 
-        : orders.value.filter(order => order.status === currentFilter.value);
+const groupedOrders = computed(() => {
+  const filtered = currentFilter.value === 'all' 
+    ? orders.value 
+    : orders.value.filter(order => order.status === currentFilter.value);
 
-      return filtered.reduce((acc, order) => {
-        if (!acc[order.table_id]) acc[order.table_id] = [];
-        acc[order.table_id].push(order);
-        return acc;
-      }, {});
+  return filtered.reduce((acc, order) => {
+    if (!acc[order.table_id]) acc[order.table_id] = [];
+    acc[order.table_id].push(order);
+    return acc;
+  }, {});
+});
+
+const pendingOrders = computed(() => 
+  orders.value
+    .filter(order => order.status === 'pending')
+    .sort((a, b) => a.sort_key - b.sort_key)
+);
+
+const cookingOrders = computed(() => 
+  orders.value
+    .filter(order => order.status === 'cooking')
+    .sort((a, b) => a.sort_key - b.sort_key)
+);
+
+const getTimeElapsed = (orderDate) => {
+  const minutes = Math.floor((new Date() - new Date(orderDate)) / 60000);
+  return `${minutes}m ago`;
+};
+
+const getOrderStatusClass = (order) => {
+  const minutes = Math.floor((new Date() - new Date(order.order_date)) / 60000);
+  if (minutes > 20) return 'critical';
+  if (minutes > 15) return 'warning';
+  return order.status;
+};
+
+const getInitialElapsedTime = (order) => {
+  return Math.floor((new Date() - new Date(order.order_date)) / 60000);
+};
+
+const getCookingElapsedTime = (order) => {
+  if (!order.cooking_started_at) return 0;
+  return Math.floor((new Date() - new Date(order.cooking_started_at)) / 60000);
+};
+
+const updateStatus = async ({ orderId, newStatus, originalDate }) => {
+  try {
+    const order = orders.value.find(o => o.order_id === orderId);
+    if (!order) return;
+
+    // Update local state first
+    order.status = newStatus;
+    order.sort_key = new Date(originalDate).getTime(); // Preserve original sort order
+
+    // Then send to server
+    await axios.post('http://localhost:8000/api/kitchen/update-status', {
+      order_id: orderId,
+      status: newStatus,
+      table_id: order.table_id
     });
 
-    const pendingOrders = computed(() => 
-      orders.value.filter(order => order.status === 'pending')
-    );
-
-    const cookingOrders = computed(() => 
-      orders.value.filter(order => order.status === 'cooking')
-    );
-
-    const getTimeElapsed = (orderDate) => {
-      const minutes = Math.floor((new Date() - new Date(orderDate)) / 60000);
-      return `${minutes}m ago`;
-    };
-
-    const getOrderStatusClass = (order) => {
-      const minutes = Math.floor((new Date() - new Date(order.order_date)) / 60000);
-      if (minutes > 20) return 'critical';
-      if (minutes > 15) return 'warning';
-      return order.status;
-    };
-
-    const updateStatus = async (orderId, status) => {
-      try {
-        const order = orders.value.find(o => o.order_id === orderId);
-        await axios.post('http://localhost:8000/api/kitchen/update-status', {
-          order_id: orderId,
-          status: status,
-          table_id: order.table_id  // Include table_id in request
-        });
-        await fetchOrders();
-      } catch (error) {
-        console.error('Error updating order status:', error);
+    // Instead of fetching all orders, just update the status locally
+    orders.value = orders.value.map(o => {
+      if (o.order_id === orderId) {
+        return {
+          ...o,
+          status: newStatus,
+          sort_key: new Date(originalDate).getTime()
+        };
       }
-    };
-
-    const formatOrderItems = (order) => {
-      if (!order) return [];
-      return {
-        ...order,
-        items: order.items ? order.items.split(', ').map(item => {
-          const [quantityPart, ...rest] = item.split('x ');
-          const itemText = rest.join('x ');
-          const match = itemText.match(/(.*?)(?:\s*\((.*?)\))?$/);
-          return {
-            quantity: parseInt(quantityPart),
-            menu_item_name: match[1].trim(),
-            notes: match[2] || ''
-          };
-        }) : []
-      };
-    };
-
-    const fetchOrders = async () => {
-      try {
-        const response = await axios.get('http://localhost:8000/api/kitchen/pending-orders');
-        const scrollPosition = window.scrollY;
-        orders.value = response.data.map(order => formatOrderItems(order));
-        nextTick(() => {
-          window.scrollTo(0, scrollPosition);
-        });
-      } catch (error) {
-        console.error('Error fetching orders:', error);
-      }
-    };
-
-    onMounted(() => {
-      if (import.meta.server) return;
-      console.log('Listening for kitchen orders...');
-      
-      fetchOrders();
-      
-      $ws.channel('orders')
-        .listen('OrderSent', () => {
-          console.log('New order received');
-          fetchOrders();
-        })
-        .listen('OrderStatusChanged', (e) => {
-          // Refresh orders for both new orders and status changes
-          console.log('Order update received:', e);
-          fetchOrders();
-        });
+      return o;
     });
 
-    onBeforeUnmount(() => {
-      $ws.leaveChannel('orders');
-    });
+    // Re-sort orders to maintain original order
+    orders.value.sort((a, b) => a.sort_key - b.sort_key);
 
-    return {
-      orders,
-      currentFilter,
-      pendingOrders,
-      cookingOrders,
-      getTimeElapsed,
-      getOrderStatusClass,
-      updateStatus
-    };
+  } catch (error) {
+    console.error('Error updating order status:', error);
   }
-}
+};
+
+const fetchOrders = async () => {
+  try {
+    const response = await axios.get('http://localhost:8000/api/kitchen/pending-orders');
+    
+    if (!response.data) {
+      orders.value = [];
+      return;
+    }
+
+    // The items are already in the correct format from the backend
+    orders.value = response.data;
+    orderStore.updateOrders(response.data);
+    
+  } catch (error) {
+    console.error('Error fetching orders:', error);
+    orders.value = [];
+  }
+};
+
+// Remove formatOrderItems function as it's no longer needed
+
+onMounted(() => {
+  if (import.meta.server) return;
+  console.log('Listening for kitchen orders...');
+  
+  fetchOrders();
+  
+  $ws.channel('orders')
+    .listen('OrderSent', () => {
+      console.log('New order received');
+      fetchOrders();
+    })
+    .listen('OrderStatusChanged', (e) => {
+      // Refresh orders for both new orders and status changes
+      console.log('Order update received:', e);
+      fetchOrders();
+    });
+});
+
+onBeforeUnmount(() => {
+  timeStore.clearAll();
+  orderStore.clearAll();
+  $ws.leaveChannel('orders');
+});
+
 </script>
 
 <style scoped>
 .kitchen-dashboard {
-  padding: 2rem;
-  background: #f8f9fa;
   min-height: 100vh;
+  background: #f8f9fa;
+  padding: 2rem;
 }
 
 .dashboard-header {
+  background: white;
+  border-radius: 16px;
+  padding: 1.5rem 2rem;
   margin-bottom: 2rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+h1 {
+  font-size: 2.5rem;
+  color: #2c3e50;
+  margin: 0;
+}
+
+.order-stats {
+  display: flex;
+  gap: 2rem;
+}
+
+.stat-item {
+  text-align: center;
+  padding: 1rem 2rem;
+  border-radius: 12px;
+  background: #f8f9fa;
+  transition: all 0.3s ease;
+}
+
+.stat-item.attention {
+  background: #fff3cd;
+  animation: pulse 2s infinite;
+}
+
+.stat-value {
+  display: block;
+  font-size: 2rem;
+  font-weight: 700;
+  color: #2c3e50;
+}
+
+.stat-label {
+  font-size: 1rem;
+  color: #7f8c8d;
+  text-transform: uppercase;
+  letter-spacing: 1px;
 }
 
 .orders-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
   gap: 2rem;
-  contain: paint;  /* Prevents layout shifts */
+  align-items: start;
 }
 
-.table-orders {
+.orders-column {
   background: white;
-  border-radius: 12px;
+  border-radius: 16px;
   padding: 1.5rem;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
 
-.order-card {
-  margin: 1rem 0;
-  padding: 1rem;
-  border-radius: 8px;
-  border-left: 4px solid;
+.orders-column h2 {
+  font-size: 1.5rem;
+  color: #2c3e50;
+  margin: 0 0 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid #f8f9fa;
 }
 
-.order-card.pending { border-left-color: #3498db; }
-.order-card.cooking { border-left-color: #f39c12; }
-.order-card.critical { border-left-color: #e74c3c; }
-.order-card.warning { border-left-color: #f1c40f; }
-
-.status-btn {
-  width: 100%;
-  padding: 0.8rem;
-  border: none;
-  border-radius: 6px;
-  font-weight: 600;
-  cursor: pointer;
+.orders-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 }
 
-.status-btn.cooking {
-  background: #f39c12;
-  color: white;
+/* Transitions */
+.order-enter-active,
+.order-leave-active {
+  transition: all 0.5s ease;
 }
 
-.status-btn.cooked {
-  background: #2ecc71;
-  color: white;
+.order-enter-from {
+  opacity: 0;
+  transform: translateY(30px);
 }
 
-.order-status {
-  background: white;
-  border-radius: 12px;
-  padding: 1.5rem;
-  contain: paint;
-  height: min-content;
+.order-leave-to {
+  opacity: 0;
+  transform: translateX(-30px);
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+@media (max-width: 768px) {
+  .kitchen-dashboard {
+    padding: 1rem;
+  }
+
+  .header-content {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .order-stats {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .stat-item {
+    padding: 0.8rem;
+  }
+
+  .orders-grid {
+    grid-template-columns: 1fr;
+  }
 }
 </style>
