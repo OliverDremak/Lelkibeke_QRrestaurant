@@ -475,10 +475,12 @@ DELIMITER //
 
 CREATE PROCEDURE GetTopSellingItems()
 BEGIN
-    SELECT mi.name AS menu_item, SUM(oi.quantity) AS total_sold
+    SELECT mi.name AS menu_item, 
+           SUM(oi.quantity) AS total_sold, 
+           mi.description AS menu_item_desc
     FROM order_items oi
     JOIN menu_items mi ON oi.menu_item_id = mi.id
-    GROUP BY mi.name
+    GROUP BY mi.name, mi.description
     ORDER BY total_sold DESC
     LIMIT 10;
 END //
