@@ -89,6 +89,9 @@
     <button @click="isLogin = !isLogin" class="toggle-button">
       <span class="text">{{ isLogin ? 'Need an account? Register' : 'Already have an account? Login' }}</span>
     </button>
+    <button @click="navigateTo('/')" class="back-button">
+      Back to Home
+    </button>
     <!-- <ButtonComponet text="Click me!" style="margin-top: 5px;"/> -->
   </div>
 </template>
@@ -205,6 +208,17 @@ button {
 
 .form-floating input {
   padding-right: 45px !important;
+}
+
+.back-button {
+  margin-top: 1rem;
+  background: #6c757d;
+  color: white;
+  border-radius: 5px;
+}
+
+.back-button:hover {
+  background: #5a6268;
 }
 
 </style>
