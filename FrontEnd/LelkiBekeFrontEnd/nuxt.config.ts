@@ -21,6 +21,8 @@ export default defineNuxtConfig({
     transpile: ['bootstrap-vue']
   },
 
-  modules: ['@pinia/nuxt'],
-  compatibilityDate: '2025-02-23',
+  modules: [
+    '@pinia/nuxt'
+  ],
+  compatibilityDate: '2025-02-23'
 });

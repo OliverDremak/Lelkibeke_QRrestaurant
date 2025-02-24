@@ -9,6 +9,7 @@ use App\Http\Controllers\TableqrScannedController;
 use App\Http\Controllers\StatController;
 use App\Http\Controllers\OpeningHoursController;
 use App\Http\Controllers\ContactController;
+use App\Http\Controllers\CouponController;
 
 Route::get('/users', [UserController::class, 'getUsers']);
 
@@ -57,4 +58,10 @@ Route::post('/update-opening-hours', [OpeningHoursController::class, 'updateOpen
 // Contact routes
 Route::get('/contact-messages', [ContactController::class, 'getAllMessages']);
 Route::post('/contact-messages', [ContactController::class, 'createMessage']);
+
+// CouponController
+Route::get('/user/coupons', [UserController::class, 'getCoupons']);
+Route::get('/coupons', [CouponController::class, 'getAllCoupons']);
+Route::get('/coupons/{id}', [CouponController::class, 'getCouponById']);
+Route::get('/coupons/user/{userId}', [CouponController::class, 'getCouponsByUserId']);
 

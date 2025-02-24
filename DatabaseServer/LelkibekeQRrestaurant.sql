@@ -80,6 +80,16 @@ CREATE TABLE IF NOT EXISTS `opening_hours` (
     PRIMARY KEY (`id`)
 );
 
+CREATE TABLE `coupons` (
+    `id` INT AUTO_INCREMENT PRIMARY KEY,
+    `user_id` BIGINT UNSIGNED NOT NULL,
+    `code` VARCHAR(255) NOT NULL UNIQUE,
+    `discount` DECIMAL(5, 2) NOT NULL,
+    `is_used` BOOLEAN DEFAULT FALSE,
+    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    `expires_at` TIMESTAMP
+);
+
 ALTER TABLE `orders` ADD CONSTRAINT `orders_fk1` FOREIGN KEY (`user_id`) REFERENCES `users`(`id`);
 
 ALTER TABLE `orders` ADD CONSTRAINT `orders_fk2` FOREIGN KEY (`table_id`) REFERENCES `tables`(`id`);
@@ -572,4 +582,43 @@ BEGIN
     SELECT * FROM contact_messages ORDER BY created_at DESC;
 END //
 
+DELIMITER ;
+
+DELIMITER //
+CREATE PROCEDURE GenerateCoupon(IN p_user_id BIGINT UNSIGNED)
+BEGIN
+    DECLARE v_order_count INT;
+    DECLARE v_coupon_code VARCHAR(255);
+    
+    -- Count the number of orders for the user
+    SELECT COUNT(*) INTO v_order_count FROM orders WHERE user_id = p_user_id;
+    
+    -- If the user has 10 orders, generate a coupon
+    IF v_order_count >= 10 THEN
+        SET v_coupon_code = CONCAT('DISCOUNT-', UUID());
+        INSERT INTO coupons (user_id, code, discount, expires_at)
+        VALUES (p_user_id, v_coupon_code, 10.00, DATE_ADD(NOW(), INTERVAL 1 YEAR));
+    END IF;
+END //
+DELIMITER //
+
+DELIMITER //
+CREATE PROCEDURE GetAllCoupons()
+BEGIN
+    SELECT * FROM coupons;
+END //
+DELIMITER //
+
+DELIMITER //
+CREATE PROCEDURE GetCouponById(IN p_coupon_id INT)
+BEGIN
+    SELECT * FROM coupons WHERE id = p_coupon_id;
+END //
+DELIMITER //
+
+DELIMITER //
+CREATE PROCEDURE GetCouponsByUserId(IN p_user_id BIGINT UNSIGNED)
+BEGIN
+    SELECT * FROM coupons WHERE user_id = p_user_id;
+END //
 DELIMITER ;

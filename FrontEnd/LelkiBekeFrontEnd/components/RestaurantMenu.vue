@@ -56,6 +56,7 @@
                 <button @click="increaseQuantity(index)"><img src="../public/svgs/plus.svg" alt="Trash" class="svg-icon" width="24" height="24"></button>
               </div>
               <button @click="removeFromCart(index)" class="trash col-2"><img src="../public/svgs/trash.svg" alt="Trash" class="svg-icon" width="24" height="24"></button>
+              <input v-model="cartItem.notes" placeholder="Add a note" class="col-12 mt-2"/>
             </div>
             <hr>
             <div class="total">
@@ -143,7 +144,7 @@ const addToCart = (item) => {
   if (cartItem) {
     cartItem.quantity++;
   } else {
-    cart.value.push({ ...item, quantity: 1 });
+    cart.value.push({ ...item, quantity: 1, notes: '' });
   }
 };
 
@@ -173,6 +174,8 @@ const handleCheckout = async () => {
   console.log('Retrieved token:', token);
 
   if (!token) {
+    // Store the intended URL before redirecting to the login page
+    localStorage.setItem('intendedUrl', window.location.pathname);
     alert('Please login first');
     await navigateTo('/auth');
     return;
@@ -245,6 +248,11 @@ watch(cart, (newCart) => {
   filter: brightness(0) saturate(100%) invert(30%) sepia(100%) saturate(1000%) hue-rotate(0deg);
 }
 
+.trash {
+  border-radius: 50px;
+  width: 55px; /* Rounded corners for the trash button */
+}
+
 .totheright {
   float: right;
 }
@@ -259,8 +267,7 @@ button:hover .svg-icon {
   gap: 2px;
 }
 
-.quantitybuttons *,
-.trash {
+.quantitybuttons * {
   border: none;
   background-color: transparent;
 }
@@ -273,7 +280,7 @@ button:hover .svg-icon {
   padding: 20px;
 }
 
-/* Kategória választó stílusok */
+/* Category Selector Styles */
 .category-buttons {
   display: flex;
   gap: 10px;
@@ -453,15 +460,20 @@ button:hover .svg-icon {
   flex: 1;
   background: #f5f5f5;
   padding: 1rem;
-  border-radius: 15px;
+  border-radius: 25px; /* Rounded corners */
   box-shadow: 9px 9px 12px #b2b2b3, inset 0 0 7px rgba(0, 0, 0, 0.3);
   max-height: fit-content;
-
 }
 
 .cart-item {
   align-items: center;
   margin-bottom: 20px;
+}
+
+.cart-item input {
+  border-radius: 25px; /* Rounded corners for the input field */
+  padding: 10px;
+  border: 1px solid #ccc;
 }
 
 .total {
@@ -488,6 +500,7 @@ button:hover .svg-icon {
     transform: translateY(calc(70% - 40px));
     width: 100%;
     min-height: 25vh;
+    border-radius: 25px 25px 0 0; /* Rounded top corners */
   }
 
   .cart-section.expanded {

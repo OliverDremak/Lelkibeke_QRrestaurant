@@ -11,9 +11,24 @@
     return (route.query.redirect as string) || '/'
   })
   
+  const handleLogin = async () => {
+    await auth.login(email.value, password.value)
+
+    if (auth.user) {
+      // Retrieve the intended URL from localStorage
+      const intendedUrl = localStorage.getItem('intendedUrl');
+      if (intendedUrl) {
+        localStorage.removeItem('intendedUrl');
+        await navigateTo(intendedUrl);
+      } else {
+        await navigateTo('/');
+      }
+    }
+  }
+
   const submitForm = async () => {
     if (isLogin.value) {
-      await auth.login(email.value, password.value)
+      await handleLogin()
     } else {
       await auth.register(name.value, email.value, password.value)
     }

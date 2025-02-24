@@ -38,6 +38,9 @@ class OrderController extends Controller
 
             broadcast(new OrderSent($tableId));
 
+            // Call the stored procedure to generate a coupon if the user has 10 orders
+            DB::statement('CALL GenerateCoupon(?)', [$userId]);
+
             return response()->json([
                 'message' => $result[0]->message ?? 'Order created successfully!',
                 'order_id' => $result[0]->order_id ?? null
@@ -91,7 +94,7 @@ class OrderController extends Controller
             'order_id' => 'required|integer',
             'status' => 'required|in:cooking,done'
         ]);
-        
+
         try {
             DB::statement('CALL SetOrderStatusById(?, ?)', [
                 $request->order_id,

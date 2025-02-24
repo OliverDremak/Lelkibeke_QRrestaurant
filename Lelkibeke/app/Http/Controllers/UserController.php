@@ -138,7 +138,7 @@ class UserController extends Controller
             if (hash('sha256', $request->password) !== $userData->password) {
                 return response()->json(['error' => 'Hibás e-mail vagy jelszó'], 401);
             }
-            
+
 
 
             $user = User::find($userData->id);
@@ -182,5 +182,15 @@ class UserController extends Controller
         } catch (JWTException $e) {
             return response()->json(['error' => 'Could not log out'], 500);
         }
+    }
+
+    public function getCoupons()
+    {
+        $coupons = DB::table('coupons')
+            ->where('user_id', auth()->id())
+            ->where('is_used', false)
+            ->get();
+
+        return response()->json($coupons);
     }
 }
