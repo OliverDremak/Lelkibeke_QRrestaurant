@@ -20,7 +20,7 @@ class RateLimitTest extends TestCase
             $response = $this->withHeaders([
                 'Accept' => 'application/json',
             ])->get('/api/menu');
-            
+
             if ($i < 20) {
                 $response->assertSuccessful();
             } else {
@@ -34,7 +34,7 @@ class RateLimitTest extends TestCase
         $response = $this->withHeaders([
             'Accept' => 'application/json',
         ])->get('/api/menu');
-        
+
         $response->assertHeader('X-RateLimit-Limit');
         $response->assertHeader('X-RateLimit-Remaining');
     }

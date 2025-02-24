@@ -91,7 +91,7 @@ class OrderController extends Controller
             'order_id' => 'required|integer',
             'status' => 'required|in:cooking,done'
         ]);
-        
+
         try {
             DB::statement('CALL SetOrderStatusById(?, ?)', [
                 $request->order_id,

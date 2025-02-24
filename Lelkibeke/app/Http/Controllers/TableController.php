@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 
 class TableController extends Controller
 {
@@ -11,7 +12,6 @@ class TableController extends Controller
      * @OA\Get(
      *     path="/api/tables",
      *     summary="Retrieve all tables",
-     *     tags={"Tables"},
      *     @OA\Response(
      *         response=200,
      *         description="List of tables",
@@ -170,12 +170,12 @@ class TableController extends Controller
      */
     public function setTableOccupancyStatus(Request $request)
     {
+        $request->validate([
+            'id' => 'required|integer',
+            'is_available' => 'required|boolean'
+        ]);
+        
         try {
-            $request->validate([
-                'id' => 'required|integer',
-                'is_available' => 'required|boolean'
-            ]);
-
             DB::statement('CALL SetTableOccupancyStatus(?, ?)', [
                 $request->id,
                 $request->is_available ? 1 : 0
