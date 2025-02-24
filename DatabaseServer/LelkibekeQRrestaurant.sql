@@ -588,13 +588,17 @@ DELIMITER //
 CREATE PROCEDURE GenerateCoupon(IN p_user_id BIGINT UNSIGNED)
 BEGIN
     DECLARE v_order_count INT;
+    DECLARE v_coupon_count INT;
     DECLARE v_coupon_code VARCHAR(255);
     
     -- Count the number of orders for the user
     SELECT COUNT(*) INTO v_order_count FROM orders WHERE user_id = p_user_id;
     
-    -- If the user has 10 orders, generate a coupon
-    IF v_order_count >= 10 THEN
+    -- Count existing coupons for the user
+    SELECT COUNT(*) INTO v_coupon_count FROM coupons WHERE user_id = p_user_id;
+    
+    -- Check if user should get a new coupon (order count is multiple of 10 and greater than existing coupons * 10)
+    IF v_order_count >= 10 AND v_order_count MOD 10 = 0 AND v_order_count > (v_coupon_count * 10) THEN
         SET v_coupon_code = CONCAT('DISCOUNT-', UUID());
         INSERT INTO coupons (user_id, code, discount, expires_at)
         VALUES (p_user_id, v_coupon_code, 10.00, DATE_ADD(NOW(), INTERVAL 1 YEAR));
@@ -671,27 +675,30 @@ END //
 
 DELIMITER //
 
+DROP PROCEDURE IF EXISTS GetUserOrders //
+
 CREATE PROCEDURE GetUserOrders(IN p_user_id BIGINT UNSIGNED)
 BEGIN
     SELECT 
         o.id,
         o.created_at,
-        o.total_price,
+        CAST(o.total_price AS DECIMAL(10,2)) as total_price,
         o.status,
-        JSON_ARRAYAGG(
-            JSON_OBJECT(
-                'id', oi.id,
-                'name', mi.name,
-                'quantity', oi.quantity,
-                'price', mi.price,
-                'notes', oi.notes
+        GROUP_CONCAT(
+            CONCAT(
+                '{"id":', oi.id,
+                ',"name":"', mi.name,
+                '","quantity":', oi.quantity,
+                ',"price":', CAST(mi.price * oi.quantity AS DECIMAL(10,2)),
+                ',"notes":"', COALESCE(oi.notes, ''),
+                '"}'
             )
         ) as items
     FROM orders o
     JOIN order_items oi ON o.id = oi.order_id
     JOIN menu_items mi ON oi.menu_item_id = mi.id
     WHERE o.user_id = p_user_id
-    GROUP BY o.id
+    GROUP BY o.id, o.created_at, o.total_price, o.status
     ORDER BY o.created_at DESC;
 END //
 

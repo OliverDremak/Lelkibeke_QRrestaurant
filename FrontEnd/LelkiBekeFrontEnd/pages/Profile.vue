@@ -18,6 +18,9 @@ const userForm = ref({
     newPassword: ''
 });
 
+const isLoading = ref(false);
+const error = ref(null);
+
 watchEffect(() => {
   if (!auth.token) {
     router.push('/auth');
@@ -34,11 +37,23 @@ const fetchCoupons = async () => {
 };
 
 const fetchOrders = async () => {
+    isLoading.value = true;
+    error.value = null;
     try {
         const response = await axios.get(`http://localhost:8000/api/orders/user/${auth.user.id}`);
-        orders.value = response.data;
-    } catch (error) {
-        console.error('Error fetching orders:', error);
+        orders.value = response.data.map(order => ({
+            ...order,
+            items: JSON.parse(`[${order.items}]`)
+        }));
+    } catch (err: any) {
+        error.value = err.response?.data?.error || 'Failed to fetch orders';
+        notification.value = {
+            show: true,
+            message: error.value,
+            type: 'error'
+        };
+    } finally {
+        isLoading.value = false;
     }
 };
 
@@ -136,32 +151,6 @@ onMounted(() => {
             </div>
           </form>
         </div>
-
-        <div class="orders-section">
-          <h2>Order History</h2>
-          <div v-if="orders.length === 0" class="no-orders">
-            <p>You haven't placed any orders yet.</p>
-          </div>
-          <div v-else class="orders-list">
-            <div v-for="order in orders" :key="order.id" class="order-card">
-              <div class="order-header">
-                <span class="order-id">Order #{{ order.id }}</span>
-                <span class="order-date">{{ new Date(order.created_at).toLocaleDateString() }}</span>
-              </div>
-              <div class="order-items">
-                <div v-for="item in order.items" :key="item.id" class="order-item">
-                  <span>{{ item.quantity }}x {{ item.name }}</span>
-                  <span>${{ item.price }}</span>
-                </div>
-              </div>
-              <div class="order-total">
-                <span>Total:</span>
-                <span>${{ order.total }}</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
         <div class="coupons-section">
           <h2>Your Coupons</h2>
           <div v-if="coupons.length === 0" class="no-coupons">
@@ -173,6 +162,36 @@ onMounted(() => {
                 <div class="discount">{{ coupon.discount }}% OFF</div>
                 <div class="code">{{ coupon.code }}</div>
                 <div class="expires">Expires: {{ new Date(coupon.expires_at).toLocaleDateString() }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="orders-section">
+          <h2>Order History</h2>
+          <div v-if="isLoading" class="loading">
+            Loading orders...
+          </div>
+          <div v-else-if="error" class="error-message">
+            {{ error }}
+          </div>
+          <div v-else-if="orders.length === 0" class="no-orders">
+            <p>You haven't placed any orders yet.</p>
+          </div>
+          <div v-else class="orders-list">
+            <div v-for="order in orders" :key="order.id" class="order-card">
+              <div class="order-header">
+                <span class="order-id">Order #{{ order.id }}</span>
+                <span class="order-date">{{ new Date(order.created_at).toLocaleDateString() }}</span>
+              </div>
+              <div class="order-items">
+                <div v-for="(item, index) in order.items" :key="index" class="order-item">
+                  <span>{{ item.quantity }}x {{ item.name }}</span>
+                  <span>${{ Number(item.price).toFixed(2) }}</span>
+                </div>
+              </div>
+              <div class="order-total">
+                <span>Total:</span>
+                <span>${{ Number(order.total_price).toFixed(2) }}</span>
               </div>
             </div>
           </div>
@@ -426,6 +445,21 @@ onMounted(() => {
 .error {
   background-color: #f44336;
   color: white;
+}
+
+.loading {
+  text-align: center;
+  padding: 2rem;
+  color: #666;
+}
+
+.error-message {
+  text-align: center;
+  padding: 2rem;
+  color: #f44336;
+  background-color: #ffebee;
+  border-radius: 8px;
+  margin: 1rem 0;
 }
 
 @keyframes slideIn {
