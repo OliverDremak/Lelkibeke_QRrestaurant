@@ -49,7 +49,7 @@ CREATE TABLE IF NOT EXISTS `orders` (
 	`id` int AUTO_INCREMENT NOT NULL UNIQUE,
 	`user_id` BIGINT UNSIGNED NOT NULL,
 	`table_id` int NOT NULL,
-	`status` enum('cooking', 'done') NOT NULL,
+	`status` enum('pending', 'cooking', 'cooked', 'served') NOT NULL DEFAULT 'pending',
 	`total_price` text NOT NULL,
 	`created_at` timestamp NOT NULL,
 -- 	`updated_at` timestamp NOT NULL,
@@ -103,7 +103,10 @@ INSERT INTO users (email, password, name, role) VALUES
 INSERT INTO tables (table_number, qr_code_url, is_available) VALUES
 ('T1', 'https://example.com/qr1', true),
 ('T2', 'https://example.com/qr2', false),
-('T3', 'https://example.com/qr3', true);
+('T3', 'https://example.com/qr3', true),
+('T4', 'https://example.com/qr4', true),
+('T5', 'https://example.com/qr5', false),
+('T6', 'https://example.com/qr6', true);
 
 -- Insert into category
 INSERT INTO category (name) VALUES
@@ -119,62 +122,62 @@ INSERT INTO menu_items (category_id, name, description, price, image_url) VALUES
 (2, 'Cheeseburger', 'Juicy beef patty with cheese and lettuce', 2000, 'https://example.com/cheeseburger.jpg'),
 (2, 'Chicken Burger', 'Crispy chicken patty with mayo and lettuce', 2200, 'https://example.com/chickenburger.jpg'),
 (3, 'Spaghetti Bolognese', 'Classic pasta with meat sauce', 2300, 'https://example.com/spaghetti.jpg'),
-(4, 'Coke', 'Refreshing Coca-Cola', 600, 'https://example.com/coke.jpg');
-
--- Insert into orders
-INSERT INTO orders (user_id, table_id, status, total_price, created_at) VALUES
-(2, 1, 'cooking', '4500', NOW()),
-(3, 2, 'done', '2800', NOW()),
-(2, 3, 'cooking', '2300', NOW());
-
--- Insert into order_items
-INSERT INTO order_items (order_id, menu_item_id, quantity, notes) VALUES
-(1, 1, 1, 'Extra cheese'),    -- Added missing quantity value
-(1, 3, 1, 'No onions'),      -- Added missing quantity value
-(3, 5, 1, 'Gluten-free pasta'); -- Added missing quantity value
-
--- Add more tables
-INSERT INTO tables (table_number, qr_code_url, is_available) VALUES
-('T4', 'https://example.com/qr4', true),
-('T5', 'https://example.com/qr5', false),
-('T6', 'https://example.com/qr6', true);
-
--- Add more menu items
-INSERT INTO menu_items (category_id, name, description, price, image_url) VALUES
+(4, 'Coke', 'Refreshing Coca-Cola', 600, 'https://example.com/coke.jpg'),
 (1, 'Hawaiian Pizza', 'Pizza with ham and pineapple', 2700, 'https://example.com/hawaiian.jpg'),
 (2, 'Veggie Burger', 'Vegetarian burger with fresh veggies', 2100, 'https://example.com/veggieburger.jpg'),
 (3, 'Fettuccine Alfredo', 'Creamy pasta with parmesan cheese', 2400, 'https://example.com/fettuccine.jpg'),
 (4, 'Iced Tea', 'Refreshing iced tea', 500, 'https://example.com/icedtea.jpg');
 
--- Insert the order
-INSERT INTO orders (user_id, table_id, status, total_price, created_at)
-VALUES (2, 4, 'cooking', '4800', NOW());
+-- Clear existing order data
+SET SQL_SAFE_UPDATES = 0;
 
--- Insert order items
-INSERT INTO order_items (order_id, menu_item_id, quantity, notes)
-VALUES 
-(LAST_INSERT_ID(), 7, 1, 'Extra pineapple'),
-(LAST_INSERT_ID(), 8, 1, 'No mayo');
+-- Safe delete with WHERE clause using primary keys
+DELETE FROM order_items WHERE id > 0;
+DELETE FROM orders WHERE id > 0;
 
--- Insert the order
-INSERT INTO orders (user_id, table_id, status, total_price, created_at)
-VALUES (3, 5, 'cooking', '3400', NOW());
+-- Insert sample orders with various statuses
+INSERT INTO orders (user_id, table_id, status, total_price, created_at) VALUES
+-- Pending orders (just received)
+(2, 1, 'pending', '4500', NOW() - INTERVAL 2 MINUTE),
+(2, 3, 'pending', '3200', NOW() - INTERVAL 1 MINUTE),
 
--- Insert order items
-INSERT INTO order_items (order_id, menu_item_id, quantity, notes)
-VALUES 
-(LAST_INSERT_ID(), 9, 1, 'Extra cheese'),
-(LAST_INSERT_ID(), 10, 2, 'No sugar');
+-- Orders being cooked
+(3, 2, 'cooking', '2800', NOW() - INTERVAL 15 MINUTE),
+(3, 4, 'cooking', '5100', NOW() - INTERVAL 10 MINUTE),
 
--- Insert the order
-INSERT INTO orders (user_id, table_id, status, total_price, created_at)
-VALUES (4, 6, 'cooking', '4500', NOW());
+-- Orders ready to be served
+(2, 5, 'cooked', '3600', NOW() - INTERVAL 8 MINUTE),
+(4, 6, 'cooked', '4200', NOW() - INTERVAL 5 MINUTE),
 
--- Insert order items
-INSERT INTO order_items (order_id, menu_item_id, quantity, notes)
-VALUES 
-(LAST_INSERT_ID(), 1, 1, 'Extra basil'),
-(LAST_INSERT_ID(), 4, 1, 'No lettuce');
+-- Orders that have been served
+(3, 1, 'served', '2900', NOW() - INTERVAL 30 MINUTE),
+(4, 2, 'served', '3800', NOW() - INTERVAL 25 MINUTE);
+
+-- Insert corresponding order items
+INSERT INTO order_items (order_id, menu_item_id, quantity, notes) VALUES
+-- For pending orders
+(1, 1, 2, 'Extra cheese'),
+(1, 3, 1, 'No onions'),
+(2, 2, 1, 'Well done'),
+(2, 6, 2, 'No ice'),
+
+-- For cooking orders
+(3, 4, 2, 'Extra spicy'),
+(3, 6, 2, 'With lemon'),
+(4, 1, 1, 'No basil'),
+(4, 2, 2, 'Extra toppings'),
+
+-- For cooked orders
+(5, 3, 2, 'No pickles'),
+(5, 5, 1, 'Extra sauce'),
+(6, 4, 2, 'Regular spice'),
+(6, 6, 2, 'Extra ice'),
+
+-- For served orders
+(7, 2, 1, 'Medium rare'),
+(7, 6, 1, 'No ice'),
+(8, 1, 2, 'Extra cheese'),
+(8, 5, 1, 'Gluten free');
 
 -- Insert default opening hours
 INSERT INTO `opening_hours` (day_of_week, open_time, close_time, is_closed) VALUES
@@ -299,37 +302,52 @@ DELIMITER //
 
 CREATE PROCEDURE GetOrdersForTableById(IN p_table_id INT)
 BEGIN
-    SELECT 
-        orders.id AS order_id,
-        orders.created_at AS order_date,
-        orders.status,
-        orders.total_price,
-        menu_items.name AS menu_item_name,
-        order_items.quantity,
-        order_items.notes
-    FROM orders
-    JOIN order_items ON orders.id = order_items.order_id
-    JOIN menu_items ON order_items.menu_item_id = menu_items.id
-    WHERE orders.status = 'cooking'
-      AND orders.table_id = p_table_id
-    ORDER BY orders.created_at, orders.id, menu_items.name;
+    SELECT DISTINCT
+        o.id AS order_id,
+        o.created_at AS order_date,
+        o.status,
+        o.total_price,
+        GROUP_CONCAT(
+            DISTINCT CONCAT(
+                oi.quantity, 'x ',
+                mi.name,
+                CASE 
+                    WHEN oi.notes IS NOT NULL AND oi.notes != 'null' 
+                    THEN CONCAT(' (', oi.notes, ')')
+                    ELSE ''
+                END
+            ) ORDER BY mi.name SEPARATOR ', '
+        ) as items
+    FROM orders o
+    JOIN order_items oi ON o.id = oi.order_id
+    JOIN menu_items mi ON oi.menu_item_id = mi.id
+    WHERE o.table_id = p_table_id
+    AND o.status IN ('pending', 'cooking', 'cooked')
+    GROUP BY o.id, o.created_at, o.status, o.total_price
+    ORDER BY o.created_at DESC;
 END //
-
 DELIMITER ;
 
 DELIMITER //
 
 CREATE PROCEDURE SetOrderStatusById(
     IN p_order_id INT,
-    IN p_status ENUM('done', 'cooking')
+    IN p_status ENUM('pending', 'cooking', 'cooked', 'served')
 )
 BEGIN
     UPDATE `orders`
     SET status = p_status
     WHERE id = p_order_id;
+    
+    -- Return the updated order data
+    SELECT 
+        id AS order_id,
+        status
+    FROM orders
+    WHERE id = p_order_id;
 END//
 
-
+DELIMITER ;
 
 DELIMITER //
 CREATE PROCEDURE SetTableOccupancyStatus(IN p_table_id INT, IN p_occupied BOOLEAN)
@@ -350,7 +368,7 @@ CREATE PROCEDURE sendOrder(
 BEGIN
     DECLARE v_order_id INT;
     INSERT INTO orders (user_id, table_id, status, total_price, created_at)
-    VALUES (p_user_id, p_table_id, 'cooking', p_total_price, NOW());
+    VALUES (p_user_id, p_table_id, 'pending', p_total_price, NOW());
     SET v_order_id = LAST_INSERT_ID();
     SET @json = p_items;
     SET @i = 0;
@@ -442,7 +460,7 @@ BEGIN
     JOIN order_items ON orders.id = order_items.order_id
     JOIN menu_items ON order_items.menu_item_id = menu_items.id
     WHERE orders.table_id = p_table_id
-    AND orders.status = 'cooking'
+    AND orders.status IN ('pending', 'cooking', 'cooked') -- Include all active statuses
     ORDER BY orders.created_at DESC;
 END //
 
@@ -503,7 +521,7 @@ BEGIN
     FROM orders
     JOIN order_items ON orders.id = order_items.order_id
     JOIN menu_items ON order_items.menu_item_id = menu_items.id
-    WHERE orders.status = 'cooking'
+    WHERE orders.status IN ('pending', 'cooking', 'cooked') -- Include all active statuses
     ORDER BY orders.created_at DESC;
 END //
 
@@ -570,6 +588,35 @@ END //
 CREATE PROCEDURE GetAllContactMessages()
 BEGIN
     SELECT * FROM contact_messages ORDER BY created_at DESC;
+END //
+
+DELIMITER ;
+
+DELIMITER //
+
+DROP PROCEDURE IF EXISTS GetPendingOrders //
+
+CREATE PROCEDURE GetPendingOrders()
+BEGIN
+    SELECT 
+        o.id AS order_id,
+        o.table_id,
+        o.created_at AS order_date,
+        o.status,
+        o.total_price,
+        CONCAT('[', GROUP_CONCAT(
+            JSON_OBJECT(
+                'quantity', oi.quantity,
+                'menu_item_name', mi.name,
+                'notes', COALESCE(NULLIF(oi.notes, ''), 'null')
+            )
+        ), ']') as items
+    FROM orders o
+    JOIN order_items oi ON o.id = oi.order_id
+    JOIN menu_items mi ON oi.menu_item_id = mi.id
+    WHERE o.status IN ('pending', 'cooking')
+    GROUP BY o.id, o.table_id, o.created_at, o.status, o.total_price
+    ORDER BY o.created_at;
 END //
 
 DELIMITER ;

@@ -3,25 +3,30 @@
     <!-- Compact header with stats and controls -->
     <div class="orders-header">
       <div class="order-stats">
-        <span class="active-orders">
-          Active Orders: {{ groupedOrders.length }}
-        </span>
+        <div class="stats-grid">
+          <div class="stat-item">
+            <span class="stat-value">{{ orderCounts.pending }}</span>
+            <span class="stat-label">Pending</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-value">{{ orderCounts.cooking }}</span>
+            <span class="stat-label">Cooking</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-value">{{ orderCounts.cooked }}</span>
+            <span class="stat-label">Ready</span>
+          </div>
+          <div class="stat-item total">
+            <span class="stat-value">{{ groupedOrders.length }}</span>
+            <span class="stat-label">Total</span>
+          </div>
+        </div>
       </div>
       
       <div class="order-controls">
-        <div class="filter-group">
-          <button 
-            v-for="status in ['all', 'critical', 'warning', 'normal']" 
-            :key="status"
-            :class="['filter-btn', { active: currentFilter === status }]"
-            @click="handleFilterClick(status)"
-          >
-            {{ status.charAt(0).toUpperCase() + status.slice(1) }}
-          </button>
-        </div>
-        <select v-model="sortOrder" class="sort-select">
-          <option value="oldest">Oldest First</option>
+        <select v-model="sortOrder" class="sort-select" @change="handleSort">
           <option value="newest">Newest First</option>
+          <option value="oldest">Oldest First</option>
         </select>
       </div>
     </div>
@@ -31,15 +36,18 @@
       <!-- Remove TransitionGroup and use a simple div -->
       <div class="orders-list">
         <div v-for="order in filteredAndSortedOrders" 
-             :key="order.order_id" 
+             :key="`${order.order_id}-${order.sortPosition}`" 
              class="order-row"
-             :class="getOrderAgeClass(order.order_date)">
+             :class="getOrderAgeClass(getOrderAge(order.order_id))">
           <div class="order-header">
             <div class="order-meta">
               <span class="order-id">#{{ order.order_id }}</span>
               <div class="order-status-group">
-                <span class="time-passed" :class="getOrderAgeClass(order.order_date)">
-                  {{ getOrderAge(order.order_date) }}m
+                <span class="status-badge" :class="order.status">
+                  {{ order.status.toUpperCase() }}
+                </span>
+                <span class="time-passed" :class="getOrderAgeClass(getOrderAge(order.order_id))">
+                  {{ getOrderAge(order.order_id) }}m
                 </span>
                 <span v-if="showTableInfo" class="table-number">T{{ order.table_id }}</span>
                 <span class="order-time">{{ formatTime(order.order_date) }}</span>
@@ -50,7 +58,7 @@
           <div class="items-container">
             <div class="items-grid">
               <div v-for="(item, index) in order.items" 
-                   :key="`${order.order_id}-${index}`"
+                   :key="`${order.order_id}-item-${index}`"
                    class="item-row">
                 <span class="item-quantity">{{ item.quantity }}×</span>
                 <span class="item-name">{{ item.menu_item_name }}</span>
@@ -76,22 +84,24 @@
   </div>
   <div v-else class="empty-state">No active orders</div>
 
-  <!-- Confirmation Modal -->
-  <div v-if="showConfirmation" class="modal-overlay" @click="showConfirmation = false">
-    <div class="modal-content" @click.stop>
-      <h3>Confirm Action</h3>
-      <p>Mark this order as served?</p>
-      <div class="modal-actions">
-        <button class="cancel-button" @click="showConfirmation = false">Cancel</button>
-        <button class="confirm-button" @click="markAsServed">Confirm</button>
-      </div>
-    </div>
-  </div>
+  <ConfirmationModal
+    :show="showConfirmation"
+    title="Confirm Order Status"
+    message="Are you sure you want to mark this order as served?"
+    :orderDetails="selectedOrder"
+    @confirm="markAsServed"
+    @cancel="closeConfirmation"
+    @close="closeConfirmation"
+  />
 </template>
 
 <script setup>
-import { ref, computed, nextTick, watch } from 'vue';
+import { ref, computed, nextTick, watch, onBeforeUnmount } from 'vue';
 import axios from 'axios';
+import ConfirmationModal from './ConfirmationModal.vue';
+import { useOrderStore } from '@/stores/orderStore';
+
+const orderStore = useOrderStore();
 
 const props = defineProps({
   orders: {
@@ -109,49 +119,69 @@ const emit = defineEmits(['order-updated']);
 // Initialize reactive refs
 const showConfirmation = ref(false);
 const selectedOrder = ref(null);
-const currentFilter = ref('all');
-const sortOrder = ref('oldest');
+const sortOrder = ref('newest');
 
-// Clean up the watcher
+// Add new watcher for smooth updates
 watch(
   () => props.orders,
   () => {
+    const scrollPosition = window.scrollY;
     nextTick(() => {
-      sortOrder.value = sortOrder.value === 'oldest' ? 'newest' : 'oldest';
-      nextTick(() => {
-        sortOrder.value = sortOrder.value === 'oldest' ? 'newest' : 'oldest';
+      window.scrollTo({
+        top: scrollPosition,
+        behavior: 'instant'  // Use instant instead of smooth
       });
     });
   },
   { deep: true }
 );
 
-// Simplify groupedOrders computed
+// Add body scroll lock when modal is shown
+watch(showConfirmation, (isVisible) => {
+  if (isVisible) {
+    document.body.style.overflow = 'hidden';
+  } else {
+    document.body.style.overflow = '';
+  }
+});
+
+// Clean up on component unmount
+onBeforeUnmount(() => {
+  document.body.style.overflow = '';
+});
+
+// Update formatOrderItems if items are in string format
+const formatItems = (order) => {
+  if (typeof order.items === 'string') {
+    return order.items.split(', ').map(item => {
+      const [quantity, rest] = item.split('x ');
+      const match = rest.match(/(.*?)(?:\s*\((.*?)\))?$/);
+      return {
+        quantity: parseInt(quantity),
+        menu_item_name: match[1].trim(),
+        notes: match[2] || ''
+      };
+    });
+  }
+  return order.items;
+};
+
+// Updated groupedOrders computed property to ensure unique keys
 const groupedOrders = computed(() => {
-  return props.orders.reduce((acc, order) => {
-    const existingOrder = acc.find(o => o.order_id === order.order_id);
-    if (existingOrder) {
-      existingOrder.items.push({
-        menu_item_name: order.menu_item_name,
-        quantity: order.quantity,
-        notes: order.notes,
-      });
-    } else {
-      acc.push({
-        order_id: order.order_id,
-        table_id: order.table_id,
-        order_date: order.order_date,
-        status: order.status,
-        total_price: order.total_price,
-        items: [{
-          menu_item_name: order.menu_item_name,
-          quantity: order.quantity,
-          notes: order.notes,
-        }],
+  const uniqueOrders = new Map();
+  
+  props.orders.forEach(order => {
+    if (!uniqueOrders.has(order.order_id)) {
+      uniqueOrders.set(order.order_id, {
+        ...order,
+        sortPosition: orderStore.getOrderPosition(order.order_id),
+        items: Array.isArray(order.items) ? order.items : formatItems(order)
       });
     }
-    return acc;
-  }, []);
+  });
+
+  return Array.from(uniqueOrders.values())
+    .sort((a, b) => a.sortPosition - b.sortPosition);
 });
 
 // Sort orders by date
@@ -170,10 +200,15 @@ const formatTime = (dateString) => {
   });
 };
 
-const getOrderAge = (dateString) => {
-  const orderTime = new Date(dateString);
-  const now = new Date();
-  return Math.floor((now - orderTime) / 60000); // Returns minutes
+const getOrderAge = (orderId) => {
+  return orderStore.getElapsedTime(orderId);
+};
+
+const getOrderAgeClass = (minutes) => {
+  if (minutes > 20) return 'critical';
+  if (minutes > 15) return 'warning';
+  if (minutes > 10) return 'attention';
+  return 'normal';
 };
 
 const calculateAverageWaitTime = () => {
@@ -182,14 +217,6 @@ const calculateAverageWaitTime = () => {
     return sum + getOrderAge(order.order_date);
   }, 0);
   return `${Math.round(total / groupedOrders.value.length)} min`;
-};
-
-const getOrderAgeClass = (dateString) => {
-  const age = getOrderAge(dateString);
-  if (age > 20) return 'critical';
-  if (age > 15) return 'warning';
-  if (age > 10) return 'attention';
-  return 'normal';
 };
 
 const averageWaitTime = computed(() => {
@@ -203,19 +230,16 @@ const urgentOrders = computed(() => {
 });
 
 const filteredAndSortedOrders = computed(() => {
-  let orders = [...sortedOrders.value];
+  let orders = groupedOrders.value;
   
-  // Apply filter
-  if (currentFilter.value !== 'all') {
-    orders = orders.filter(order => 
-      getOrderAgeClass(order.order_date) === currentFilter.value
-    );
-  }
-  
-  // Apply sort
-  if (sortOrder.value === 'newest') {
-    orders.reverse();
-  }
+  // Sort based on order_date
+  orders = [...orders].sort((a, b) => {
+    const dateA = new Date(a.order_date);
+    const dateB = new Date(b.order_date);
+    return sortOrder.value === 'newest' ? 
+      dateB - dateA : 
+      dateA - dateB;
+  });
   
   return orders;
 });
@@ -228,27 +252,66 @@ const getUrgencyClass = (minutes) => {
 
 // Order actions
 const confirmMarkAsServed = (order) => {
-  selectedOrder.value = order;
+  console.log('Order being marked as served:', order); // Add debugging
+  selectedOrder.value = {
+    order_id: order.order_id,
+    table_id: order.table_id,  // Make sure table_id exists in the order object
+    status: order.status
+  };
+  console.log('Selected order details:', {
+    order_id: order.order_id,
+    table_id: order.table_id,
+    status: order.status
+  });
   showConfirmation.value = true;
 };
 
+// Update markAsServed function with better error handling
 const markAsServed = async () => {
-  if (selectedOrder.value) {
-    try {
-      await axios.post('http://localhost:8000/api/setOrderStatus', {
-        order_id: selectedOrder.value.order_id,
-        status: 'done'
-      });
-      showConfirmation.value = false;
-      emit('order-updated');
-    } catch (error) {
-      console.error('Error marking order as served:', error);
-    }
+  if (!selectedOrder.value || !selectedOrder.value.table_id) {
+    console.error('Invalid order or missing table_id:', selectedOrder.value);
+    // Add user feedback
+    alert('Error: Unable to mark order as served - missing table information');
+    return;
+  }
+
+  try {
+    console.log('Attempting to mark order as served:', selectedOrder.value);
+    
+    await axios.post('http://localhost:8000/api/kitchen/update-status', {
+      order_id: selectedOrder.value.order_id,
+      status: 'served',
+      table_id: selectedOrder.value.table_id
+    });
+    
+    closeConfirmation();
+    emit('order-updated');
+  } catch (error) {
+    console.error('Error marking order as served:', error?.response?.data || error);
+    alert('Error updating order status. Please try again.');
   }
 };
 
-const handleFilterClick = (status) => {
-  currentFilter.value = status;
+const handleSort = () => {
+  const scrollPosition = window.scrollY;
+  nextTick(() => {
+    window.scrollTo({
+      top: scrollPosition,
+      behavior: 'instant'
+    });
+  });
+};
+
+const orderCounts = computed(() => {
+  return groupedOrders.value.reduce((acc, order) => {
+    acc[order.status] = (acc[order.status] || 0) + 1;
+    return acc;
+  }, { pending: 0, cooking: 0, cooked: 0 });
+});
+
+const closeConfirmation = () => {
+  showConfirmation.value = false;
+  selectedOrder.value = null;
 };
 </script>
 
@@ -506,6 +569,10 @@ const handleFilterClick = (status) => {
   align-items: center;
   justify-content: center;
   z-index: 1000;
+  padding: 1rem;
+  /* Prevent scrolling of background */
+  overflow: hidden;
+  -webkit-overflow-scrolling: touch;
 }
 
 .modal-content {
@@ -515,6 +582,16 @@ const handleFilterClick = (status) => {
   width: 90%;
   max-width: 400px;
   text-align: center;
+  /* Center modal and prevent overflow */
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  /* Add max height and scrolling for very tall screens */
+  max-height: 90vh;
+  overflow-y: auto;
+  /* Improve appearance */
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
 }
 
 .modal-actions {
@@ -522,99 +599,23 @@ const handleFilterClick = (status) => {
   gap: 1rem;
   justify-content: center;
   margin-top: 2rem;
+  /* Ensure buttons stay at bottom of modal */
+  position: sticky;
+  bottom: 0;
+  background: white;
+  padding-top: 1rem;
+  border-top: 1px solid #eee;
 }
 
-.cancel-button, .confirm-button {
-  padding: 1rem 2rem;
-  border-radius: 12px;
-  font-size: 1.1rem;
-  font-weight: 600;
-  border: none;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.cancel-button {
-  background: #e9ecef;
-  color: #2c3e50;
-}
-
-.confirm-button {
-  background: linear-gradient(45deg, #2ecc71, #27ae60);
-  color: white;
-}
-
+/* Add responsive padding for mobile */
 @media (max-width: 768px) {
-  .order-card {
-    padding: 1rem;
+  .modal-overlay {
+    padding: 0.5rem;
   }
   
-  .serve-button {
-    padding: 1.2rem;
-    font-size: 1.3rem;
+  .modal-content {
+    padding: 1.5rem;
   }
-}
-
-.order-stats {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 1rem;
-  margin-bottom: 1.5rem;
-}
-
-.stat-item {
-  background: white;
-  padding: 1rem;
-  border-radius: 12px;
-  text-align: center;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-}
-
-.stat-label {
-  color: #666;
-  font-size: 0.9rem;
-  display: block;
-}
-
-.stat-value {
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: #2c3e50;
-}
-
-.order-time {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.time-ago {
-  color: #666;
-  font-size: 0.9rem;
-}
-
-.attention-needed {
-  border-left: 4px solid #e74c3c;
-  animation: pulse 2s infinite;
-}
-
-.priority-indicator {
-  color: #e74c3c;
-  font-weight: 600;
-  font-size: 0.9rem;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.priority-indicator::before {
-  content: '⚠️';
-}
-
-@keyframes pulse {
-  0% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.4); }
-  70% { box-shadow: 0 0 0 10px rgba(231, 76, 60, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0); }
 }
 
 .quick-stats {
@@ -680,13 +681,6 @@ const handleFilterClick = (status) => {
   background: #2980b9;
 }
 
-.sort-select {
-  margin-left: auto;
-  padding: 0.5rem;
-  border-radius: 8px;
-  border: 1px solid #dee2e6;
-}
-
 .order-row {
   cursor: pointer;
   transition: all 0.3s ease;
@@ -709,9 +703,7 @@ const handleFilterClick = (status) => {
   margin: 1rem 0;
 }
 
-.serve-button {
 
-}
 
 .serve-button.critical {
   background: #e74c3c;
@@ -768,14 +760,6 @@ const handleFilterClick = (status) => {
 .filter-btn.active {
   background: #3498db;
   color: white;
-}
-
-.sort-select {
-  padding: 0.4rem;
-  border-radius: 8px;
-  border: 1px solid #dee2e6;
-  font-size: 0.9rem;
-  background: white;
 }
 
 @media (max-width: 768px) {
@@ -847,18 +831,40 @@ const handleFilterClick = (status) => {
 }
 
 .status-badge {
-  padding: 0.3rem 0.6rem;
+  padding: 0.4rem 0.8rem;
   border-radius: 6px;
   font-weight: 600;
+  font-size: 0.85rem;
   text-transform: uppercase;
-  font-size: 0.9rem;
+  letter-spacing: 0.5px;
+}
+
+.status-badge.pending {
+  background: #f1c40f;
+  color: #000;
 }
 
 .status-badge.cooking {
-  background: #f39c12;
+  background: #e67e22;
   color: white;
 }
 
+.status-badge.cooked {
+  background: #2ecc71;
+  color: white;
+}
+
+@media (max-width: 768px) {
+  .order-status-group {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  
+  .status-badge {
+    padding: 0.3rem 0.6rem;
+    font-size: 0.8rem;
+  }
+}
 
 @media (max-width: 768px) {
   .items-grid {
@@ -962,5 +968,91 @@ const handleFilterClick = (status) => {
 .orders-list {
   position: relative;
   width: 100%;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  padding: 0.5rem;
+}
+
+.stat-item {
+  text-align: center;
+  padding: 0.5rem;
+  border-radius: 8px;
+  background: #f8f9fa;
+}
+
+.stat-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  display: block;
+  color: #2c3e50;
+}
+
+.stat-label {
+  font-size: 0.9rem;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.stat-item.total {
+  background: #3498db;
+}
+
+.stat-item.total .stat-value,
+.stat-item.total .stat-label {
+  color: white;
+}
+
+@media (max-width: 768px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .stat-item.total {
+    grid-column: span 2;
+  }
+}
+
+/* Add or modify these styles */
+.orders-container {
+  contain: paint;
+  min-height: min-content;
+}
+
+.orders-list {
+  contain: paint;
+  position: relative;
+  width: 100%;
+  overflow: visible;
+}
+
+/* Disable any smooth-scroll behaviors */
+* {
+  scroll-behavior: auto !important;
+}
+
+.sort-select {
+  padding: 0.8rem 1.2rem;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  font-size: 1rem;
+  color: #2c3e50;
+  background-color: white;
+  cursor: pointer;
+  min-width: 150px;
+}
+
+.sort-select:hover {
+  border-color: #3498db;
+}
+
+.sort-select:focus {
+  outline: none;
+  border-color: #3498db;
+  box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
 }
 </style>

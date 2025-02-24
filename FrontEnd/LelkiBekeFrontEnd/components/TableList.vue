@@ -131,6 +131,17 @@ export default {
           if (props.selectedTableId === e.tableId) {
             selectTable(e.tableId);
           }
+        })
+        .listen('OrderStatusChanged', (e) => {
+          console.log('Order status changed:', e);
+          // Add notifications for new orders or when orders are ready
+          if (e.isNewOrder || e.status === 'cooked') {
+            addTableOrder(e.tableId);
+          }
+          // Refresh if this is the selected table
+          if (props.selectedTableId === e.tableId) {
+            selectTable(e.tableId);
+          }
         });
     });
 
@@ -343,7 +354,7 @@ export default {
   position: absolute;
   top: -12px;
   right: -12px;
-  background: #ff4757;
+  background: #e74c3c; /* Red color for cooked orders notification */
   color: white;
   width: 32px;
   height: 32px;

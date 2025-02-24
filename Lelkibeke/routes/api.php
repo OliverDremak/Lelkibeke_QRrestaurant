@@ -58,3 +58,7 @@ Route::post('/update-opening-hours', [OpeningHoursController::class, 'updateOpen
 Route::get('/contact-messages', [ContactController::class, 'getAllMessages']);
 Route::post('/contact-messages', [ContactController::class, 'createMessage']);
 
+// Kitchen Dashboard routes
+Route::get('/kitchen/pending-orders', [OrderController::class, 'getPendingOrders']);
+Route::post('/kitchen/update-status', [OrderController::class, 'updateOrderStatus']);
+
