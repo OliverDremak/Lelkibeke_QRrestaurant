@@ -24,5 +24,16 @@ export default defineNuxtConfig({
   modules: [
     '@pinia/nuxt'
   ],
-  compatibilityDate: '2025-02-23'
+  compatibilityDate: '2025-02-23',
+
+  app: {
+    head: {
+      link: [
+        {
+          rel: 'stylesheet',
+          href: 'https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@48,400,0,0'
+        }
+      ]
+    }
+  }
 });
