@@ -18,6 +18,11 @@ Route::post('/register', [UserController::class, 'register']);
 Route::post('/login', [UserController::class, 'login']);
 Route::post('/logout', [UserController::class, 'logout']);
 
+// User profile routes
+Route::get('/users/{id}', [UserController::class, 'getUser']);
+Route::put('/users/{id}', [UserController::class, 'updateUser']);
+Route::get('/orders/user/{userId}', [OrderController::class, 'getUserOrders']);
+
 // TableController
 Route::post('/setOccupancyStatus', [TableController::class, 'setTableOccupancyStatus']);
 

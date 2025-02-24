@@ -621,4 +621,78 @@ CREATE PROCEDURE GetCouponsByUserId(IN p_user_id BIGINT UNSIGNED)
 BEGIN
     SELECT * FROM coupons WHERE user_id = p_user_id;
 END //
+DELIMITER //
+
+DELIMITER //
+
+CREATE PROCEDURE GetUserById(IN p_user_id BIGINT UNSIGNED)
+BEGIN
+    SELECT id, name, email, role
+    FROM users
+    WHERE id = p_user_id;
+END //
+
+DELIMITER //
+
+CREATE PROCEDURE UpdateUser(
+    IN p_user_id BIGINT UNSIGNED,
+    IN p_name VARCHAR(255),
+    IN p_email VARCHAR(255),
+    IN p_current_password VARCHAR(255),
+    IN p_new_password VARCHAR(255)
+)
+BEGIN
+    DECLARE current_stored_password VARCHAR(255);
+    
+    -- Get current password hash
+    SELECT password INTO current_stored_password
+    FROM users
+    WHERE id = p_user_id;
+    
+    -- Verify current password if provided
+    IF p_current_password IS NOT NULL THEN
+        IF SHA2(p_current_password, 256) != current_stored_password THEN
+            SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = 'Current password is incorrect';
+        END IF;
+    END IF;
+    
+    -- Update user information
+    UPDATE users 
+    SET name = p_name,
+        email = p_email,
+        password = CASE 
+            WHEN p_new_password IS NOT NULL THEN SHA2(p_new_password, 256)
+            ELSE password
+        END,
+        updated_at = CURRENT_TIMESTAMP
+    WHERE id = p_user_id;
+END //
+
+DELIMITER //
+
+CREATE PROCEDURE GetUserOrders(IN p_user_id BIGINT UNSIGNED)
+BEGIN
+    SELECT 
+        o.id,
+        o.created_at,
+        o.total_price,
+        o.status,
+        JSON_ARRAYAGG(
+            JSON_OBJECT(
+                'id', oi.id,
+                'name', mi.name,
+                'quantity', oi.quantity,
+                'price', mi.price,
+                'notes', oi.notes
+            )
+        ) as items
+    FROM orders o
+    JOIN order_items oi ON o.id = oi.order_id
+    JOIN menu_items mi ON oi.menu_item_id = mi.id
+    WHERE o.user_id = p_user_id
+    GROUP BY o.id
+    ORDER BY o.created_at DESC;
+END //
+
 DELIMITER ;

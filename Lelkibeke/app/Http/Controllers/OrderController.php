@@ -110,4 +110,14 @@ class OrderController extends Controller
         $result = DB::select('CALL GetAllActiveOrders()');
         return response()->json($result);
     }
+
+    public function getUserOrders($userId)
+    {
+        try {
+            $orders = DB::select('CALL GetUserOrders(?)', [$userId]);
+            return response()->json($orders);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to fetch orders'], 500);
+        }
+    }
 }
