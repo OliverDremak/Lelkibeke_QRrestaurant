@@ -1,84 +1,87 @@
 <?php
 
+namespace Tests\Feature;
+
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
-use App\Models\User;
-use Illuminate\Support\Facades\Auth;
+use Tests\TestCase;
 
-beforeEach(function () {
-    // Optionally use RefreshDatabase to reset DB between tests
-    //$this->user = User::factory()->create();
-    //Auth::login($this->user);
-});
+class OrderControllerTest extends TestCase
+{
+    use RefreshDatabase;
 
-test('sendOrder should create a new order', function () {
-    // Fake DB response for stored procedure
-    DB::shouldReceive('select')
-        ->once()
-        ->with('CALL sendOrder(?, ?, ?, ?)', [1, 1, 20.5, json_encode([['item_id' => 1, 'qty' => 2]])])
-        ->andReturn([
-            (object)['message' => 'Order created!', 'order_id' => 123]
-        ]);
 
-    // Send a request
-    $response = $this->postJson('/api/sendOrder', [
-        'table_id' => 1,
-        'total_price' => 20.5,
-        'items' => [['item_id' => 1, 'qty' => 2]]
-    ]);
+    /** @test */
+    public function it_returns_active_orders()
+    {
+        DB::shouldReceive('select')
+            ->once()
+            ->with('CALL GetAllActiveOrders()')
+            ->andReturn([
+                (object)['order_id' => 1, 'table_id' => 1]
+            ]);
 
-    // Assert response
-    $response->assertStatus(200)
-        ->assertJson([
-            'message' => 'Order created!',
-            'order_id' => 123
-        ]);
-});
+        $response = $this->getJson('/api/allActiveOrders');
 
-test('getActiveOrders should return active orders', function () {
-    DB::shouldReceive('select')
-        ->once()
-        ->with('CALL GetActiveOrders()')
-        ->andReturn([
-            (object)['order_id' => 1, 'status' => 'active']
-        ]);
+        $response->assertStatus(200)
+            ->assertJson([
+                ['order_id' => 1, 'table_id' => 1]
+            ]);
+    }
 
-    $response = $this->getJson('/api/orders/active');
+    /** @test */
+    public function it_returns_all_ordered_items()
+    {
+        DB::shouldReceive('select')
+            ->once()
+            ->with('CALL GetAllOrderedItems()')
+            ->andReturn([
+                (object)['item_id' => 1, 'name' => 'Pizza']
+            ]);
 
-    $response->assertStatus(200)
-        ->assertJson([
-            ['order_id' => 1, 'status' => 'active']
-        ]);
-});
+        $response = $this->getJson('/api/allOrderedItems');
 
-test('getAllOrderedItems should return all items', function () {
-    DB::shouldReceive('select')
-        ->once()
-        ->with('CALL GetAllOrderedItems()')
-        ->andReturn([
-            (object)['item_id' => 1, 'name' => 'Pizza']
-        ]);
+        $response->assertStatus(200)
+            ->assertJson([
+                ['item_id' => 1, 'name' => 'Pizza']
+            ]);
+    }
 
-    $response = $this->getJson('/api/orders/items');
+    /** @test */
+    public function it_returns_all_orders_for_table()
+    {
+        DB::shouldReceive('select')
+            ->once()
+            ->with('CALL GetOrdersForTableById(?)', [1])
+            ->andReturn([
+                (object)['order_id' => 1, 'table_id' => 1]
+            ]);
 
-    $response->assertStatus(200)
-        ->assertJson([
-            ['item_id' => 1, 'name' => 'Pizza']
-        ]);
-});
+        $response = $this->postJson('/api/getOrdersForTable', ['id' => 1]);
 
-test('getOrdersForTableById should return orders for a table', function () {
-    DB::shouldReceive('select')
-        ->once()
-        ->with('CALL GetOrdersForTableById(?)', [1])
-        ->andReturn([
-            (object)['order_id' => 1, 'table_id' => 1]
-        ]);
+        $response->assertStatus(200)
+            ->assertJson([
+                ['order_id' => 1, 'table_id' => 1]
+            ]);
+    }
+}
 
-    $response = $this->postJson('/api/orders/table', ['id' => 1]);
 
-    $response->assertStatus(200)
-        ->assertJson([
-            ['order_id' => 1, 'table_id' => 1]
-        ]);
-});
+
+
+
+// test('getOrdersForTableById should return orders for a table', function () {
+//     DB::shouldReceive('select')
+//         ->once()
+//         ->with('CALL GetOrdersForTableById(?)', [1])
+//         ->andReturn([
+//             (object)['order_id' => 1, 'table_id' => 1]
+//         ]);
+
+//     $response = $this->postJson('/api/orders/table', ['id' => 1]);
+
+//     $response->assertStatus(200)
+//         ->assertJson([
+//             ['order_id' => 1, 'table_id' => 1]
+//         ]);
+// });

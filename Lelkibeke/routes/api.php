@@ -64,9 +64,15 @@ Route::post('/update-opening-hours', [OpeningHoursController::class, 'updateOpen
 Route::get('/contact-messages', [ContactController::class, 'getAllMessages']);
 Route::post('/contact-messages', [ContactController::class, 'createMessage']);
 
+
 // CouponController
 Route::get('/user/coupons', [UserController::class, 'getCoupons']);
 Route::get('/coupons', [CouponController::class, 'getAllCoupons']);
 Route::get('/coupons/{id}', [CouponController::class, 'getCouponById']);
 Route::get('/coupons/user/{userId}', [CouponController::class, 'getCouponsByUserId']);
+
+// Kitchen Dashboard routes
+Route::get('/kitchen/pending-orders', [OrderController::class, 'getPendingOrders']);
+Route::post('/kitchen/update-status', [OrderController::class, 'updateOrderStatus']);
+
 

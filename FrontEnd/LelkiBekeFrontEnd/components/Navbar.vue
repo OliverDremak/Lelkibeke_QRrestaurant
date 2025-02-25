@@ -37,6 +37,31 @@
           </template>
         </ul>
       </div>
+      <transition name="fade">
+        <div v-show="isNavbarOpen" class="navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav ms-auto">
+            <!-- Show these buttons only when user is NOT logged in -->
+             <li class="nav-item m-2 text-center">
+                <DarkModeToggle />
+             </li>
+            <template v-if="!auth.token">
+              <li class="nav-item m-2 text-center">
+                <ButtonComponet @click="goToRegister" text="Register" class="w-100"/>
+              </li>            
+              <li class="nav-item m-2 text-center">             
+                <ButtonComponet @click="goToLogin" text="Login" class="w-100"/>
+              </li>
+            </template>
+            <!-- Show logout when user is logged in -->
+            <template v-else>
+              <li class="nav-item m-2 text-center">
+                <span class="me-3">Welcome, {{ auth.user?.name }}</span>
+                <ButtonComponet @click="handleLogout" text="Logout" class="w-100"/>
+              </li>
+            </template>
+          </ul>
+        </div>
+      </transition>
     </div>
   </nav>
 </template>

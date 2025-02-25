@@ -10,6 +10,7 @@ definePageMeta({
   <div>
     <Navbar />
     <h1>{{ auth.user?.name }}</h1>
+    <PopularItems />
     <RestaurantMenu />
     <Footer />
   </div>

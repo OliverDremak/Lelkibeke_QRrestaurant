@@ -55,11 +55,14 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from 'vue';
+import { ref, onMounted, watch, nextTick, onBeforeUnmount } from 'vue';
 import { useNuxtApp } from '#app';
+import { useOrderStore } from '@/stores/orderStore';
 import TableList from '@/components/TableList.vue';
 import OrderList from '@/components/OrderList.vue';
 import axios from 'axios';
+
+const orderStore = useOrderStore();
 
 const tables = ref([]);
 const selectedTable = ref(null);
@@ -83,14 +86,21 @@ const refreshOrders = async () => {
   if (selectedTable.value) {
     await fetchActiveOrdersForTable(selectedTable.value.id);
   }
+  // Remove any automatic scrolling here
 };
 
 const fetchActiveOrdersForTable = async (tableId) => {
   try {
+    const scrollPosition = window.scrollY;
     const response = await axios.post('http://localhost:8000/api/getActiveOrdersForTable', {
       id: tableId
     });
+    
     selectedTableOrders.value = response.data;
+    
+    nextTick(() => {
+      window.scrollTo(0, scrollPosition);
+    });
   } catch (error) {
     console.error('Error fetching active orders for table:', error);
   }
@@ -102,7 +112,7 @@ const selectTable = async (tableId) => {
     showAllOrders.value = false; // Switch to table view when selecting a table
     await fetchActiveOrdersForTable(tableId);
     
-    // Scroll to orders section with smooth animation
+    // Only scroll when explicitly selecting a table
     setTimeout(() => {
       ordersSection.value?.scrollIntoView({ 
         behavior: 'smooth',
@@ -112,6 +122,7 @@ const selectTable = async (tableId) => {
   }
 };
 
+// Remove or modify automatic scrolling in other functions
 const toggleAllOrders = async () => {
   showAllOrders.value = !showAllOrders.value;
   if (showAllOrders.value) {
@@ -119,23 +130,32 @@ const toggleAllOrders = async () => {
   } else if (selectedTable.value) {
     await fetchActiveOrdersForTable(selectedTable.value.id);
   }
-  
-  // Scroll after data is loaded
-  setTimeout(() => {
-    ordersSection.value?.scrollIntoView({ 
-      behavior: 'smooth',
-      block: 'start'
-    });
-  }, 100);
+  // Remove automatic scrolling here
 };
 
 const fetchAllOrders = async () => {
   try {
+    const scrollPosition = window.scrollY;
     const response = await axios.get('http://localhost:8000/api/allActiveOrders');
-    allOrders.value = response.data;
+    
+    // Update store first to maintain positions
+    orderStore.updateOrders(response.data);
+    
+    // Get sorted orders from store
+    allOrders.value = orderStore.getSortedOrders();
+    
+    nextTick(() => {
+      window.scrollTo(0, scrollPosition);
+    });
   } catch (error) {
     console.error('Error fetching all orders:', error);
   }
+};
+
+// Remove any sorting operations from other functions
+
+const getOrderTime = (orderId) => {
+  return orderStore.getElapsedTime(orderId);
 };
 
 const getOrdersSectionTitle = () => {
@@ -168,20 +188,11 @@ onMounted(() => {
   
   const { $ws } = useNuxtApp();
   $ws.channel('orders')
-    .listen('OrderSent', async (e) => {
-      try {
-        if (showAllOrders.value) {
-          const response = await axios.get('http://localhost:8000/api/allActiveOrders');
-          allOrders.value = response.data;
-        } else if (selectedTable.value?.id === e.tableId) {
-          const response = await axios.post('http://localhost:8000/api/getActiveOrdersForTable', {
-            id: e.tableId
-          });
-          selectedTableOrders.value = response.data;
-        }
-      } catch (error) {
-        console.error('Error updating orders:', error);
-      }
+    .listen('OrderSent', async () => {
+      await fetchAllOrders();
+    })
+    .listen('OrderStatusChanged', async () => {
+      await fetchAllOrders();
     });
 
   // Get initial position of table list
@@ -196,6 +207,9 @@ onMounted(() => {
   });
 });
 
+onBeforeUnmount(() => {
+  orderStore.clearAll();
+});
 </script>
 
 <style scoped>
@@ -250,6 +264,7 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   gap: 2rem;
+  contain: paint;
 }
 
 .orders-container {
@@ -258,6 +273,7 @@ onMounted(() => {
   padding: 2rem;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
   scroll-margin-top: 2rem; /* Adds some space at the top when scrolling */
+  contain: paint;
 }
 
 .section-title {
