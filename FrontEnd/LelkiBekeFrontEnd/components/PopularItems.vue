@@ -36,7 +36,7 @@ onMounted(() => {
           <div class="chunky-content">
             <div class="chunky-number">#{{'0' + (index + 1)}}</div>
             <h3 class="chunky-name">{{ item.menu_item }}</h3>
-            <div class="chunky-sales">{{ item.menu_item_desc}} orders</div>
+            <div class="chunky-sales">{{ item.menu_item_desc}}</div>
           </div>
         </div>
       </div>
@@ -53,71 +53,74 @@ onMounted(() => {
   font-size: 2.5rem;
   font-weight: 900;
   text-transform: uppercase;
-  color: #333;
+  color: #dd6013;
   text-align: center;
-  text-shadow: 
-    2px 2px 0 #ff6b6b,
-    4px 4px 0 #666;
   margin-bottom: 2rem;
-}
-
-.chunky-grid {
-  display: block; /* Remove the custom grid */
+  text-shadow: 2px 2px 4px rgba(221, 96, 19, 0.2);
 }
 
 .chunky-item {
   background: white;
-  border: 8px solid #333;
+  border: 3px solid #dd6013;
   border-radius: 15px;
   position: relative;
   transform: translateY(50px);
   opacity: 0;
   animation: chunkIn 0.5s forwards;
   animation-delay: var(--delay);
-  transition: transform 0.3s, border-color 0.3s;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(221, 96, 19, 0.1);
+  margin-top: 35px;
+  overflow: visible;
 }
 
 .chunky-content {
   padding: 1.5rem;
-  background: white;
-  border-radius: 7px;
+  background: linear-gradient(45deg, rgba(255, 189, 0, 0.05), rgba(221, 96, 19, 0.05));
+  border-radius: 12px;
   position: relative;
-  transition: transform 0.3s;
+  transition: all 0.3s ease;
+  min-height: 150px;
+  height: 100%; /* Add this to ensure full height */
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start; /* Change from center to flex-start */
 }
 
 .chunky-item:hover {
-  transform: translate(-8px, -8px);
-  border-color: #ff6b6b;
-  box-shadow: 8px 8px 0 #333;
-}
-
-.chunky-item:hover .chunky-content {
-  transform: none;
+  transform: translateY(-5px);
+  border-color: #ffbd00;
+  box-shadow: 0 8px 25px rgba(221, 96, 19, 0.2);
 }
 
 .chunky-number {
   position: absolute;
-  top: -20px;
-  right: -20px;
-  background: #ff6b6b;
+  top: -35px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(45deg, #dd6013, #ffbd00);
   color: white;
-  padding: 0.5rem 1rem;
-  border: 5px solid #333;
-  border-radius: 8px;
+  padding: 0.5rem 1.5rem;
+  border-radius: 12px;
   font-weight: 900;
   font-size: 1.2rem;
+  box-shadow: 0 4px 15px rgba(221, 96, 19, 0.2);
+  white-space: nowrap;
+  z-index: 2;
 }
 
 .chunky-name {
   font-size: 1.8rem;
   font-weight: 800;
-  color: #333;
+  color: #dd6013;
   margin-bottom: 0.5rem;
+  transition: all 0.3s ease;
+  margin-top: 0.5rem; /* Add some top margin */
 }
 
 .chunky-sales {
   font-size: 1.2rem;
-  color: #666;
+  color: #ffbd00;
   font-weight: 600;
 }
 
@@ -125,6 +128,20 @@ onMounted(() => {
   to {
     transform: translateY(0);
     opacity: 1;
+  }
+}
+
+@media (max-width: 768px) {
+  .chunky-title {
+    font-size: 2rem;
+  }
+  
+  .chunky-name {
+    font-size: 1.5rem;
+  }
+  
+  .chunky-sales {
+    font-size: 1rem;
   }
 }
 </style>

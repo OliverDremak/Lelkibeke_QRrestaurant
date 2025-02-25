@@ -21,6 +21,19 @@ export default defineNuxtConfig({
     transpile: ['bootstrap-vue']
   },
 
-  modules: ['@pinia/nuxt'],
+  modules: [
+    '@pinia/nuxt'
+  ],
   compatibilityDate: '2025-02-23',
+
+  app: {
+    head: {
+      link: [
+        {
+          rel: 'stylesheet',
+          href: 'https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@48,400,0,0'
+        }
+      ]
+    }
+  }
 });

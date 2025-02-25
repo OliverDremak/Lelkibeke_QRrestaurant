@@ -45,6 +45,9 @@ class OrderController extends Controller
                 true // This is a new order
             ));
 
+            // Call the stored procedure to generate a coupon if the user has 10 orders
+            DB::statement('CALL GenerateCoupon(?)', [$userId]);
+
             return response()->json([
                 'message' => $result[0]->message ?? 'Order created successfully!',
                 'order_id' => $result[0]->order_id ?? null
@@ -87,12 +90,12 @@ class OrderController extends Controller
 
         try {
             $result = DB::select('CALL GetOrdersForTableById(?)', [$request->id]);
-            
+
             // Ensure table_id is included in each order
             $formattedResult = array_map(function($order) use ($request) {
                 return array_merge((array)$order, ['table_id' => $request->id]);
             }, $result);
-            
+
             return response()->json($formattedResult);
         } catch (\Exception $e) {
             return response()->json(['error' => 'Failed to fetch active orders', 'details' => $e->getMessage()], 500);
@@ -119,7 +122,7 @@ class OrderController extends Controller
                 $request->table_id,
                 false
             ));
-            
+
             return response()->json(['message' => 'Order status updated successfully']);
         } catch (\Exception $e) {
             return response()->json(['error' => 'Failed to update order status', 'details' => $e->getMessage()], 500);
@@ -130,11 +133,19 @@ class OrderController extends Controller
         $result = DB::select('CALL GetAllActiveOrders()');
         return response()->json($result);
     }
-
-    public function getPendingOrders() {
+    public function getUserOrders($userId)
+    {
+        try {
+            $orders = DB::select('CALL GetUserOrders(?)', [$userId]);
+            return response()->json($orders);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to fetch orders'], 500);
+        }
+    }
+      public function getPendingOrders() {
         try {
             $orders = DB::select('CALL GetPendingOrders()');
-            
+
             if (!$orders) {
                 return response()->json([]);
             }
@@ -183,7 +194,7 @@ class OrderController extends Controller
                 $request->table_id,
                 false
             ));
-            
+
             return response()->json(['message' => 'Order status updated successfully']);
         } catch (\Exception $e) {
             \Log::error('Error updating order status: ' . $e->getMessage());
@@ -191,4 +202,5 @@ class OrderController extends Controller
             return response()->json(['error' => 'Failed to update order status'], 500);
         }
     }
+
 }
