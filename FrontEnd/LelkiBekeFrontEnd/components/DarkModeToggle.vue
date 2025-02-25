@@ -3,6 +3,7 @@
     <button 
       @click="toggleDarkMode"
       :class="{ 'dark-mode': isDarkMode, 'light-mode': !isDarkMode }"
+      class="nav-button"
     >
       <span v-if="isDarkMode">🌞 Light</span>
       <span v-else>🌙 Dark</span>
@@ -12,28 +13,44 @@
 
 <style scoped>
 
-button {
-  background-color: transparent;
-  border: 2px solid currentColor;
+.nav-button {
+  padding: 0.5rem 1.5rem;
   border-radius: 25px;
-  padding: 10px 20px;
-  font-size: 1.2em;
+  font-weight: 600;
+  transition: all 0.3s ease;
   cursor: pointer;
-  transition: background-color 0.3s, color 0.3s;
+  margin: 0 0.5rem;
+  font-size: 1rem; /* Match font size with other buttons */
+  width: 120px; /* Fixed width to match other buttons */
+  height: 38px; /* Fixed height to match other buttons */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nav-button:hover {
+  transform: translateY(-2px);
 }
 
 button.dark-mode {
-  color: #f39c12;
-  background-color: #2c3e50;
+  background: white;
+  color: #dd6013;
+  border: 2px solid #dd6013;
+}
+
+button.dark-mode:hover {
+  background: #dd6013;
+  color: white;
 }
 
 button.light-mode {
-  color: #2c3e50;
-  background-color: #f39c12;
+  background: linear-gradient(45deg, #dd6013, #ffbd00);
+  color: white;
+  border: none;
 }
 
-button:hover {
-  opacity: 0.8;
+button.light-mode:hover {
+  box-shadow: 0 2px 8px rgba(221, 96, 19, 0.4);
 }
 </style>
   <script>

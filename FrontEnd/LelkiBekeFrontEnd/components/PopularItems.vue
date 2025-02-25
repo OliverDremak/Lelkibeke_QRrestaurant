@@ -74,6 +74,28 @@ onMounted(() => {
   overflow: visible;
 }
 
+:root.dark .chunky-item {
+  background: #1a1a1a;
+  border-color: #dd6013;
+}
+
+:root.dark .chunky-content {
+  background: linear-gradient(45deg, rgba(255, 189, 0, 0.1), rgba(221, 96, 19, 0.1));
+}
+
+:root.dark .chunky-name {
+  color: #dd6013;
+}
+
+:root.dark .chunky-sales {
+  color: #ffbd00;
+}
+
+:root.dark .chunky-title {
+  color: #dd6013;
+  text-shadow: 2px 2px 4px rgba(221, 96, 19, 0.4);
+}
+
 .chunky-content {
   padding: 1.5rem;
   background: linear-gradient(45deg, rgba(255, 189, 0, 0.05), rgba(221, 96, 19, 0.05));

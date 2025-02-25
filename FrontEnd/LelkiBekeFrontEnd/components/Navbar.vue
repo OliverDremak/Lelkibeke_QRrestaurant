@@ -16,8 +16,52 @@
         <span></span>
         <span></span>
       </button>
-      <div class="navbar-links" :class="{ 'show': isNavbarOpen }">
+
+      <!-- Mobile Menu Overlay -->
+      <transition name="fade">
+        <div v-show="isNavbarOpen" class="mobile-menu-overlay" @click="closeNavbar"></div>
+      </transition>
+
+      <!-- Mobile Menu -->
+      <transition name="slide">
+        <div v-show="isNavbarOpen" class="mobile-menu">
+          <div class="mobile-menu-header">
+            <span class="mobile-menu-title">Menu</span>
+            <button class="close-button" @click="closeNavbar"></button>
+          </div>
+          <ul class="mobile-nav-list">
+            <li class="mobile-nav-item">
+              <DarkModeToggle />
+            </li>
+            <template v-if="!auth.token">
+              <li class="mobile-nav-item">
+                <button @click="goToRegister" class="nav-button register w-100">Register</button>
+              </li>            
+              <li class="mobile-nav-item">             
+                <button @click="goToLogin" class="nav-button login w-100">Login</button>
+              </li>
+            </template>
+            <template v-else>
+              <li class="mobile-nav-item">
+                <div class="welcome-text w-100">Welcome, {{ auth.user?.name }}</div>
+              </li>
+              <li class="mobile-nav-item">
+                <button @click="goToProfile" class="nav-button profile w-100">Profile</button>
+              </li>
+              <li class="mobile-nav-item">
+                <button @click="handleLogout" class="nav-button logout w-100">Logout</button>
+              </li>
+            </template>
+          </ul>
+        </div>
+      </transition>
+
+      <!-- Desktop Menu -->
+      <div class="navbar-links d-none d-md-flex">
         <ul class="nav-list">
+          <li class="nav-item">
+            <DarkModeToggle />
+          </li>
           <!-- Show these buttons only when user is NOT logged in -->
           <template v-if="!auth.token">
             <li class="nav-item">
@@ -37,39 +81,15 @@
           </template>
         </ul>
       </div>
-      <transition name="fade">
-        <div v-show="isNavbarOpen" class="navbar-collapse" id="navbarNav">
-          <ul class="navbar-nav ms-auto">
-            <!-- Show these buttons only when user is NOT logged in -->
-             <li class="nav-item m-2 text-center">
-                <DarkModeToggle />
-             </li>
-            <template v-if="!auth.token">
-              <li class="nav-item m-2 text-center">
-                <ButtonComponet @click="goToRegister" text="Register" class="w-100"/>
-              </li>            
-              <li class="nav-item m-2 text-center">             
-                <ButtonComponet @click="goToLogin" text="Login" class="w-100"/>
-              </li>
-            </template>
-            <!-- Show logout when user is logged in -->
-            <template v-else>
-              <li class="nav-item m-2 text-center">
-                <span class="me-3">Welcome, {{ auth.user?.name }}</span>
-                <ButtonComponet @click="handleLogout" text="Logout" class="w-100"/>
-              </li>
-            </template>
-          </ul>
-        </div>
-      </transition>
     </div>
   </nav>
 </template>
 
 <script setup lang="ts">
 import { useRouter, useRoute } from 'vue-router' 
-import { ref } from 'vue';
+import { ref, watch, onMounted } from 'vue';
 import ButtonComponet from './ButtonComponet.vue';
+import DarkModeToggle from './DarkModeToggle.vue';
 import { useAuthStore } from '~/stores/auth';
 
 const auth = useAuthStore();
@@ -79,6 +99,10 @@ const isNavbarOpen = ref(false);
 
 const toggleNavbar = () => {
   isNavbarOpen.value = !isNavbarOpen.value;
+};
+
+const closeNavbar = () => {
+  isNavbarOpen.value = false;
 };
 
 const goToLogin = () => {
@@ -104,6 +128,18 @@ const handleLogout = async () => {
 const goBack = () => {
   router.back();
 };
+
+// Close menu on route change
+watch(() => route.path, () => {
+  closeNavbar();
+});
+
+onMounted(() => {
+  // Close menu on escape key
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeNavbar();
+  });
+});
 </script>
   
 <style scoped>
@@ -114,6 +150,12 @@ const goBack = () => {
   position: sticky;
   top: 0;
   z-index: 1000;
+  transition: background-color 0.3s ease;
+}
+
+:root.dark .custom-navbar {
+  background: linear-gradient(to right, #1a1a1a, #2d2d2d);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
 }
 
 .container {
@@ -189,40 +231,64 @@ const goBack = () => {
   list-style: none;
   margin: 0;
   padding: 0;
+  align-items: center; /* Add this to vertically align items */
 }
 
 .nav-button {
-  padding: 0.5rem 1.5rem;
-  border-radius: 25px;
+  padding: 0.6rem 1.8rem;
+  border-radius: 8px;
   font-weight: 600;
   transition: all 0.3s ease;
   cursor: pointer;
   border: none;
   margin: 0 0.5rem;
+  font-size: 0.95rem;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .nav-button:hover {
   transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
 .register {
   background: linear-gradient(45deg, #dd6013, #ffbd00);
   color: white;
+  border: none;
 }
 
 .register:hover {
-  box-shadow: 0 2px 8px rgba(221, 96, 19, 0.4);
+  background: linear-gradient(45deg, #c55511, #e5a800);
 }
 
 .login {
-  background: white;
+  background: transparent;
   color: #dd6013;
   border: 2px solid #dd6013;
+  position: relative;
+  overflow: hidden;
+  z-index: 1;
 }
 
 .login:hover {
-  background: #dd6013;
   color: white;
+}
+
+.login::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: #dd6013;
+  transition: all 0.3s ease;
+  z-index: -1;
+}
+
+.login:hover::before {
+  left: 0;
 }
 
 .profile {
@@ -231,16 +297,53 @@ const goBack = () => {
   border: none;
 }
 
+.profile:hover {
+  background: #c55511;
+}
+
 .logout {
-  background: #f8f9fa;
+  background: transparent;
   color: #dc3545;
   border: 2px solid #dc3545;
+  position: relative;
+  overflow: hidden;
+  z-index: 1;
+}
+
+.logout:hover {
+  color: white;
+}
+
+.logout::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: #dc3545;
+  transition: all 0.3s ease;
+  z-index: -1;
+}
+
+.logout:hover::before {
+  left: 0;
 }
 
 .welcome-text {
   margin-right: 1rem;
-  color: #333;
-  font-weight: 500;
+  font-weight: 600;
+  font-size: 1rem;
+  color: #2c3e50;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  background: rgba(221, 96, 19, 0.1);
+  display: inline-block;
+}
+
+:root.dark .welcome-text {
+  color: #e0e0e0;
+  background: rgba(221, 96, 19, 0.2);
 }
 
 .slide-fade-enter-active,
@@ -263,48 +366,145 @@ const goBack = () => {
 .back-button {
   background: transparent;
   color: #dd6013;
-  border: 1px solid #dd6013;
-  padding: 0.5rem 1rem;
+  border: 2px solid #dd6013;
+  padding: 0.5rem 1.2rem;
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  border-radius: 8px;
+  font-weight: 600;
+  transition: all 0.3s ease;
 }
 
 .back-button:hover {
   background: #dd6013;
   color: white;
+  transform: translateX(-2px);
 }
 
+/* Mobile Menu Styles */
+.mobile-menu-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+}
+
+.mobile-menu {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 80%;
+  max-width: 300px;
+  background: white;
+  z-index: 1001;
+  padding: 1rem;
+  box-shadow: -2px 0 10px rgba(0, 0, 0, 0.1);
+  overflow-y: auto;
+}
+
+:root.dark .mobile-menu {
+  background: #1a1a1a;
+  box-shadow: -2px 0 10px rgba(0, 0, 0, 0.3);
+}
+
+.mobile-menu-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 1rem;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid #eee;
+}
+
+:root.dark .mobile-menu-header {
+  border-bottom-color: #333;
+}
+
+.mobile-menu-title {
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.close-button {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0.5rem;
+  color: #333;
+}
+
+:root.dark .close-button {
+  color: #fff;
+}
+
+.mobile-nav-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.mobile-nav-item {
+  margin: 0.5rem 0;
+  opacity: 0;
+  animation: slideIn 0.3s ease-out forwards;
+}
+
+.mobile-nav-item:nth-child(1) { animation-delay: 0.1s; }
+.mobile-nav-item:nth-child(2) { animation-delay: 0.2s; }
+.mobile-nav-item:nth-child(3) { animation-delay: 0.3s; }
+
+/* Transitions */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+.slide-enter-active,
+.slide-leave-active {
+  transition: transform 0.3s ease-out;
+}
+
+.slide-enter-from,
+.slide-leave-to {
+  transform: translateX(100%);
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Update existing media queries */
 @media (max-width: 768px) {
   .navbar-toggler {
     display: flex;
+    z-index: 1002;
   }
 
-  .navbar-links {
-    display: none;
+  .welcome-text {
+    text-align: center;
+    margin: 0;
     width: 100%;
-    background: white;
-    padding: 1rem;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  }
-
-  .navbar-links.show {
-    display: block;
-  }
-
-  .nav-list {
-    flex-direction: column;
-    align-items: center;
-    width: 100%;
-  }
-
-  .nav-item {
-    width: 100%;
-    margin: 0.5rem 0;
   }
 
   .nav-button {
-    width: 100%;
     margin: 0.5rem 0;
   }
 }
