@@ -6,27 +6,27 @@
         <div class="stats-grid">
           <div class="stat-item">
             <span class="stat-value">{{ orderCounts.pending }}</span>
-            <span class="stat-label">Pending</span>
+            <span class="stat-label">{{ t('orderList.pending') }}</span>
           </div>
           <div class="stat-item">
             <span class="stat-value">{{ orderCounts.cooking }}</span>
-            <span class="stat-label">Cooking</span>
+            <span class="stat-label">{{ t('orderList.cooking') }}</span>
           </div>
           <div class="stat-item">
             <span class="stat-value">{{ orderCounts.cooked }}</span>
-            <span class="stat-label">Ready</span>
+            <span class="stat-label">{{ t('orderList.ready') }}</span>
           </div>
           <div class="stat-item total">
             <span class="stat-value">{{ groupedOrders.length }}</span>
-            <span class="stat-label">Total</span>
+            <span class="stat-label">{{ t('orderList.total') }}</span>
           </div>
         </div>
       </div>
       
       <div class="order-controls">
         <select v-model="sortOrder" class="sort-select" @change="handleSort">
-          <option value="newest">Newest First</option>
-          <option value="oldest">Oldest First</option>
+          <option value="newest">{{ t('orderList.nFirst') }}</option>
+          <option value="oldest">{{ t('orderList.oFirst') }}</option>
         </select>
       </div>
     </div>
@@ -100,6 +100,9 @@ import { ref, computed, nextTick, watch, onBeforeUnmount } from 'vue';
 import axios from 'axios';
 import ConfirmationModal from './ConfirmationModal.vue';
 import { useOrderStore } from '@/stores/orderStore';
+import { useI18n } from '#imports'
+const { t } = useI18n()
+
 import { useGlobalTimer } from '@/composables/useGlobalTimer';
 
 const orderStore = useOrderStore();

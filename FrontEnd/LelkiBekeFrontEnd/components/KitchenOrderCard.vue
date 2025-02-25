@@ -3,7 +3,7 @@
     <header class="order-header">
       <div class="order-info">
         <span class="order-number">#{{ order.order_id }}</span>
-        <span class="table-number">Table {{ order.table_id }}</span>
+        <span class="table-number">{{ t('kitchenOrderCard.table') }} {{ order.table_id }}</span>
       </div>
       
       <div class="time-info">
@@ -11,7 +11,7 @@
           {{ elapsedTime }}m
         </span>
         <div class="time-details">
-          <span class="time-value">Created: {{ formatTime(order.order_date) }}</span>
+          <span class="time-value">{{ t('kitchenOrderCard.created') }}: {{ formatTime(order.order_date) }}</span>
         </div>
       </div>
     </header>
@@ -46,6 +46,9 @@
 import { ref, onMounted, onBeforeUnmount, computed } from 'vue';
 import { useOrderStore } from '@/stores/orderStore';
 import { useGlobalTimer } from '@/composables/useGlobalTimer';
+
+import { useI18n } from '#imports'
+const { t } = useI18n()
 
 const orderStore = useOrderStore();
 const timer = useGlobalTimer();

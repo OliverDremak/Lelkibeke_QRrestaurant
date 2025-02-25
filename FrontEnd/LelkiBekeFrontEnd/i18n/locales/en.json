@@ -1,0 +1,102 @@
+{
+    "allergenInfo":{
+        "title": "Allergen information"
+    },
+    "confirmationModal":{
+        "order": "Order",
+        "table": "Table",
+        "status": "Status",
+        "cancel": "Cancel",
+        "confirm": "Confirm",
+        "processing": "Processing..."
+    },
+    "darkModeToggle":{
+        "light": "Light",
+        "dark": "Dark"
+    },
+    "errorPage":{
+        "title": "Error",
+        "goHome": "Return to Home Page"
+    },
+    "footer":{
+        "titleOne": "About Devs",
+        "titleTwo": "Opening Hours",
+        "titleThree": "Contact Us",
+        "p": "If you have any questions or feedback, feel free to reach out to us!",
+        "placeholderOne": "Your Name",
+        "placeholderTwo": "Your Email",
+        "placeholderThree": "Your Message",
+        "buttonText": "Send Message"
+    },
+    "kitchenOrderCard":{
+        "table": "Table",
+        "created": "Created"
+    },
+    "navbar":{
+        "back": "Back",
+        "title": "Inner Peace",
+        "register": "Register",
+        "login": "Login",
+        "welcome": "Welcome",
+        "profile": "Profile",
+        "logout": "Logout"
+    },
+    "notificationStack":{
+        "table": "Table"
+    },
+    "nutritionInfo":{
+        "title": "Nutritional Information",
+        "calories": "Calories",
+        "protein": "Protein",
+        "carbs": "Carbs",
+        "fat": "Fat"
+    },
+    "orderDetails":{
+        "served": "Mark as Served"
+    },
+    "orderList":{
+        "pending": "Pending",
+        "cooking": "Cooking",
+        "ready": "Ready",
+        "total": "Total",
+        "nFirst": "Newest First",
+        "oFirst": "Oldest First"
+    },
+    "popularItems":{
+        "title": "Most Popular Items"
+    },
+    "qrReaded":{
+        "title": "Let's start your journey to inner peace",
+        "pharagraph": "Order your favorite meals from the best restaurant in town.",
+        "code": "Code",
+        "search": "Search",
+        "scanqr": "Scan the QR Code"
+    },
+    "qrScanner":{
+        "title": "Readed QR code",
+        "error": "Couldn't read the QR code"
+    },
+    "reastaurantMenu":{
+        "parLoad": "Loading menu items",
+        "parNoItems": "No menu items available",
+        "cartTitle": "Your Order",
+        "addToCart": "Add to Cart",
+        "cartEmpty": "Your cart is empty",
+        "total": "Total",
+        "checkout": "Checkout"
+    },
+    "tableList":{
+        "scanned": "SCANNED",
+        "available": "Available",
+        "occupied": "Occupied",
+        "setav": "Set as available",
+        "setoc": "Set as occupied"
+    },
+    "languageSelector":{
+        "hu": "Hungarian",
+        "en": "English"
+    }
+
+
+
+}
