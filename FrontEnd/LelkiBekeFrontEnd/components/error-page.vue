@@ -4,10 +4,10 @@
       <div class="error-icon">
         ⚠️
       </div>
-      <h1 class="error-title">Error</h1>
+      <h1 class="error-title">{{ t('errorPage.title') }}</h1>
       <p class="error-message">{{ errorMessage }}</p>
       <button @click="goToHome" class="return-button">
-        Return to Home Page
+        {{ t('errorPage.goHome') }}
       </button>
     </div>
   </div>
@@ -15,6 +15,9 @@
 
 <script setup>
 import { useRouter } from 'vue-router';
+
+import { useI18n } from '#imports'
+const { t } = useI18n()
 
 const router = useRouter();
 

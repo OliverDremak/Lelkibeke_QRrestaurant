@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { useI18n } from '#imports'
+const { t } = useI18n()
 
 const router = useRouter()
 const inputCode = ref('')
@@ -24,15 +26,15 @@ const goToScanner = () => {
     <section class="hero d-flex align-items-center">
         <div class="container">
             <div class="hero-content text-center">
-                <h1 class="display-4 fw-bold mb-4 text-white heading">Let's start your journey to inner peace</h1>
-                <p class="lead mb-4 text-white">Order your favorite meals from the best restaurant in town.</p>
+                <h1 class="display-4 fw-bold mb-4 text-white heading">{{ t('qrReaded.title') }}</h1>
+                <p class="lead mb-4 text-white">{{ t('qrReaded.pharagraph') }}</p>
 
                     <div class="form-floating mb-3">
                         <input type="text" class="form-control " id="floatingInput" placeholder="" v-model="inputCode">
-                        <label for="floatingInput">Code</label>
+                        <label for="floatingInput">{{ t('qrReaded.code') }}</label>
                     </div>
-                    <ButtonComponet text="Search" @click="goToTable" />
-                    <ButtonComponet text="Scan the QR code" @click="goToScanner"/>
+                    <ButtonComponet :text="t('qrReaded.search')" @click="goToTable" />
+                    <ButtonComponet :text="t('qrReaded.scanqr')" @click="goToScanner"/>
             </div>
         </div>
     </section>

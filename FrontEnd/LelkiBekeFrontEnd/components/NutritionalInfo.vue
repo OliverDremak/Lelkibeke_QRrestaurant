@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import { useI18n } from '#imports'
+const { t } = useI18n()
+
 const props = defineProps<{
   calories: number
   protein: number
@@ -9,22 +12,22 @@ const props = defineProps<{
 
 <template>
   <div class="nutrition-info">
-    <h4>Nutritional Information</h4>
+    <h4>{{ t('nutritionInfo.title') }}</h4>
     <div class="nutrition-grid">
       <div class="nutrition-item">
-        <span class="label">Calories</span>
+        <span class="label">{{ t('nutritionInfo.calories') }}</span>
         <span class="value">{{ calories }}kcal</span>
       </div>
       <div class="nutrition-item">
-        <span class="label">Protein</span>
+        <span class="label">{{ t('nutritionInfo.protein') }}</span>
         <span class="value">{{ protein }}g</span>
       </div>
       <div class="nutrition-item">
-        <span class="label">Carbs</span>
+        <span class="label">{{ t('nutritionInfo.carbs') }}</span>
         <span class="value">{{ carbs }}g</span>
       </div>
       <div class="nutrition-item">
-        <span class="label">Fat</span>
+        <span class="label">{{ t('nutritionInfo.fat') }}</span>
         <span class="value">{{ fat }}g</span>
       </div>
     </div>

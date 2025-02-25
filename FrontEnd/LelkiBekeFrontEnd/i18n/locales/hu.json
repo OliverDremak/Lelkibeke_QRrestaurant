@@ -1,0 +1,95 @@
+{
+    "allergenInfo": {
+      "title": "Allergén információk"
+    },
+    "confirmationModal": {
+      "order": "Rendelés",
+      "table": "Asztal",
+      "status": "Állapot",
+      "cancel": "Mégse",
+      "confirm": "Megerősítés",
+      "processing": "Feldolgozás..."
+    },
+    "darkModeToggle": {
+      "light": "Világos",
+      "dark": "Sötét"
+    },
+    "errorPage": {
+      "title": "Hiba",
+      "goHome": "Vissza a főoldalra"
+    },
+    "footer": {
+      "titleOne": "A fejlesztőkről",
+      "titleTwo": "Nyitvatartás",
+      "titleThree": "Kapcsolat",
+      "p": "Ha kérdése vagy visszajelzése van, keressen minket bizalommal!",
+      "placeholderOne": "Neved",
+      "placeholderTwo": "E-mail címed",
+      "placeholderThree": "Üzeneted",
+      "buttonText": "Üzenet küldése"
+    },
+    "kitchenOrderCard": {
+      "table": "Asztal",
+      "created": "Létrehozva"
+    },
+    "navbar": {
+      "back": "Vissza",
+      "title": "Lelki Béke",
+      "register": "Regisztráció",
+      "login": "Bejelentkezés",
+      "welcome": "Üdvözlet",
+      "profile": "Profil",
+      "logout": "Kijelentkezés"
+    },
+    "notificationStack": {
+      "table": "Asztal"
+    },
+    "nutritionInfo": {
+      "title": "Táplálkozási információk",
+      "calories": "Kalória",
+      "protein": "Fehérje",
+      "carbs": "Szénhidrát",
+      "fat": "Zsír"
+    },
+    "orderDetails": {
+      "served": "Kiszolgálva"
+    },
+    "orderList": {
+      "pending": "Függőben",
+      "cooking": "Sütés alatt",
+      "ready": "Kész",
+      "total": "Összesen",
+      "nFirst": "Legújabb elől",
+      "oFirst": "Legrégebbi elől"
+    },
+    "popularItems": {
+      "title": "Legnépszerűbb ételek"
+    },
+    "qrReaded": {
+      "title": "Kezdjük el az utazást a lelki béke felé",
+      "pharagraph": "Rendelje meg kedvenc ételeit a város legjobb étterméből.",
+      "code": "Kód",
+      "search": "Keresés",
+      "scanqr": "QR kód beolvasása"
+    },
+    "qrScanner": {
+      "title": "Beolvasott QR kód",
+      "error": "Nem sikerült beolvasni a QR kódot"
+    },
+    "reastaurantMenu": {
+      "parLoad": "Étlap betöltése",
+      "parNoItems": "Nincsenek elérhető ételek",
+      "cartTitle": "Rendelésed",
+      "addToCart": "Kosárba",
+      "cartEmpty": "A kosarad üres",
+      "total": "Összesen",
+      "checkout": "Pénztár"
+    },
+    "tableList": {
+      "scanned": "Beolvasva",
+      "available": "Szabad",
+      "occupied": "Foglalt",
+      "setav": "Megjelölés szabadként",
+      "setoc": "Megjelölés foglaltként"
+    }
+  }

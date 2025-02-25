@@ -2,6 +2,9 @@
 import { ref, onMounted } from 'vue'
 import axios from 'axios'
 
+import { useI18n } from '#imports'
+const { t } = useI18n()
+
 const popularItems = ref([])
 const isLoading = ref(true)
 
@@ -23,7 +26,7 @@ onMounted(() => {
 
 <template>
   <div class="chunky-container container">
-    <h2 class="chunky-title">Most Popular Items</h2>
+    <h2 class="chunky-title">{{ t('popularItems.title') }}</h2>
     <div v-if="isLoading" class="text-center">
       <span class="loading loading-spinner loading-lg"></span>
     </div>
