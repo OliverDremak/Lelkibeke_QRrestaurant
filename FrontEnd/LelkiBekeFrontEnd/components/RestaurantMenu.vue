@@ -91,7 +91,7 @@ const handleResize = () => {
   isWide.value = window.innerWidth >= 1000;
 };
 
-const isDarkMode = ref(false)
+const isDarkMode = ref(localStorage.getItem('darkMode') === 'true')
 
 const updateDarkMode = () => {
   isDarkMode.value = localStorage.getItem('darkMode') === 'true'
