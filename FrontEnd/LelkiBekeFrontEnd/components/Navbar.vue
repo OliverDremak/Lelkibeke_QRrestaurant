@@ -18,6 +18,9 @@
       </button>
       <div class="navbar-links" :class="{ 'show': isNavbarOpen }">
         <ul class="nav-list">
+          <li class="nav-item">
+            <DarkModeToggle />
+          </li>
           <!-- Show these buttons only when user is NOT logged in -->
           <template v-if="!auth.token">
             <li class="nav-item">
@@ -70,6 +73,7 @@
 import { useRouter, useRoute } from 'vue-router' 
 import { ref } from 'vue';
 import ButtonComponet from './ButtonComponet.vue';
+import DarkModeToggle from './DarkModeToggle.vue';
 import { useAuthStore } from '~/stores/auth';
 
 const auth = useAuthStore();
@@ -114,6 +118,12 @@ const goBack = () => {
   position: sticky;
   top: 0;
   z-index: 1000;
+  transition: background-color 0.3s ease;
+}
+
+:root.dark .custom-navbar {
+  background: linear-gradient(to right, #1a1a1a, #2d2d2d);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
 }
 
 .container {
@@ -189,6 +199,7 @@ const goBack = () => {
   list-style: none;
   margin: 0;
   padding: 0;
+  align-items: center; /* Add this to vertically align items */
 }
 
 .nav-button {
@@ -241,6 +252,10 @@ const goBack = () => {
   margin-right: 1rem;
   color: #333;
   font-weight: 500;
+}
+
+:root.dark .welcome-text {
+  color: #e0e0e0;
 }
 
 .slide-fade-enter-active,
@@ -306,6 +321,14 @@ const goBack = () => {
   .nav-button {
     width: 100%;
     margin: 0.5rem 0;
+  }
+
+  .navbar-links {
+    background: white;
+  }
+
+  :root.dark .navbar-links {
+    background: #1a1a1a;
   }
 }
 </style>
