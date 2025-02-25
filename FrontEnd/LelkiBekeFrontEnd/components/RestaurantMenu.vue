@@ -201,7 +201,7 @@ const handleCheckout = async () => {
     // Store the intended URL before redirecting to the login page
     localStorage.setItem('intendedUrl', window.location.pathname);
     alert('Please login first');
-    await navigateTo('/auth');
+    router.push(`/auth?redirect=${encodeURIComponent(currentPath)}`);
     return;
   }
 
