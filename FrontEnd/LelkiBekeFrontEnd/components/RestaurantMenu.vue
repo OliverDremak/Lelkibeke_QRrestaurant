@@ -8,7 +8,6 @@
     </div>
     <div v-else class="menu-content">
       <div class="category-container-wrapper">
-        <button class="scroll-button left" @click="scrollLeft">‹</button>
         <div ref="categoryContainer" class="category-buttons">
           <button 
             @click="filterByCategory('')"
@@ -25,9 +24,7 @@
             {{ category }}
           </button>
         </div>
-        <button class="scroll-button right" @click="scrollRight">›</button>
       </div>
-
       <div class="main-content row">
         <!-- Menu Section -->
         <div class="menu-section" :class="menuClass">
@@ -91,11 +88,7 @@ const handleResize = () => {
   isWide.value = window.innerWidth >= 1000;
 };
 
-const isDarkMode = ref(localStorage.getItem('darkMode') === 'true')
-
-const updateDarkMode = () => {
-  isDarkMode.value = localStorage.getItem('darkMode') === 'true'
-}
+const isDarkMode = computed(() => localStorage.getItem('darkMode') === 'true');
 
 onMounted(async () => {
   handleResize();
@@ -110,21 +103,6 @@ onMounted(async () => {
   } finally {
     loading.value = false;
   }
-
-  // Initialize dark mode from localStorage
-  isDarkMode.value = localStorage.getItem('darkMode') === 'true'
-  
-  // Listen for dark mode changes
-  window.addEventListener('storage', (e) => {
-    if (e.key === 'darkMode') {
-      isDarkMode.value = e.newValue === 'true'
-    }
-  })
-
-  updateDarkMode()
-  document.addEventListener('darkModeChange', (e) => {
-    isDarkMode.value = e.detail
-  })
 });
 
 const props = defineProps({
@@ -136,9 +114,6 @@ const props = defineProps({
 
 onUnmounted(() => {
   window.removeEventListener("resize", handleResize);
-  document.removeEventListener('darkModeChange', (e) => {
-    isDarkMode.value = e.detail
-  })
 });
 
 const cart = ref([]);
@@ -315,6 +290,7 @@ button:hover .svg-icon {
   padding: 0 40px;
 }
 
+/* Update Category Button Styles */
 .category-buttons button {
   padding: 10px 20px;
   cursor: pointer;
@@ -329,14 +305,13 @@ button:hover .svg-icon {
 
 .category-buttons button:hover {
   transform: translateY(-2px);
-  background: linear-gradient(145deg, #e6e6e6, #ffffff);
-  box-shadow: 2px 2px 5px #bebebe, -2px -2px 5px #ffffff;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
 .category-buttons button.active {
   background: linear-gradient(145deg, #dd6013, #ffbd00);
   color: white;
-  box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.2);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .menu-item-image {
@@ -579,72 +554,65 @@ button:hover .svg-icon {
   }
 }
 
-/* Dark mode styles */
-.dark {
-  background-color: #1a1a1a;
+/* Update dark mode styles */
+:root.dark .menu-container {
   color: #ffffff;
 }
 
-.dark .menu-item {
+:root.dark .menu-item {
   background-color: #2d2d2d;
   border-color: #404040;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
 
-.dark .menu-item:hover {
+:root.dark .menu-item:hover {
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
 }
 
-.dark .menu-item h3,
-.dark .menu-item p {
+:root.dark .menu-item h3,
+:root.dark .menu-item p {
   color: #ffffff;
 }
 
-.dark .cart-section {
+:root.dark .cart-section {
   background-color: #2d2d2d;
   color: #ffffff;
   box-shadow: 9px 9px 12px #000000, inset 0 0 7px rgba(255, 255, 255, 0.1);
 }
 
-.dark .category-buttons button {
-  background: #2d2d2d;
+:root.dark .category-buttons button {
+  background: linear-gradient(145deg, #2d2d2d, #1a1a1a);
   color: #ffffff;
-  border: 1px solid #404040;
+  border: none;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
-.dark .category-buttons button:hover {
-  background: #404040;
-  box-shadow: 2px 2px 5px #000000, -2px -2px 5px #404040;
+:root.dark .category-buttons button:hover {
+  background: linear-gradient(145deg, #333333, #2d2d2d);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
 }
 
-.dark .scroll-button {
-  background: rgba(45, 45, 45, 0.8);
-  color: #ffffff;
+:root.dark .category-buttons button.active {
+  background: linear-gradient(145deg, #dd6013, #ffbd00);
+  color: white;
+  box-shadow: 
+    inset 0 2px 4px rgba(0, 0, 0, 0.3),
+    0 0 15px rgba(221, 96, 19, 0.3);
 }
 
-.dark .cart-item input {
+:root.dark .cart-item input {
   background-color: #404040;
   border-color: #666;
   color: #ffffff;
 }
 
-.dark hr {
+:root.dark hr {
   border-color: #404040;
 }
 
-.dark .toggle-cart {
+:root.dark .toggle-cart {
   background-color: #2d2d2d;
   color: #ffffff;
   border-color: #404040;
-}
-
-@media (max-width: 999px) {
-  .dark .cart-section {
-    background: #2d2d2d;
-  }
-}
-
-.dark .svg-icon {
-  filter: invert(1);
 }
 </style>
