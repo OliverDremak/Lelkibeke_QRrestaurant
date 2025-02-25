@@ -45,6 +45,9 @@ class OrderController extends Controller
                 true // This is a new order
             ));
 
+            // Call the stored procedure to generate a coupon if the user has 10 orders
+            DB::statement('CALL GenerateCoupon(?)', [$userId]);
+
             return response()->json([
                 'message' => $result[0]->message ?? 'Order created successfully!',
                 'order_id' => $result[0]->order_id ?? null
@@ -130,8 +133,16 @@ class OrderController extends Controller
         $result = DB::select('CALL GetAllActiveOrders()');
         return response()->json($result);
     }
-
-    public function getPendingOrders() {
+    public function getUserOrders($userId)
+    {
+        try {
+            $orders = DB::select('CALL GetUserOrders(?)', [$userId]);
+            return response()->json($orders);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to fetch orders'], 500);
+        }
+    }
+      public function getPendingOrders() {
         try {
             $orders = DB::select('CALL GetPendingOrders()');
             
@@ -189,6 +200,5 @@ class OrderController extends Controller
             \Log::error('Error updating order status: ' . $e->getMessage());
             \Log::error($e->getTraceAsString());
             return response()->json(['error' => 'Failed to update order status'], 500);
-        }
-    }
+
 }

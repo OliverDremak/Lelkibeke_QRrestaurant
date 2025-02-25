@@ -80,6 +80,16 @@ CREATE TABLE IF NOT EXISTS `opening_hours` (
     PRIMARY KEY (`id`)
 );
 
+CREATE TABLE `coupons` (
+    `id` INT AUTO_INCREMENT PRIMARY KEY,
+    `user_id` BIGINT UNSIGNED NOT NULL,
+    `code` VARCHAR(255) NOT NULL UNIQUE,
+    `discount` DECIMAL(5, 2) NOT NULL,
+    `is_used` BOOLEAN DEFAULT FALSE,
+    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    `expires_at` TIMESTAMP
+);
+
 ALTER TABLE `orders` ADD CONSTRAINT `orders_fk1` FOREIGN KEY (`user_id`) REFERENCES `users`(`id`);
 
 ALTER TABLE `orders` ADD CONSTRAINT `orders_fk2` FOREIGN KEY (`table_id`) REFERENCES `tables`(`id`);
@@ -483,10 +493,12 @@ DELIMITER //
 
 CREATE PROCEDURE GetTopSellingItems()
 BEGIN
-    SELECT mi.name AS menu_item, SUM(oi.quantity) AS total_sold
+    SELECT mi.name AS menu_item, 
+           SUM(oi.quantity) AS total_sold, 
+           mi.description AS menu_item_desc
     FROM order_items oi
     JOIN menu_items mi ON oi.menu_item_id = mi.id
-    GROUP BY mi.name
+    GROUP BY mi.name, mi.description
     ORDER BY total_sold DESC
     LIMIT 10;
 END //
@@ -594,6 +606,7 @@ DELIMITER ;
 
 DELIMITER //
 
+
 DROP PROCEDURE IF EXISTS GetPendingOrders //
 
 CREATE PROCEDURE GetPendingOrders()
@@ -617,6 +630,128 @@ BEGIN
     WHERE o.status IN ('pending', 'cooking')
     GROUP BY o.id, o.table_id, o.created_at, o.status, o.total_price
     ORDER BY o.created_at;
+END //
+
+DELIMITER ;
+
+
+DELIMITER //
+
+CREATE PROCEDURE GenerateCoupon(IN p_user_id BIGINT UNSIGNED)
+BEGIN
+    DECLARE v_order_count INT;
+    DECLARE v_coupon_count INT;
+    DECLARE v_coupon_code VARCHAR(255);
+    
+    -- Count the number of orders for the user
+    SELECT COUNT(*) INTO v_order_count FROM orders WHERE user_id = p_user_id;
+    
+    -- Count existing coupons for the user
+    SELECT COUNT(*) INTO v_coupon_count FROM coupons WHERE user_id = p_user_id;
+    
+    -- Check if user should get a new coupon (order count is multiple of 10 and greater than existing coupons * 10)
+    IF v_order_count >= 10 AND v_order_count MOD 10 = 0 AND v_order_count > (v_coupon_count * 10) THEN
+        SET v_coupon_code = CONCAT('DISCOUNT-', UUID());
+        INSERT INTO coupons (user_id, code, discount, expires_at)
+        VALUES (p_user_id, v_coupon_code, 10.00, DATE_ADD(NOW(), INTERVAL 1 YEAR));
+    END IF;
+END //
+DELIMITER //
+
+DELIMITER //
+CREATE PROCEDURE GetAllCoupons()
+BEGIN
+    SELECT * FROM coupons;
+END //
+DELIMITER //
+
+DELIMITER //
+CREATE PROCEDURE GetCouponById(IN p_coupon_id INT)
+BEGIN
+    SELECT * FROM coupons WHERE id = p_coupon_id;
+END //
+DELIMITER //
+
+DELIMITER //
+CREATE PROCEDURE GetCouponsByUserId(IN p_user_id BIGINT UNSIGNED)
+BEGIN
+    SELECT * FROM coupons WHERE user_id = p_user_id;
+END //
+DELIMITER //
+
+DELIMITER //
+
+CREATE PROCEDURE GetUserById(IN p_user_id BIGINT UNSIGNED)
+BEGIN
+    SELECT id, name, email, role
+    FROM users
+    WHERE id = p_user_id;
+END //
+
+DELIMITER //
+
+CREATE PROCEDURE UpdateUser(
+    IN p_user_id BIGINT UNSIGNED,
+    IN p_name VARCHAR(255),
+    IN p_email VARCHAR(255),
+    IN p_current_password VARCHAR(255),
+    IN p_new_password VARCHAR(255)
+)
+BEGIN
+    DECLARE current_stored_password VARCHAR(255);
+    
+    -- Get current password hash
+    SELECT password INTO current_stored_password
+    FROM users
+    WHERE id = p_user_id;
+    
+    -- Verify current password if provided
+    IF p_current_password IS NOT NULL THEN
+        IF SHA2(p_current_password, 256) != current_stored_password THEN
+            SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = 'Current password is incorrect';
+        END IF;
+    END IF;
+    
+    -- Update user information
+    UPDATE users 
+    SET name = p_name,
+        email = p_email,
+        password = CASE 
+            WHEN p_new_password IS NOT NULL THEN SHA2(p_new_password, 256)
+            ELSE password
+        END,
+        updated_at = CURRENT_TIMESTAMP
+    WHERE id = p_user_id;
+END //
+
+DELIMITER //
+
+DROP PROCEDURE IF EXISTS GetUserOrders //
+
+CREATE PROCEDURE GetUserOrders(IN p_user_id BIGINT UNSIGNED)
+BEGIN
+    SELECT 
+        o.id,
+        o.created_at,
+        CAST(o.total_price AS DECIMAL(10,2)) as total_price,
+        o.status,
+        GROUP_CONCAT(
+            CONCAT(
+                '{"id":', oi.id,
+                ',"name":"', mi.name,
+                '","quantity":', oi.quantity,
+                ',"price":', CAST(mi.price * oi.quantity AS DECIMAL(10,2)),
+                ',"notes":"', COALESCE(oi.notes, ''),
+                '"}'
+            )
+        ) as items
+    FROM orders o
+    JOIN order_items oi ON o.id = oi.order_id
+    JOIN menu_items mi ON oi.menu_item_id = mi.id
+    WHERE o.user_id = p_user_id
+    GROUP BY o.id, o.created_at, o.total_price, o.status
+    ORDER BY o.created_at DESC;
 END //
 
 DELIMITER ;

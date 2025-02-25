@@ -9,6 +9,7 @@ use App\Http\Controllers\TableqrScannedController;
 use App\Http\Controllers\StatController;
 use App\Http\Controllers\OpeningHoursController;
 use App\Http\Controllers\ContactController;
+use App\Http\Controllers\CouponController;
 
 Route::get('/users', [UserController::class, 'getUsers']);
 
@@ -16,6 +17,11 @@ Route::get('/users', [UserController::class, 'getUsers']);
 Route::post('/register', [UserController::class, 'register']);
 Route::post('/login', [UserController::class, 'login']);
 Route::post('/logout', [UserController::class, 'logout']);
+
+// User profile routes
+Route::get('/users/{id}', [UserController::class, 'getUser']);
+Route::put('/users/{id}', [UserController::class, 'updateUser']);
+Route::get('/orders/user/{userId}', [OrderController::class, 'getUserOrders']);
 
 // TableController
 Route::post('/setOccupancyStatus', [TableController::class, 'setTableOccupancyStatus']);
@@ -58,7 +64,15 @@ Route::post('/update-opening-hours', [OpeningHoursController::class, 'updateOpen
 Route::get('/contact-messages', [ContactController::class, 'getAllMessages']);
 Route::post('/contact-messages', [ContactController::class, 'createMessage']);
 
+
+// CouponController
+Route::get('/user/coupons', [UserController::class, 'getCoupons']);
+Route::get('/coupons', [CouponController::class, 'getAllCoupons']);
+Route::get('/coupons/{id}', [CouponController::class, 'getCouponById']);
+Route::get('/coupons/user/{userId}', [CouponController::class, 'getCouponsByUserId']);
+
 // Kitchen Dashboard routes
 Route::get('/kitchen/pending-orders', [OrderController::class, 'getPendingOrders']);
 Route::post('/kitchen/update-status', [OrderController::class, 'updateOrderStatus']);
+
 

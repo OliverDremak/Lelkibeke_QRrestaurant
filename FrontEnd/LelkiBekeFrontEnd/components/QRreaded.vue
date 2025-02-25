@@ -43,6 +43,7 @@ const goToScanner = () => {
 
 /* Hero Section Styles */
 .hero {
+    background: linear-gradient(to bottom, transparent, black);
     height: 100vh;
     /* Full viewport height */
 }

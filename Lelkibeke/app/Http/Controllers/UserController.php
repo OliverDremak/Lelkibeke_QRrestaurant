@@ -138,7 +138,7 @@ class UserController extends Controller
             if (hash('sha256', $request->password) !== $userData->password) {
                 return response()->json(['error' => 'Hibás e-mail vagy jelszó'], 401);
             }
-            
+
 
 
             $user = User::find($userData->id);
@@ -181,6 +181,50 @@ class UserController extends Controller
             return response()->json(['message' => 'Successfully logged out']);
         } catch (JWTException $e) {
             return response()->json(['error' => 'Could not log out'], 500);
+        }
+    }
+
+    public function getCoupons()
+    {
+        $coupons = DB::table('coupons')
+            ->where('user_id', auth()->id())
+            ->where('is_used', false)
+            ->get();
+
+        return response()->json($coupons);
+    }
+
+    public function getUser($id)
+    {
+        try {
+            $user = DB::select('CALL GetUserById(?)', [$id]);
+            return response()->json($user[0] ?? null);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'User not found'], 404);
+        }
+    }
+
+    public function updateUser(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email',
+            'password' => 'nullable|string|min:8',
+            'newPassword' => 'nullable|string|min:8'
+        ]);
+
+        try {
+            DB::select('CALL UpdateUser(?, ?, ?, ?, ?)', [
+                $id,
+                $validated['name'],
+                $validated['email'],
+                $validated['password'],
+                $validated['newPassword'] ?? null
+            ]);
+
+            return response()->json(['message' => 'User updated successfully']);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to update user'], 500);
         }
     }
 }
