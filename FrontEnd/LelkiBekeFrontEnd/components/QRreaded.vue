@@ -28,7 +28,7 @@ const goToScanner = () => {
                 <p class="lead mb-4 text-white">Order your favorite meals from the best restaurant in town.</p>
 
                     <div class="form-floating mb-3">
-                        <input type="text" class="form-control" id="floatingInput" placeholder="" v-model="inputCode">
+                        <input type="text" class="form-control " id="floatingInput" placeholder="" v-model="inputCode">
                         <label for="floatingInput">Code</label>
                     </div>
                     <ButtonComponet text="Search" @click="goToTable" />
@@ -43,7 +43,6 @@ const goToScanner = () => {
 
 /* Hero Section Styles */
 .hero {
-    background: linear-gradient(rgba(255, 255, 255, 0.5), rgba(0, 0, 0, 0.5));
     height: 100vh;
     /* Full viewport height */
 }
@@ -65,3 +64,4 @@ const goToScanner = () => {
 }
 
 </style>
+rewrite every bootsrap and css to tailwind
