@@ -203,37 +203,60 @@ const goBack = () => {
 }
 
 .nav-button {
-  padding: 0.5rem 1.5rem;
-  border-radius: 25px;
+  padding: 0.6rem 1.8rem;
+  border-radius: 8px;
   font-weight: 600;
   transition: all 0.3s ease;
   cursor: pointer;
   border: none;
   margin: 0 0.5rem;
+  font-size: 0.95rem;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .nav-button:hover {
   transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
 .register {
   background: linear-gradient(45deg, #dd6013, #ffbd00);
   color: white;
+  border: none;
 }
 
 .register:hover {
-  box-shadow: 0 2px 8px rgba(221, 96, 19, 0.4);
+  background: linear-gradient(45deg, #c55511, #e5a800);
 }
 
 .login {
-  background: white;
+  background: transparent;
   color: #dd6013;
   border: 2px solid #dd6013;
+  position: relative;
+  overflow: hidden;
+  z-index: 1;
 }
 
 .login:hover {
-  background: #dd6013;
   color: white;
+}
+
+.login::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: #dd6013;
+  transition: all 0.3s ease;
+  z-index: -1;
+}
+
+.login:hover::before {
+  left: 0;
 }
 
 .profile {
@@ -242,20 +265,53 @@ const goBack = () => {
   border: none;
 }
 
+.profile:hover {
+  background: #c55511;
+}
+
 .logout {
-  background: #f8f9fa;
+  background: transparent;
   color: #dc3545;
   border: 2px solid #dc3545;
+  position: relative;
+  overflow: hidden;
+  z-index: 1;
+}
+
+.logout:hover {
+  color: white;
+}
+
+.logout::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: #dc3545;
+  transition: all 0.3s ease;
+  z-index: -1;
+}
+
+.logout:hover::before {
+  left: 0;
 }
 
 .welcome-text {
   margin-right: 1rem;
-  color: #333;
-  font-weight: 500;
+  font-weight: 600;
+  font-size: 1rem;
+  color: #2c3e50;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  background: rgba(221, 96, 19, 0.1);
+  display: inline-block;
 }
 
 :root.dark .welcome-text {
   color: #e0e0e0;
+  background: rgba(221, 96, 19, 0.2);
 }
 
 .slide-fade-enter-active,
@@ -278,16 +334,20 @@ const goBack = () => {
 .back-button {
   background: transparent;
   color: #dd6013;
-  border: 1px solid #dd6013;
-  padding: 0.5rem 1rem;
+  border: 2px solid #dd6013;
+  padding: 0.5rem 1.2rem;
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  border-radius: 8px;
+  font-weight: 600;
+  transition: all 0.3s ease;
 }
 
 .back-button:hover {
   background: #dd6013;
   color: white;
+  transform: translateX(-2px);
 }
 
 @media (max-width: 768px) {
