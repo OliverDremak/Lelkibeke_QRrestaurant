@@ -14,8 +14,15 @@ const router = useRouter();
 <template>
   <div>
     <Navbar />
-    <PopularItems />
-    <QRreaded/>
+    <div class="bg">
+      <QRreaded/>
+    </div>
     <Footer/>
   </div>
 </template>
+
+<style scoped>
+    .bg{
+      background: linear-gradient(rgba(255, 255, 255, 0.5), rgba(0, 0, 0, 0.5));
+    }
+</style>

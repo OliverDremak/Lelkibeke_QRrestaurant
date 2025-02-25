@@ -9,6 +9,9 @@
         <div v-show="isNavbarOpen" class="navbar-collapse" id="navbarNav">
           <ul class="navbar-nav ms-auto">
             <!-- Show these buttons only when user is NOT logged in -->
+             <li class="nav-item m-2 text-center">
+                <DarkModeToggle />
+             </li>
             <template v-if="!auth.token">
               <li class="nav-item m-2 text-center">
                 <ButtonComponet @click="goToRegister" text="Register" class="w-100"/>
