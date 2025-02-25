@@ -1,5 +1,5 @@
 <template>
-  <div class="menu-container container">
+  <div class="menu-container container" :class="{ 'dark': isDarkMode }">
     <div v-if="loading" class="text-center mt-4">
       <p>Loading menu items...</p>
     </div>
@@ -91,6 +91,12 @@ const handleResize = () => {
   isWide.value = window.innerWidth >= 1000;
 };
 
+const isDarkMode = ref(false)
+
+const updateDarkMode = () => {
+  isDarkMode.value = localStorage.getItem('darkMode') === 'true'
+}
+
 onMounted(async () => {
   handleResize();
   window.addEventListener("resize", handleResize);
@@ -104,6 +110,21 @@ onMounted(async () => {
   } finally {
     loading.value = false;
   }
+
+  // Initialize dark mode from localStorage
+  isDarkMode.value = localStorage.getItem('darkMode') === 'true'
+  
+  // Listen for dark mode changes
+  window.addEventListener('storage', (e) => {
+    if (e.key === 'darkMode') {
+      isDarkMode.value = e.newValue === 'true'
+    }
+  })
+
+  updateDarkMode()
+  document.addEventListener('darkModeChange', (e) => {
+    isDarkMode.value = e.detail
+  })
 });
 
 const props = defineProps({
@@ -115,6 +136,9 @@ const props = defineProps({
 
 onUnmounted(() => {
   window.removeEventListener("resize", handleResize);
+  document.removeEventListener('darkModeChange', (e) => {
+    isDarkMode.value = e.detail
+  })
 });
 
 const cart = ref([]);
@@ -553,5 +577,74 @@ button:hover .svg-icon {
   .toggle-cart {
     display: none;
   }
+}
+
+/* Dark mode styles */
+.dark {
+  background-color: #1a1a1a;
+  color: #ffffff;
+}
+
+.dark .menu-item {
+  background-color: #2d2d2d;
+  border-color: #404040;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.dark .menu-item:hover {
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+}
+
+.dark .menu-item h3,
+.dark .menu-item p {
+  color: #ffffff;
+}
+
+.dark .cart-section {
+  background-color: #2d2d2d;
+  color: #ffffff;
+  box-shadow: 9px 9px 12px #000000, inset 0 0 7px rgba(255, 255, 255, 0.1);
+}
+
+.dark .category-buttons button {
+  background: #2d2d2d;
+  color: #ffffff;
+  border: 1px solid #404040;
+}
+
+.dark .category-buttons button:hover {
+  background: #404040;
+  box-shadow: 2px 2px 5px #000000, -2px -2px 5px #404040;
+}
+
+.dark .scroll-button {
+  background: rgba(45, 45, 45, 0.8);
+  color: #ffffff;
+}
+
+.dark .cart-item input {
+  background-color: #404040;
+  border-color: #666;
+  color: #ffffff;
+}
+
+.dark hr {
+  border-color: #404040;
+}
+
+.dark .toggle-cart {
+  background-color: #2d2d2d;
+  color: #ffffff;
+  border-color: #404040;
+}
+
+@media (max-width: 999px) {
+  .dark .cart-section {
+    background: #2d2d2d;
+  }
+}
+
+.dark .svg-icon {
+  filter: invert(1);
 }
 </style>
