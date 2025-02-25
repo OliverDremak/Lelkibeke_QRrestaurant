@@ -45,8 +45,10 @@
 <script setup>
 import { ref, onMounted, onBeforeUnmount, computed } from 'vue';
 import { useOrderStore } from '@/stores/orderStore';
+import { useGlobalTimer } from '@/composables/useGlobalTimer';
 
 const orderStore = useOrderStore();
+const timer = useGlobalTimer();
 
 const props = defineProps({
   order: {
@@ -72,8 +74,14 @@ const handleStatusChange = async (orderId, newStatus) => {
   });
 };
 
+timer.startTracking(props.order.order_id, props.order.order_date);
+
 const elapsedTime = computed(() => {
-  return orderStore.getElapsedTime(props.order.order_id);
+  return timer.getElapsedTime(props.order.order_id);
+});
+
+onBeforeUnmount(() => {
+  timer.stopTracking(props.order.order_id);
 });
 
 const orderUrgencyClass = computed(() => {

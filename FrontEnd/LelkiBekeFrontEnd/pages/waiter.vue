@@ -145,7 +145,7 @@ const fetchActiveOrdersForTable = async (tableId) => {
         parsedItems = [];
       }
 
-      return {
+      const processedOrder = {
         order_id: order.order_id,
         table_id: order.table_id,
         order_date: order.order_date,
@@ -153,6 +153,12 @@ const fetchActiveOrdersForTable = async (tableId) => {
         total_price: order.total_price,
         items: parsedItems
       };
+
+      // Initialize timer tracking for this order
+      orderStore.initialize();
+      orderStore.timeStore.startTracking(processedOrder.order_id, processedOrder.order_date);
+
+      return processedOrder;
     });
 
     selectedTableOrders.value = processedOrders;
@@ -211,6 +217,9 @@ const fetchAllOrders = async () => {
           total_price: item.total_price,
           items: []
         };
+        // Initialize timer for each new order
+        orderStore.initialize();
+        orderStore.timeStore.startTracking(item.order_id, item.order_date);
       }
       
       acc[item.order_id].items.push({
@@ -269,11 +278,24 @@ onMounted(() => {
   
   const { $ws } = useNuxtApp();
   $ws.channel('orders')
-    .listen('OrderSent', async () => {
+    .listen('OrderSent', async (e) => {
+      console.log('New order received:', e);
       if (showAllOrders.value) {
         await fetchAllOrders();
-      } else if (selectedTable.value) {
-        await updateTableOrders(selectedTable.value.id);
+      } else if (selectedTable.value && selectedTable.value.id === e.tableId) {
+        // For new orders, immediately add to store and update view
+        const response = await axios.post('http://localhost:8000/api/getActiveOrdersForTable', {
+          id: selectedTable.value.id
+        });
+        
+        const processedOrders = response.data.map(order => ({
+          ...order,
+          items: typeof order.items === 'string' ? JSON.parse(order.items) : order.items
+        }));
+        
+        // Update store and view
+        processedOrders.forEach(order => orderStore.addNewOrder(order));
+        selectedTableOrders.value = processedOrders;
       }
     })
     .listen('OrderStatusChanged', async () => {

@@ -20,30 +20,51 @@ export const useOrderStore = defineStore('orderStore', {
     updateOrders(orderList) {
       this.initialize();
       
-      // Preserve existing positions and assign new ones to new orders
+      // Process each order and update timer maps
       orderList.forEach((order, index) => {
         const orderId = order.order_id;
+        
+        // Handle position tracking
         if (!this.originalPositions.has(orderId)) {
           this.originalPositions.set(orderId, index);
         }
-      });
 
-      // Update orders while maintaining original positions
-      orderList.forEach(order => {
-        const orderId = order.order_id;
+        // Always update time tracking to ensure it's correct
+        this.timeStore.startTracking(orderId, order.order_date);
+
+        // Update order data
         this.orders.set(orderId, {
           ...order,
           sortPosition: this.originalPositions.get(orderId)
         });
-        this.timeStore.startTracking(orderId, order.order_date);
       });
-
-      // Don't remove positions when cleaning up orders
+      
+      // Clean up removed orders
       [...this.orders.keys()].forEach(orderId => {
         if (!orderList.some(o => o.order_id === orderId)) {
           this.orders.delete(orderId);
           this.timeStore.stopTracking(orderId);
+          this.originalPositions.delete(orderId);
         }
+      });
+    },
+
+    addNewOrder(order) {
+      this.initialize();
+      const orderId = order.order_id;
+      
+      // Initialize timer immediately for new order
+      this.timeStore.startTracking(orderId, order.order_date);
+      
+      // Set initial position if needed
+      if (!this.originalPositions.has(orderId)) {
+        this.originalPositions.set(orderId, this.originalPositions.size);
+      }
+      
+      // Add order to store
+      this.orders.set(orderId, {
+        ...order,
+        sortPosition: this.originalPositions.get(orderId)
       });
     },
 
@@ -72,6 +93,19 @@ export const useOrderStore = defineStore('orderStore', {
       this.initialize();
       this.orders.clear();
       this.timeStore.clearAll();
+    },
+
+    // Add new method to update single order
+    updateOrderStatus(orderId, newStatus) {
+      const order = this.orders.get(orderId);
+      if (order) {
+        // Maintain the original order date when updating status
+        this.orders.set(orderId, {
+          ...order,
+          status: newStatus,
+          originalDate: order.order_date // Preserve original timestamp
+        });
+      }
     }
   }
 });

@@ -100,8 +100,10 @@ import { ref, computed, nextTick, watch, onBeforeUnmount } from 'vue';
 import axios from 'axios';
 import ConfirmationModal from './ConfirmationModal.vue';
 import { useOrderStore } from '@/stores/orderStore';
+import { useGlobalTimer } from '@/composables/useGlobalTimer';
 
 const orderStore = useOrderStore();
+const timer = useGlobalTimer();
 
 const props = defineProps({
   orders: {
@@ -135,6 +137,9 @@ watch(showConfirmation, (isVisible) => {
 // Clean up on component unmount
 onBeforeUnmount(() => {
   document.body.style.overflow = '';
+  props.orders.forEach(order => {
+    timer.stopTracking(order.order_id);
+  });
 });
 
 // Update formatOrderItems if items are in string format
@@ -159,26 +164,43 @@ const formatItems = (order) => {
   return [];
 };
 
-// Updated groupedOrders computed property
+// Update the groupedOrders computed property for better performance
 const groupedOrders = computed(() => {
   if (!props.orders) return [];
   
   return props.orders.map(order => {
     const items = formatItems(order);
+    
+    // Start tracking time for this order if not already tracking
+    timer.startTracking(order.order_id, order.order_date);
+    
     return {
       ...order,
       items: items.map((item, index) => ({
         ...item,
-        sortIndex: item.sortIndex ?? index
-      })),
-      sortPosition: orderStore.getOrderPosition(order.order_id)
+        sortIndex: index // Simplify item sorting
+      }))
     };
   });
 });
 
-// Sort orders by date
-const sortedOrders = computed(() => {
-  return [...groupedOrders.value].sort((a, b) => {
+// Replace the filteredAndSortedOrders computed property
+const filteredAndSortedOrders = computed(() => {
+  let orders = groupedOrders.value;
+  
+  return orders.sort((a, b) => {
+    // Define status priority (higher number = higher priority)
+    const statusPriority = {
+      'cooked': 3,
+      'cooking': 2,
+      'pending': 1
+    };
+
+    // Compare by status priority first
+    const priorityDiff = statusPriority[b.status] - statusPriority[a.status];
+    if (priorityDiff !== 0) return priorityDiff;
+
+    // If same status, sort by time (oldest first)
     return new Date(a.order_date) - new Date(b.order_date);
   });
 });
@@ -192,10 +214,17 @@ const formatTime = (dateString) => {
   });
 };
 
+// Replace getOrderAge with this version
 const getOrderAge = (orderId) => {
-  return orderStore.getElapsedTime(orderId);
+  const order = props.orders.find(o => o.order_id === orderId);
+  if (!order) return 0;
+  
+  // Start tracking if not already tracking
+  timer.startTracking(order.order_id, order.order_date);
+  return timer.getElapsedTime(order.order_id);
 };
 
+// Add getOrderAgeClass function that was missing
 const getOrderAgeClass = (minutes) => {
   if (minutes > 20) return 'critical';
   if (minutes > 15) return 'warning';
@@ -219,25 +248,6 @@ const urgentOrders = computed(() => {
   return groupedOrders.value.filter(order => 
     getOrderAge(order.order_date) > 15
   ).length;
-});
-
-const filteredAndSortedOrders = computed(() => {
-  let orders = groupedOrders.value;
-  
-  return orders.sort((a, b) => {
-    // First sort by original position
-    const posA = orderStore.getOrderPosition(a.order_id);
-    const posB = orderStore.getOrderPosition(b.order_id);
-    
-    if (posA !== posB) {
-      return sortOrder.value === 'newest' ? posA - posB : posB - posA;
-    }
-    
-    // If positions are equal, fallback to date
-    const dateA = new Date(a.order_date);
-    const dateB = new Date(b.order_date);
-    return sortOrder.value === 'newest' ? dateB - dateA : dateA - dateB;
-  });
 });
 
 const getUrgencyClass = (minutes) => {
@@ -274,19 +284,20 @@ const markAsServed = async () => {
   try {
     console.log('Attempting to mark order as served:', selectedOrder.value);
     const originalPosition = orderStore.getOrderPosition(selectedOrder.value.order_id);
-    
     await axios.post('http://localhost:8000/api/kitchen/update-status', {
       order_id: selectedOrder.value.order_id,
       status: 'served',
       table_id: selectedOrder.value.table_id,
-      originalPosition // Pass the position to maintain order
+      originalPosition
     });
+
+    // Update local order status without refreshing the entire list
+    orderStore.updateOrderStatus(selectedOrder.value.order_id, 'served');
     
     closeConfirmation();
     emit('order-updated');
   } catch (error) {
-    console.error('Error marking order as served:', error?.response?.data || error);
-    alert('Error updating order status. Please try again.');
+    console.error('Error marking order as served:', error);
   }
 };
 
@@ -306,12 +317,10 @@ const closeConfirmation = () => {
   selectedOrder.value = null;
 };
 
-// Add new method to sort items
+// Update sortedItems function to maintain consistent order
 const sortedItems = (order) => {
   if (!order.items) return [];
-  return [...order.items].sort((a, b) => {
-    return (a.sortIndex || 0) - (b.sortIndex || 0);
-  });
+  return order.items; // Items are already sorted by their index
 };
 </script>
 
@@ -1044,6 +1053,16 @@ const sortedItems = (order) => {
   background-color: white;
   cursor: pointer;
   min-width: 150px;
+}
+
+.sort-select:hover {
+  border-color: #3498db;
+}
+
+.sort-select:focus {
+  outline: none;
+  border-color: #3498db;
+  box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
 }
 
 .sort-select:hover {
