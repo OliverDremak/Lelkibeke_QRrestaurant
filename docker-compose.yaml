@@ -1,0 +1,78 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: secret
+      MYSQL_DATABASE: laravel_db
+      MYSQL_USER: laravel
+      MYSQL_PASSWORD: laravel_secret
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+  laravel-api:
+    build:
+      context: ./Lelkibeke
+      dockerfile: Dockerfile
+    container_name: laravel-api
+    working_dir: /var/www
+    command: php artisan serve --host=0.0.0.0 --port=8000
+    volumes:
+      - ./Lelkibeke:/var/www
+    ports:
+      - "8000:8000"
+    depends_on:
+      - mysql
+    environment:
+      APP_ENV: local
+      APP_DEBUG: true
+      DB_HOST: bgs.jedlik.eu
+      DB_DATABASE: innerpeace
+      DB_USERNAME: innerpeace
+      DB_PASSWORD: InnerP2025%
+    # Ha a .env fájlodat használni szeretnéd,
+    # tedd be a .env-t is a laravel mappába, vagy mount-old
+    # environment:-ben is beállíthatod, ha szükséges
+
+  laravel-websockets:
+    build:
+      context: ./Lelkibeke
+      dockerfile: Dockerfile
+    container_name: laravel-websockets
+    working_dir: /var/www
+    command: php artisan websockets:serve --host=0.0.0.0 --port=8080
+    volumes:
+      - ./Lelkibeke:/var/www
+    ports:
+      - "8080:8080"
+    depends_on:
+      - mysql
+    environment:
+      DB_HOST: mysql
+      DB_DATABASE: laravel_db
+      DB_USERNAME: laravel
+      DB_PASSWORD: laravel_secret
+
+  nuxt:
+    build:
+      context: ./FrontEnd/LelkiBekeFrontEnd
+      dockerfile: Dockerfile
+    container_name: nuxt
+    working_dir: /app
+    volumes:
+      - ./FrontEnd/LelkiBekeFrontEnd:/app
+      - /app/node_modules
+    ports:
+      - "3000:3000"
+    environment:
+      # A belső hálózaton a konténerek nevei alapján éred el a backendet:
+      API_BASE_URL: http://laravel-api:8000
+      WEBSOCKET_URL: ws://laravel-websockets:8080
+
+volumes:
+  mysql_data:
