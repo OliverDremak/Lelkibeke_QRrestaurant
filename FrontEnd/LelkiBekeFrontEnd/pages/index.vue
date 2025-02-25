@@ -15,6 +15,7 @@ const router = useRouter();
   <div>
     <Navbar />
     <div class="bg">
+      <PopularItems />
       <QRreaded/>
     </div>
     <Footer/>
