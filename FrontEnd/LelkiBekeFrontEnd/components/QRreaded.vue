@@ -50,6 +50,10 @@ const goToScanner = () => {
     /* Full viewport height */
 }
 
+:root.dark .hero {
+    background: linear-gradient(to bottom, transparent, #121212);
+}
+
 .hero-content {
     max-width: 800px;
     margin: 0 auto;
@@ -66,5 +70,22 @@ const goToScanner = () => {
     margin-bottom: 2rem;
 }
 
+.form-floating input {
+    transition: all 0.3s ease;
+}
+
+:root.dark .form-floating input {
+    background-color: #2d2d2d;
+    color: #e0e0e0;
+    border-color: #404040;
+}
+
+:root.dark .form-floating label {
+    color: #808080;
+}
+
+:root.dark .hero-content {
+    color: #e0e0e0;
+}
+
 </style>
-rewrite every bootsrap and css to tailwind

@@ -5,7 +5,9 @@ export const useOrderStore = defineStore('orderStore', {
   state: () => ({
     orders: new Map(),
     orderPositions: new Map(), // Store original positions
-    timeStore: null
+    itemPositions: new Map(), // Add new map for item positions
+    timeStore: null,
+    originalPositions: new Map(), // Add new map for original positions
   }),
 
   actions: {
@@ -17,40 +19,57 @@ export const useOrderStore = defineStore('orderStore', {
 
     updateOrders(orderList) {
       this.initialize();
-      const currentTime = Date.now();
-
-      orderList.forEach(order => {
+      
+      // Process each order and update timer maps
+      orderList.forEach((order, index) => {
         const orderId = order.order_id;
         
-        // Preserve or set initial position
-        if (!this.orderPositions.has(orderId)) {
-          this.orderPositions.set(orderId, {
-            timestamp: new Date(order.order_date).getTime(),
-            sortIndex: this.orderPositions.size
-          });
+        // Handle position tracking
+        if (!this.originalPositions.has(orderId)) {
+          this.originalPositions.set(orderId, index);
         }
 
-        // Update order data while maintaining position
+        // Always update time tracking to ensure it's correct
+        this.timeStore.startTracking(orderId, order.order_date);
+
+        // Update order data
         this.orders.set(orderId, {
           ...order,
-          originalPosition: this.orderPositions.get(orderId)
+          sortPosition: this.originalPositions.get(orderId)
         });
-        
-        this.timeStore.startTracking(orderId, order.order_date);
       });
-
+      
       // Clean up removed orders
       [...this.orders.keys()].forEach(orderId => {
         if (!orderList.some(o => o.order_id === orderId)) {
           this.orders.delete(orderId);
           this.timeStore.stopTracking(orderId);
-          // Don't remove from orderPositions to maintain stable sorting
+          this.originalPositions.delete(orderId);
         }
       });
     },
 
+    addNewOrder(order) {
+      this.initialize();
+      const orderId = order.order_id;
+      
+      // Initialize timer immediately for new order
+      this.timeStore.startTracking(orderId, order.order_date);
+      
+      // Set initial position if needed
+      if (!this.originalPositions.has(orderId)) {
+        this.originalPositions.set(orderId, this.originalPositions.size);
+      }
+      
+      // Add order to store
+      this.orders.set(orderId, {
+        ...order,
+        sortPosition: this.originalPositions.get(orderId)
+      });
+    },
+
     getOrderPosition(orderId) {
-      return this.orderPositions.get(orderId)?.sortIndex ?? 0;
+      return this.originalPositions.get(orderId) ?? 999999;
     },
 
     getSortedOrders() {
@@ -74,6 +93,19 @@ export const useOrderStore = defineStore('orderStore', {
       this.initialize();
       this.orders.clear();
       this.timeStore.clearAll();
+    },
+
+    // Add new method to update single order
+    updateOrderStatus(orderId, newStatus) {
+      const order = this.orders.get(orderId);
+      if (order) {
+        // Maintain the original order date when updating status
+        this.orders.set(orderId, {
+          ...order,
+          status: newStatus,
+          originalDate: order.order_date // Preserve original timestamp
+        });
+      }
     }
   }
 });

@@ -312,30 +312,28 @@ DELIMITER //
 
 CREATE PROCEDURE GetOrdersForTableById(IN p_table_id INT)
 BEGIN
-    SELECT DISTINCT
+    SELECT 
         o.id AS order_id,
+        o.table_id,
         o.created_at AS order_date,
         o.status,
         o.total_price,
-        GROUP_CONCAT(
-            DISTINCT CONCAT(
-                oi.quantity, 'x ',
-                mi.name,
-                CASE 
-                    WHEN oi.notes IS NOT NULL AND oi.notes != 'null' 
-                    THEN CONCAT(' (', oi.notes, ')')
-                    ELSE ''
-                END
-            ) ORDER BY mi.name SEPARATOR ', '
-        ) as items
+        CONCAT('[', GROUP_CONCAT(
+            JSON_OBJECT(
+                'quantity', oi.quantity,
+                'menu_item_name', mi.name,
+                'notes', COALESCE(NULLIF(oi.notes, ''), 'null')
+            )
+        ), ']') as items
     FROM orders o
     JOIN order_items oi ON o.id = oi.order_id
     JOIN menu_items mi ON oi.menu_item_id = mi.id
     WHERE o.table_id = p_table_id
     AND o.status IN ('pending', 'cooking', 'cooked')
-    GROUP BY o.id, o.created_at, o.status, o.total_price
+    GROUP BY o.id, o.table_id, o.created_at, o.status, o.total_price
     ORDER BY o.created_at DESC;
 END //
+
 DELIMITER ;
 
 DELIMITER //

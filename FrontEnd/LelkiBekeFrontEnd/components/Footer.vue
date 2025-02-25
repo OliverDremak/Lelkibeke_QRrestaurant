@@ -138,6 +138,12 @@ onMounted(fetchOpeningHours);
 
 .footer {
   background-color: #f9f9f9;
+  transition: background-color 0.3s ease;
+}
+
+:root.dark .footer {
+  background-color: #1a1a1a;
+  color: #e0e0e0;
 }
 
 .profile-card {
@@ -153,11 +159,19 @@ onMounted(fetchOpeningHours);
   .border-right {
     border-right: 1px solid #00000024;
   }
+
+  :root.dark .border-right {
+    border-right: 1px solid #ffffff24;
+  }
 }
 
 @media (max-width: 765px) {
   .border-right {
     border-bottom: 1px solid #00000024;
+  }
+
+  :root.dark .border-right {
+    border-bottom: 1px solid #ffffff24;
   }
 }
 
@@ -167,14 +181,21 @@ onMounted(fetchOpeningHours);
     padding-top: 15px;
     
   }
+
+  :root.dark .last {
+    border-top: 1px solid #ffffff24;
+  }
 }
 @media (min-width: 992px) {
   .last {
     border-left: 1px solid #00000024;
 
   }
-}
 
+  :root.dark .last {
+    border-left: 1px solid #ffffff24;
+  }
+}
 
 li {
   padding: 10px;
@@ -197,5 +218,19 @@ li {
 
 .text-hidden {
   color: burlywood;
+}
+
+.form-control {
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+:root.dark .form-control {
+  background-color: #2d2d2d;
+  color: #e0e0e0;
+  border-color: #404040;
+}
+
+:root.dark .form-control::placeholder {
+  color: #808080;
 }
 </style>

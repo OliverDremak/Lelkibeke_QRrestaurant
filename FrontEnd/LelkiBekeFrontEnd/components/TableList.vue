@@ -10,8 +10,8 @@
         ]"
         @click="selectTable(table.id)"
       >
-        <!-- Order notification bubble -->
-        <div v-if="tableOrders[table.id]" class="order-bubble">
+        <!-- Only show notification if table isn't selected -->
+        <div v-if="tableOrders[table.id] && selectedTableId !== table.id" class="order-bubble">
           <span v-if="tableOrders[table.id] > 1">{{ tableOrders[table.id] }}</span>
         </div>
 
@@ -80,6 +80,9 @@ export default {
     };
 
     const addTableOrder = (tableId) => {
+      // Don't add notifications for the currently selected table
+      if (props.selectedTableId === tableId) return;
+      
       if (!tableOrders.value[tableId]) {
         tableOrders.value[tableId] = 1;
       } else {
@@ -92,8 +95,16 @@ export default {
     };
 
     const selectTable = (tableId) => {
-      clearTableOrders(tableId);
+      if (!tableId) return;
+      
+      // Only emit the select-table event for actual table clicks
+      // not for status updates or other changes
       emit('select-table', tableId);
+      
+      // Clear orders notification after selection
+      if (tableOrders.value[tableId]) {
+        clearTableOrders(tableId);
+      }
     };
 
     const removeScannedTable = (tableId) => {
@@ -130,20 +141,15 @@ export default {
         .listen('OrderSent', (e) => {
           console.log('Order received for table ID:', e.tableId);
           addTableOrder(e.tableId);
-          // Fix: Access selectedTableId through props
-          if (props.selectedTableId === e.tableId) {
-            selectTable(e.tableId);
-          }
+          // Remove automatic table selection on order updates
         })
         .listen('OrderStatusChanged', (e) => {
           console.log('Order status changed:', e);
-          // Add notifications for new orders or when orders are ready
-          if (e.isNewOrder || e.status === 'cooked') {
+          // Only show notification if:
+          // 1. It's a new order or cooked status
+          // 2. The table isn't currently selected
+          if ((e.isNewOrder || e.status === 'cooked') && props.selectedTableId !== e.tableId) {
             addTableOrder(e.tableId);
-          }
-          // Refresh if this is the selected table
-          if (props.selectedTableId === e.tableId) {
-            selectTable(e.tableId);
           }
         });
     });

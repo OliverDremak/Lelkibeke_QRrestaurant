@@ -1,5 +1,5 @@
 <template>
-  <div class="menu-container container">
+  <div class="menu-container container" :class="{ 'dark': isDarkMode }">
     <div v-if="loading" class="text-center mt-4">
       <p>{{ t('reastaurantMenu.parLoad') }}</p>
     </div>
@@ -8,7 +8,6 @@
     </div>
     <div v-else class="menu-content">
       <div class="category-container-wrapper">
-        <button class="scroll-button left" @click="scrollLeft">‹</button>
         <div ref="categoryContainer" class="category-buttons">
           <button 
             @click="filterByCategory('')"
@@ -25,9 +24,7 @@
             {{ category }}
           </button>
         </div>
-        <button class="scroll-button right" @click="scrollRight">›</button>
       </div>
-
       <div class="main-content row">
         <!-- Menu Section -->
         <div class="menu-section" :class="menuClass">
@@ -92,6 +89,8 @@ const menuClass = computed(() => ({
 const handleResize = () => {
   isWide.value = window.innerWidth >= 1000;
 };
+
+const isDarkMode = computed(() => localStorage.getItem('darkMode') === 'true');
 
 onMounted(async () => {
   handleResize();
@@ -179,7 +178,7 @@ const handleCheckout = async () => {
     // Store the intended URL before redirecting to the login page
     localStorage.setItem('intendedUrl', window.location.pathname);
     alert('Please login first');
-    await navigateTo('/auth');
+    router.push(`/auth?redirect=${encodeURIComponent(currentPath)}`);
     return;
   }
 
@@ -293,6 +292,7 @@ button:hover .svg-icon {
   padding: 0 40px;
 }
 
+/* Update Category Button Styles */
 .category-buttons button {
   padding: 10px 20px;
   cursor: pointer;
@@ -307,14 +307,13 @@ button:hover .svg-icon {
 
 .category-buttons button:hover {
   transform: translateY(-2px);
-  background: linear-gradient(145deg, #e6e6e6, #ffffff);
-  box-shadow: 2px 2px 5px #bebebe, -2px -2px 5px #ffffff;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
 .category-buttons button.active {
   background: linear-gradient(145deg, #dd6013, #ffbd00);
   color: white;
-  box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.2);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .menu-item-image {
@@ -555,5 +554,67 @@ button:hover .svg-icon {
   .toggle-cart {
     display: none;
   }
+}
+
+/* Update dark mode styles */
+:root.dark .menu-container {
+  color: #ffffff;
+}
+
+:root.dark .menu-item {
+  background-color: #2d2d2d;
+  border-color: #404040;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+:root.dark .menu-item:hover {
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+}
+
+:root.dark .menu-item h3,
+:root.dark .menu-item p {
+  color: #ffffff;
+}
+
+:root.dark .cart-section {
+  background-color: #2d2d2d;
+  color: #ffffff;
+  box-shadow: 9px 9px 12px #000000, inset 0 0 7px rgba(255, 255, 255, 0.1);
+}
+
+:root.dark .category-buttons button {
+  background: linear-gradient(145deg, #2d2d2d, #1a1a1a);
+  color: #ffffff;
+  border: none;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+:root.dark .category-buttons button:hover {
+  background: linear-gradient(145deg, #333333, #2d2d2d);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+}
+
+:root.dark .category-buttons button.active {
+  background: linear-gradient(145deg, #dd6013, #ffbd00);
+  color: white;
+  box-shadow: 
+    inset 0 2px 4px rgba(0, 0, 0, 0.3),
+    0 0 15px rgba(221, 96, 19, 0.3);
+}
+
+:root.dark .cart-item input {
+  background-color: #404040;
+  border-color: #666;
+  color: #ffffff;
+}
+
+:root.dark hr {
+  border-color: #404040;
+}
+
+:root.dark .toggle-cart {
+  background-color: #2d2d2d;
+  color: #ffffff;
+  border-color: #404040;
 }
 </style>
