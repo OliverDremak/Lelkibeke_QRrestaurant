@@ -36,7 +36,7 @@
       <!-- Remove TransitionGroup and use a simple div -->
       <div class="orders-list">
         <div v-for="order in filteredAndSortedOrders" 
-             :key="`${order.order_id}-${order.sortPosition}`" 
+             :key="`${order.order_id}-${orderStore.getOrderPosition(order.order_id)}`" 
              class="order-row"
              :class="getOrderAgeClass(getOrderAge(order.order_id))">
           <div class="order-header">
@@ -57,7 +57,7 @@
 
           <div class="items-container">
             <div class="items-grid">
-              <div v-for="(item, index) in order.items" 
+              <div v-for="(item, index) in sortedItems(order)" 
                    :key="`${order.order_id}-item-${index}`"
                    class="item-row">
                 <span class="item-quantity">{{ item.quantity }}×</span>
@@ -116,27 +116,14 @@ const props = defineProps({
 
 const emit = defineEmits(['order-updated']);
 
-// Initialize reactive refs
+// Remove scroll position management
 const showConfirmation = ref(false);
 const selectedOrder = ref(null);
 const sortOrder = ref('newest');
 
-// Add new watcher for smooth updates
-watch(
-  () => props.orders,
-  () => {
-    const scrollPosition = window.scrollY;
-    nextTick(() => {
-      window.scrollTo({
-        top: scrollPosition,
-        behavior: 'instant'  // Use instant instead of smooth
-      });
-    });
-  },
-  { deep: true }
-);
+// Remove the orders watcher that was managing scroll position
 
-// Add body scroll lock when modal is shown
+// Keep only modal-related scroll lock
 watch(showConfirmation, (isVisible) => {
   if (isVisible) {
     document.body.style.overflow = 'hidden';
@@ -151,37 +138,42 @@ onBeforeUnmount(() => {
 });
 
 // Update formatOrderItems if items are in string format
+// Update the formatItems function to handle both array and object formats
 const formatItems = (order) => {
-  if (typeof order.items === 'string') {
-    return order.items.split(', ').map(item => {
-      const [quantity, rest] = item.split('x ');
-      const match = rest.match(/(.*?)(?:\s*\((.*?)\))?$/);
-      return {
-        quantity: parseInt(quantity),
-        menu_item_name: match[1].trim(),
-        notes: match[2] || ''
-      };
-    });
+  if (!order.items) return [];
+  
+  // If items is already parsed as an array
+  if (Array.isArray(order.items)) {
+    return order.items;
   }
-  return order.items;
+  
+  // If items is a JSON string
+  if (typeof order.items === 'string') {
+    try {
+      return JSON.parse(order.items);
+    } catch (e) {
+      console.error('Error parsing items:', e);
+    }
+  }
+  
+  return [];
 };
 
-// Updated groupedOrders computed property to ensure unique keys
+// Updated groupedOrders computed property
 const groupedOrders = computed(() => {
-  const uniqueOrders = new Map();
+  if (!props.orders) return [];
   
-  props.orders.forEach(order => {
-    if (!uniqueOrders.has(order.order_id)) {
-      uniqueOrders.set(order.order_id, {
-        ...order,
-        sortPosition: orderStore.getOrderPosition(order.order_id),
-        items: Array.isArray(order.items) ? order.items : formatItems(order)
-      });
-    }
+  return props.orders.map(order => {
+    const items = formatItems(order);
+    return {
+      ...order,
+      items: items.map((item, index) => ({
+        ...item,
+        sortIndex: item.sortIndex ?? index
+      })),
+      sortPosition: orderStore.getOrderPosition(order.order_id)
+    };
   });
-
-  return Array.from(uniqueOrders.values())
-    .sort((a, b) => a.sortPosition - b.sortPosition);
 });
 
 // Sort orders by date
@@ -232,16 +224,20 @@ const urgentOrders = computed(() => {
 const filteredAndSortedOrders = computed(() => {
   let orders = groupedOrders.value;
   
-  // Sort based on order_date
-  orders = [...orders].sort((a, b) => {
+  return orders.sort((a, b) => {
+    // First sort by original position
+    const posA = orderStore.getOrderPosition(a.order_id);
+    const posB = orderStore.getOrderPosition(b.order_id);
+    
+    if (posA !== posB) {
+      return sortOrder.value === 'newest' ? posA - posB : posB - posA;
+    }
+    
+    // If positions are equal, fallback to date
     const dateA = new Date(a.order_date);
     const dateB = new Date(b.order_date);
-    return sortOrder.value === 'newest' ? 
-      dateB - dateA : 
-      dateA - dateB;
+    return sortOrder.value === 'newest' ? dateB - dateA : dateA - dateB;
   });
-  
-  return orders;
 });
 
 const getUrgencyClass = (minutes) => {
@@ -277,11 +273,13 @@ const markAsServed = async () => {
 
   try {
     console.log('Attempting to mark order as served:', selectedOrder.value);
+    const originalPosition = orderStore.getOrderPosition(selectedOrder.value.order_id);
     
     await axios.post('http://localhost:8000/api/kitchen/update-status', {
       order_id: selectedOrder.value.order_id,
       status: 'served',
-      table_id: selectedOrder.value.table_id
+      table_id: selectedOrder.value.table_id,
+      originalPosition // Pass the position to maintain order
     });
     
     closeConfirmation();
@@ -293,13 +291,7 @@ const markAsServed = async () => {
 };
 
 const handleSort = () => {
-  const scrollPosition = window.scrollY;
-  nextTick(() => {
-    window.scrollTo({
-      top: scrollPosition,
-      behavior: 'instant'
-    });
-  });
+  // Empty function - no scroll handling needed
 };
 
 const orderCounts = computed(() => {
@@ -312,6 +304,14 @@ const orderCounts = computed(() => {
 const closeConfirmation = () => {
   showConfirmation.value = false;
   selectedOrder.value = null;
+};
+
+// Add new method to sort items
+const sortedItems = (order) => {
+  if (!order.items) return [];
+  return [...order.items].sort((a, b) => {
+    return (a.sortIndex || 0) - (b.sortIndex || 0);
+  });
 };
 </script>
 
@@ -1032,7 +1032,7 @@ const closeConfirmation = () => {
 
 /* Disable any smooth-scroll behaviors */
 * {
-  scroll-behavior: auto !important;
+  scroll-behavior: unset !important;
 }
 
 .sort-select {

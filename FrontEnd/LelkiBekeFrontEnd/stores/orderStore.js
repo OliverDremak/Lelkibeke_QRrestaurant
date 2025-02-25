@@ -5,7 +5,9 @@ export const useOrderStore = defineStore('orderStore', {
   state: () => ({
     orders: new Map(),
     orderPositions: new Map(), // Store original positions
-    timeStore: null
+    itemPositions: new Map(), // Add new map for item positions
+    timeStore: null,
+    originalPositions: new Map(), // Add new map for original positions
   }),
 
   actions: {
@@ -17,40 +19,36 @@ export const useOrderStore = defineStore('orderStore', {
 
     updateOrders(orderList) {
       this.initialize();
-      const currentTime = Date.now();
+      
+      // Preserve existing positions and assign new ones to new orders
+      orderList.forEach((order, index) => {
+        const orderId = order.order_id;
+        if (!this.originalPositions.has(orderId)) {
+          this.originalPositions.set(orderId, index);
+        }
+      });
 
+      // Update orders while maintaining original positions
       orderList.forEach(order => {
         const orderId = order.order_id;
-        
-        // Preserve or set initial position
-        if (!this.orderPositions.has(orderId)) {
-          this.orderPositions.set(orderId, {
-            timestamp: new Date(order.order_date).getTime(),
-            sortIndex: this.orderPositions.size
-          });
-        }
-
-        // Update order data while maintaining position
         this.orders.set(orderId, {
           ...order,
-          originalPosition: this.orderPositions.get(orderId)
+          sortPosition: this.originalPositions.get(orderId)
         });
-        
         this.timeStore.startTracking(orderId, order.order_date);
       });
 
-      // Clean up removed orders
+      // Don't remove positions when cleaning up orders
       [...this.orders.keys()].forEach(orderId => {
         if (!orderList.some(o => o.order_id === orderId)) {
           this.orders.delete(orderId);
           this.timeStore.stopTracking(orderId);
-          // Don't remove from orderPositions to maintain stable sorting
         }
       });
     },
 
     getOrderPosition(orderId) {
-      return this.orderPositions.get(orderId)?.sortIndex ?? 0;
+      return this.originalPositions.get(orderId) ?? 999999;
     },
 
     getSortedOrders() {

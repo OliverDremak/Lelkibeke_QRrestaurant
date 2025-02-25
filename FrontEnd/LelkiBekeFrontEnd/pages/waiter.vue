@@ -82,43 +82,84 @@ const fetchTables = async () => {
   }
 };
 
-const refreshOrders = async () => {
-  if (selectedTable.value) {
-    await fetchActiveOrdersForTable(selectedTable.value.id);
-  }
-  // Remove any automatic scrolling here
-};
-
-const fetchActiveOrdersForTable = async (tableId) => {
+// Separate fetch function without scrolling
+const updateTableOrders = async (tableId) => {
   try {
-    const scrollPosition = window.scrollY;
     const response = await axios.post('http://localhost:8000/api/getActiveOrdersForTable', {
       id: tableId
     });
-    
     selectedTableOrders.value = response.data;
-    
-    nextTick(() => {
-      window.scrollTo(0, scrollPosition);
-    });
   } catch (error) {
     console.error('Error fetching active orders for table:', error);
   }
 };
 
+// Only use scrolling when explicitly selecting a table
 const selectTable = async (tableId) => {
+  console.log('Select table clicked:', tableId);
   selectedTable.value = tables.value.find(t => t.id === tableId);
   if (selectedTable.value) {
-    showAllOrders.value = false; // Switch to table view when selecting a table
+    showAllOrders.value = false;
     await fetchActiveOrdersForTable(tableId);
     
-    // Only scroll when explicitly selecting a table
+    // Use same delay as toggleAllOrders
     setTimeout(() => {
-      ordersSection.value?.scrollIntoView({ 
-        behavior: 'smooth',
-        block: 'start'
-      });
-    }, 100); // Small delay to ensure content is rendered
+      const element = document.querySelector('.orders-container');
+      if (element) {
+        element.scrollIntoView({ 
+          behavior: 'smooth',
+          block: 'start'
+        });
+      }
+    }, 200);
+  }
+};
+
+// Update the refreshOrders function to use the non-scrolling version
+const refreshOrders = async () => {
+  if (selectedTable.value) {
+    await updateTableOrders(selectedTable.value.id);
+  }
+};
+
+const fetchActiveOrdersForTable = async (tableId) => {
+  try {
+    const response = await axios.post('http://localhost:8000/api/getActiveOrdersForTable', {
+      id: tableId
+    });
+    
+    // Process orders to ensure consistent format
+    const processedOrders = response.data.map(order => {
+      let parsedItems;
+      try {
+        // Handle different item formats
+        if (typeof order.items === 'string') {
+          parsedItems = JSON.parse(order.items);
+        } else if (Array.isArray(order.items)) {
+          parsedItems = order.items;
+        } else {
+          parsedItems = [];
+        }
+      } catch (e) {
+        console.error('Error parsing items for order:', order.order_id, e);
+        parsedItems = [];
+      }
+
+      return {
+        order_id: order.order_id,
+        table_id: order.table_id,
+        order_date: order.order_date,
+        status: order.status,
+        total_price: order.total_price,
+        items: parsedItems
+      };
+    });
+
+    selectedTableOrders.value = processedOrders;
+    
+  } catch (error) {
+    console.error('Error fetching active orders for table:', error);
+    selectedTableOrders.value = [];
   }
 };
 
@@ -127,32 +168,72 @@ const toggleAllOrders = async () => {
   showAllOrders.value = !showAllOrders.value;
   if (showAllOrders.value) {
     await fetchAllOrders();
+    // Add controlled scrolling with delay for render
+    setTimeout(() => {
+      const element = document.querySelector('.orders-container');
+      if (element) {
+        element.scrollIntoView({ 
+          behavior: 'smooth',
+          block: 'start'
+        });
+      }
+    }, 200);
   } else if (selectedTable.value) {
     await fetchActiveOrdersForTable(selectedTable.value.id);
   }
-  // Remove automatic scrolling here
+};
+
+// Add helper function to manage scrolling
+const scrollToOrders = () => {
+  setTimeout(() => {
+    const element = document.querySelector('.orders-container');
+    if (element) {
+      element.scrollIntoView({ 
+        behavior: 'smooth',
+        block: 'start'
+      });
+    }
+  }, 200);
 };
 
 const fetchAllOrders = async () => {
   try {
-    const scrollPosition = window.scrollY;
     const response = await axios.get('http://localhost:8000/api/allActiveOrders');
     
-    // Update store first to maintain positions
-    orderStore.updateOrders(response.data);
+    // Process the orders to group items by order_id
+    const processedOrders = response.data.reduce((acc, item) => {
+      if (!acc[item.order_id]) {
+        acc[item.order_id] = {
+          order_id: item.order_id,
+          table_id: item.table_id,
+          order_date: item.order_date,
+          status: item.status,
+          total_price: item.total_price,
+          items: []
+        };
+      }
+      
+      acc[item.order_id].items.push({
+        quantity: item.quantity,
+        menu_item_name: item.menu_item_name,
+        notes: item.notes
+      });
+      
+      return acc;
+    }, {});
+
+    // Convert to array
+    const formattedOrders = Object.values(processedOrders);
     
-    // Get sorted orders from store
-    allOrders.value = orderStore.getSortedOrders();
+    // Update store
+    orderStore.updateOrders(formattedOrders);
+    allOrders.value = formattedOrders;
     
-    nextTick(() => {
-      window.scrollTo(0, scrollPosition);
-    });
   } catch (error) {
     console.error('Error fetching all orders:', error);
+    allOrders.value = [];
   }
 };
-
-// Remove any sorting operations from other functions
 
 const getOrderTime = (orderId) => {
   return orderStore.getElapsedTime(orderId);
@@ -189,10 +270,18 @@ onMounted(() => {
   const { $ws } = useNuxtApp();
   $ws.channel('orders')
     .listen('OrderSent', async () => {
-      await fetchAllOrders();
+      if (showAllOrders.value) {
+        await fetchAllOrders();
+      } else if (selectedTable.value) {
+        await updateTableOrders(selectedTable.value.id);
+      }
     })
     .listen('OrderStatusChanged', async () => {
-      await fetchAllOrders();
+      if (showAllOrders.value) {
+        await fetchAllOrders();
+      } else if (selectedTable.value) {
+        await updateTableOrders(selectedTable.value.id);
+      }
     });
 
   // Get initial position of table list
@@ -350,5 +439,10 @@ onBeforeUnmount(() => {
   .action-button {
     width: 100%;
   }
+}
+
+/* Ensure other elements don't interfere with controlled scrolling */
+* {
+  scroll-behavior: unset !important;
 }
 </style>
