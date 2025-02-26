@@ -15,6 +15,8 @@ use Tymon\JWTAuth\Contracts\JWTSubject;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
+use App\Mail\ResetPasswordMail;
+use Illuminate\Support\Facades\Mail;
 
 class UserController extends Controller
 {
@@ -273,19 +275,16 @@ class UserController extends Controller
         // Create reset URL
         $resetUrl = env('FRONTEND_URL', 'http://localhost:3000') . '/reset-password?token=' . $token . '&email=' . urlencode($request->email);
         
-        // Send email via the separate mail server
+        // Send email directly
         try {
-            $mailServerUrl = env('MAIL_SERVER_URL', 'http://localhost:8001');
-            $response = Http::post($mailServerUrl . '/api/send-reset-password-email', [
-                'email' => $request->email,
-                'resetUrl' => $resetUrl
-            ]);
+            $mailData = [
+                'resetUrl' => $resetUrl,
+                'email' => $request->email
+            ];
             
-            if($response->successful()) {
-                return response()->json(['message' => 'Password reset link sent to your email']);
-            } else {
-                return response()->json(['error' => 'Failed to send reset link: ' . $response->body()], 500);
-            }
+            Mail::to($request->email)->send(new ResetPasswordMail($mailData));
+            
+            return response()->json(['message' => 'Password reset link sent to your email']);
         } catch(\Exception $e) {
             return response()->json(['error' => 'Mail service unavailable: ' . $e->getMessage()], 500);
         }
