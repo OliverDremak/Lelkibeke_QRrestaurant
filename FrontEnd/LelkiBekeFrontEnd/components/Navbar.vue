@@ -46,7 +46,9 @@
                 <div class="welcome-text w-100">Welcome, {{ auth.user?.name }}</div>
               </li>
               <li class="mobile-nav-item">
-                <button @click="goToProfile" class="nav-button profile w-100">Profile</button>
+                <button v-if="auth.user?.role === 'waiter'" @click="goToWaiter" class="nav-button waiter w-100">Waiter Panel</button>
+                <button v-else-if="auth.user?.role === 'kitchen'" @click="goToKitchen" class="nav-button kitchen w-100">Kitchen Panel</button>
+                <button v-else @click="goToProfile" class="nav-button profile w-100">Profile</button>
               </li>
               <li class="mobile-nav-item">
                 <button @click="handleLogout" class="nav-button logout w-100">Logout</button>
@@ -75,7 +77,9 @@
           <template v-else>
             <li class="nav-item user-menu">
               <div class="welcome-text">Welcome, {{ auth.user?.name }}</div>
-              <button @click="goToProfile" class="nav-button profile">Profile</button>
+              <button v-if="auth.user?.role === 'waiter'" @click="goToWaiter" class="nav-button waiter">Waiter Panel</button>
+              <button v-else-if="auth.user?.role === 'kitchen'" @click="goToKitchen" class="nav-button kitchen">Kitchen Panel</button>
+              <button v-else @click="goToProfile" class="nav-button profile">Profile</button>
               <button @click="handleLogout" class="nav-button logout">Logout</button>
             </li>
           </template>
@@ -117,6 +121,14 @@ const goToRegister = () => {
 
 const goToProfile = () => {
   router.push('/profile');
+};
+
+const goToWaiter = () => {
+  router.push('/waiter');
+};
+
+const goToKitchen = () => {
+  router.push('/kitchen');
 };
 
 const handleLogout = async () => {
@@ -291,14 +303,30 @@ onMounted(() => {
   left: 0;
 }
 
-.profile {
+.profile, .waiter, .kitchen {
   background: #dd6013;
   color: white;
   border: none;
 }
 
-.profile:hover {
+.profile:hover, .waiter:hover, .kitchen:hover {
   background: #c55511;
+}
+
+.waiter {
+  background: #2e8b57; /* Sea Green */
+}
+
+.waiter:hover {
+  background: #21703f;
+}
+
+.kitchen {
+  background: #4169e1; /* Royal Blue */
+}
+
+.kitchen:hover {
+  background: #3151b5;
 }
 
 .logout {
