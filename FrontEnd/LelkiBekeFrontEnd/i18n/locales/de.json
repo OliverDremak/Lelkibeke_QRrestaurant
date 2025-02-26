@@ -1,0 +1,102 @@
+{
+    "allergenInfo":{
+        "title": "Allergeninformationen"
+    },
+    "confirmationModal":{
+        "order": "Bestellung",
+        "table": "Tisch",
+        "status": "Status",
+        "cancel": "Abbrechen",
+        "confirm": "Bestätigen",
+        "processing": "Wird verarbeitet..."
+    },
+    "darkModeToggle":{
+        "light": "Hell",
+        "dark": "Dunkel"
+    },
+    "errorPage":{
+        "title": "Fehler",
+        "goHome": "Zurück zur Startseite"
+    },
+    "footer":{
+        "titleOne": "Über uns",
+        "titleTwo": "Öffnungszeiten",
+        "titleThree": "Kontakt",
+        "p": "Wenn Sie Fragen oder Feedback haben, können Sie uns gerne kontaktieren!",
+        "placeholderOne": "Ihr Name",
+        "placeholderTwo": "Ihre E-Mail",
+        "placeholderThree": "Ihre Nachricht",
+        "buttonText": "Nachricht senden"
+    },
+    "kitchenOrderCard":{
+        "table": "Tisch",
+        "created": "Erstellt"
+    },
+    "navbar":{
+        "back": "Zurück",
+        "title": "Inner Peace",
+        "register": "Registrieren",
+        "login": "Anmelden",
+        "welcome": "Willkommen",
+        "profile": "Profil",
+        "logout": "Abmelden"
+    },
+    "notificationStack":{
+        "table": "Tisch"
+    },
+    "nutritionInfo":{
+        "title": "Nährwertangaben",
+        "calories": "Kalorien",
+        "protein": "Eiweiß",
+        "carbs": "Kohlenhydrate",
+        "fat": "Fett"
+    },
+    "orderDetails":{
+        "served": "Als serviert markieren"
+    },
+    "orderList":{
+        "pending": "Ausstehend",
+        "cooking": "In Zubereitung",
+        "ready": "Fertig",
+        "total": "Gesamt",
+        "nFirst": "Neueste zuerst",
+        "oFirst": "Älteste zuerst"
+    },
+    "popularItems":{
+        "title": "Beliebteste Gerichte"
+    },
+    "qrReaded":{
+        "title": "Beginnen Sie Ihre Reise zur inneren Ruhe",
+        "pharagraph": "Bestellen Sie Ihre Lieblingsgerichte vom besten Restaurant der Stadt.",
+        "code": "Code",
+        "search": "Suchen",
+        "scanqr": "QR-Code scannen"
+    },
+    "qrScanner":{
+        "title": "QR-Code gelesen",
+        "error": "QR-Code konnte nicht gelesen werden"
+    },
+    "reastaurantMenu":{
+        "parLoad": "Menüpunkte werden geladen",
+        "parNoItems": "Keine Menüpunkte verfügbar",
+        "cartTitle": "Ihre Bestellung",
+        "addToCart": "Zum Warenkorb hinzufügen",
+        "cartEmpty": "Ihr Warenkorb ist leer",
+        "total": "Gesamt",
+        "checkout": "Zur Kasse gehen"
+    },
+    "tableList":{
+        "scanned": "GESCANNT",
+        "available": "Verfügbar",
+        "occupied": "Belegt",
+        "setav": "Als verfügbar setzen",
+        "setoc": "Als belegt setzen"
+    },
+    "languageSelector":{
+        "en": "Englisch",
+        "hu": "Ungarisch",
+        "de": "Deutsch",
+        "fr": "Französisch",
+        "es": "Spanisch"
+    }
+}
