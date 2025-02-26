@@ -20,12 +20,12 @@ services:
       context: ./Lelkibeke
       dockerfile: Dockerfile
     container_name: laravel-api
-    working_dir: /var/www
-    command: php artisan serve --host=0.0.0.0 --port=8000
-    volumes:
-      - ./Lelkibeke:/var/www
+    # working_dir: /var/www
+    # command: php artisan serve --host=0.0.0.0 --port=8000
+    # volumes:
+    #   - ./Lelkibeke:/var/www
     ports:
-      - "8000:8000"
+      - "8181:8181"
     depends_on:
       - mysql
     environment:
@@ -39,24 +39,24 @@ services:
     # tedd be a .env-t is a laravel mappába, vagy mount-old
     # environment:-ben is beállíthatod, ha szükséges
 
-  laravel-websockets:
-    build:
-      context: ./Lelkibeke
-      dockerfile: Dockerfile
-    container_name: laravel-websockets
-    working_dir: /var/www
-    command: php artisan websockets:serve --host=0.0.0.0 --port=8080
-    volumes:
-      - ./Lelkibeke:/var/www
-    ports:
-      - "8080:8080"
-    depends_on:
-      - mysql
-    environment:
-      DB_HOST: mysql
-      DB_DATABASE: laravel_db
-      DB_USERNAME: laravel
-      DB_PASSWORD: laravel_secret
+  # laravel-websockets:
+  #   build:
+  #     context: ./Lelkibeke
+  #     dockerfile: Dockerfile
+  #   container_name: laravel-websockets
+  #   working_dir: /var/www
+  #   command: php artisan websockets:serve --host=0.0.0.0 --port=8080
+  #   volumes:
+  #     - ./Lelkibeke:/var/www
+  #   ports:
+  #     - "8080:8080"
+  #   depends_on:
+  #     - mysql
+  #   environment:
+  #     DB_HOST: mysql
+  #     DB_DATABASE: laravel_db
+  #     DB_USERNAME: laravel
+  #     DB_PASSWORD: laravel_secret
 
   nuxt:
     build:
