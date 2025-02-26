@@ -23,17 +23,27 @@ export const useAuthStore = defineStore('auth', {
               }
             })
             
+            console.log('Login API response:', response) // Debug full response
+            
             // Make sure we're storing the token from the correct response structure
             if (response.token) {
               this.token = response.token
               this.user = response.user
               
-              // Store both token AND user object in localStorage
-              localStorage.setItem('token', response.token)
-              localStorage.setItem('user', JSON.stringify(response.user))
+              // Normalize and store role consistently
+              const userRole = response.user?.role?.toLowerCase().trim() || null
+              console.log('Normalized user role:', userRole)
               
-              console.log('Token stored:', response.token)
-              console.log('User role:', response.user?.role)
+              // Use consistent keys across the application
+              localStorage.setItem('auth_token', response.token) // Changed from 'token' to 'auth_token'
+              localStorage.setItem('user', JSON.stringify(response.user))
+              localStorage.setItem('user_role', userRole || '')
+              
+              console.log('Auth data stored in localStorage:', {
+                token: !!response.token,
+                user: !!response.user,
+                role: userRole
+              })
               return true
             } else {
               console.error('No token in response:', response)
@@ -94,13 +104,19 @@ export const useAuthStore = defineStore('auth', {
       logout() {
         this.token = null
         this.user = null
-        localStorage.removeItem('token')
-        localStorage.removeItem('user') // Also remove user from storage
-        window.location.reload()
+        
+        // Clear all auth-related storage consistently
+        localStorage.removeItem('auth_token') // Changed from 'token' to 'auth_token'
+        localStorage.removeItem('user')
+        localStorage.removeItem('user_role') // Also remove the role
+        
+        console.log('Logged out, auth data cleared')
+        // Use router navigation instead of page reload for smoother experience
+        navigateTo('/auth')
       },
   
       async checkAuth() {
-        const token = localStorage.getItem('token')
+        const token = localStorage.getItem('auth_token') // Changed from 'token' to 'auth_token'
         const userStr = localStorage.getItem('user')
         
         if (token && userStr) {
@@ -108,6 +124,11 @@ export const useAuthStore = defineStore('auth', {
             // First try to load user from localStorage
             this.token = token
             this.user = JSON.parse(userStr)
+            
+            // Ensure user_role is also set
+            if (this.user?.role) {
+              localStorage.setItem('user_role', this.user.role.toLowerCase().trim())
+            }
             
             // Optionally verify with backend
             // const user = await $fetch<User>('/api/auth/me', {

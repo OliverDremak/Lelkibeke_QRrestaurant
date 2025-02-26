@@ -13,28 +13,27 @@
   })
   
   const handleLogin = async () => {
+    console.log('Login attempt with:', { email: email.value })
     const success = await auth.login(email.value, password.value)
 
     if (success && auth.user) {
-      // Debug log the user and role
-      console.log('Login successful, user:', auth.user)
-      console.log('User role:', auth.user.role)
+      console.log('Login successful, full user object:', auth.user)
       
-      // Role-based redirection with explicit string comparison
-      const role = auth.user.role?.toLowerCase().trim();
+      // Get role with null safety and normalization
+      const role = auth.user.role?.toLowerCase().trim() || ''
+      console.log('Normalized role for routing:', role)
       
-      if (role === 'waiter') {
-        console.log('Redirecting to waiter page')
-        await navigateTo('/waiter');
-        return; // Add early return to prevent further execution
+      // Explicit role checking with proper logging
+      if (role === 'kitchen') {
+        console.log('Role matched: kitchen - redirecting to kitchen page')
+        await navigateTo('/kitchen')
       } 
-      else if (role === 'kitchen') {
-        console.log('Redirecting to kitchen page')
-        await navigateTo('/kitchen');
-        return; // Add early return to prevent further execution
+      else if (role === 'waiter') {
+        console.log('Role matched: waiter - redirecting to waiter page')
+        await navigateTo('/waiter')
       } 
       else {
-        console.log('No special role, using default redirection')
+        console.log('No role match found, role value was:', role)
         // Retrieve the intended URL from localStorage or use default route
         const intendedUrl = localStorage.getItem('intendedUrl');
         if (intendedUrl) {
@@ -45,7 +44,7 @@
         }
       }
     } else {
-      console.error('Login failed or user missing')
+      console.error('Login failed or user data missing')
     }
   }
 
