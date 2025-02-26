@@ -1,0 +1,102 @@
+{
+    "allergenInfo": {
+        "title": "Información sobre alérgenos"
+    },
+    "confirmationModal": {
+        "order": "Pedido",
+        "table": "Mesa",
+        "status": "Estado",
+        "cancel": "Cancelar",
+        "confirm": "Confirmar",
+        "processing": "Procesando..."
+    },
+    "darkModeToggle": {
+        "light": "Claro",
+        "dark": "Oscuro"
+    },
+    "errorPage": {
+        "title": "Error",
+        "goHome": "Volver a la página de inicio"
+    },
+    "footer": {
+        "titleOne": "Sobre los desarrolladores",
+        "titleTwo": "Horario de apertura",
+        "titleThree": "Contáctanos",
+        "p": "Si tienes alguna pregunta o comentario, no dudes en contactarnos.",
+        "placeholderOne": "Tu Nombre",
+        "placeholderTwo": "Tu Correo Electrónico",
+        "placeholderThree": "Tu Mensaje",
+        "buttonText": "Enviar Mensaje"
+    },
+    "kitchenOrderCard": {
+        "table": "Mesa",
+        "created": "Creado"
+    },
+    "navbar": {
+        "back": "Atrás",
+        "title": "Paz Interior",
+        "register": "Registrarse",
+        "login": "Iniciar sesión",
+        "welcome": "Bienvenido",
+        "profile": "Perfil",
+        "logout": "Cerrar sesión"
+    },
+    "notificationStack": {
+        "table": "Mesa"
+    },
+    "nutritionInfo": {
+        "title": "Información Nutricional",
+        "calories": "Calorías",
+        "protein": "Proteína",
+        "carbs": "Carbohidratos",
+        "fat": "Grasa"
+    },
+    "orderDetails": {
+        "served": "Marcar como servido"
+    },
+    "orderList": {
+        "pending": "Pendiente",
+        "cooking": "Cocinando",
+        "ready": "Listo",
+        "total": "Total",
+        "nFirst": "Más nuevo primero",
+        "oFirst": "Más antiguo primero"
+    },
+    "popularItems": {
+        "title": "Platos más populares"
+    },
+    "qrReaded": {
+        "title": "Comienza tu viaje hacia la paz interior",
+        "pharagraph": "Ordena tus comidas favoritas del mejor restaurante de la ciudad.",
+        "code": "Código",
+        "search": "Buscar",
+        "scanqr": "Escanear el código QR"
+    },
+    "qrScanner": {
+        "title": "Código QR leído",
+        "error": "No se pudo leer el código QR"
+    },
+    "reastaurantMenu": {
+        "parLoad": "Cargando elementos del menú",
+        "parNoItems": "No hay elementos en el menú disponibles",
+        "cartTitle": "Tu Pedido",
+        "addToCart": "Añadir al carrito",
+        "cartEmpty": "Tu carrito está vacío",
+        "total": "Total",
+        "checkout": "Pagar"
+    },
+    "tableList": {
+        "scanned": "ESCANEADO",
+        "available": "Disponible",
+        "occupied": "Ocupado",
+        "setav": "Marcar como disponible",
+        "setoc": "Marcar como ocupado"
+    },
+    "languageSelector": {
+        "en": "Inglés",
+        "hu": "Húngaro",
+        "de": "Alemán",
+        "fr": "Francés",
+        "es": "Español"
+    }
+}

@@ -1,8 +1,8 @@
 <template>
   <div class="dark-mode-toggle">
     <button @click="toggleDarkMode" :class="{ 'dark-mode': isDarkMode, 'light-mode': !isDarkMode }">
-      <span v-if="isDarkMode">🌞{{ t('popularItems.light') }}</span>
-      <span v-else>🌙{{ t('popularItems.dark') }}</span>
+      <span v-if="isDarkMode">🌞{{ t('darkModeToggle.light') }}</span>
+      <span v-else>🌙{{ t('darkModeToggle.dark') }}</span>
     </button>
   </div>
 </template>

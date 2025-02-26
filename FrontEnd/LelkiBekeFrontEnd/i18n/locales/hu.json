@@ -91,5 +91,13 @@
       "occupied": "Foglalt",
       "setav": "Megjelölés szabadként",
       "setoc": "Megjelölés foglaltként"
+    },
+    "languageSelector":{
+      "en": "Angol",
+      "hu": "Magyar",
+      "de": "Német",
+      "fr": "Francia",
+      "es": "Spanyol"
     }
+
   }

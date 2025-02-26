@@ -1,0 +1,102 @@
+{
+    "allergenInfo":{
+        "title": "Informations sur les allergènes"
+    },
+    "confirmationModal":{
+        "order": "Commande",
+        "table": "Table",
+        "status": "Statut",
+        "cancel": "Annuler",
+        "confirm": "Confirmer",
+        "processing": "En cours de traitement..."
+    },
+    "darkModeToggle":{
+        "light": "Clair",
+        "dark": "Sombre"
+    },
+    "errorPage":{
+        "title": "Erreur",
+        "goHome": "Retour à la page d'accueil"
+    },
+    "footer":{
+        "titleOne": "À propos de nous",
+        "titleTwo": "Heures d'ouverture",
+        "titleThree": "Contactez-nous",
+        "p": "Si vous avez des questions ou des commentaires, n'hésitez pas à nous contacter !",
+        "placeholderOne": "Votre nom",
+        "placeholderTwo": "Votre email",
+        "placeholderThree": "Votre message",
+        "buttonText": "Envoyer le message"
+    },
+    "kitchenOrderCard":{
+        "table": "Table",
+        "created": "Créé"
+    },
+    "navbar":{
+        "back": "Retour",
+        "title": "Inner Peace",
+        "register": "S'inscrire",
+        "login": "Connexion",
+        "welcome": "Bienvenue",
+        "profile": "Profil",
+        "logout": "Déconnexion"
+    },
+    "notificationStack":{
+        "table": "Table"
+    },
+    "nutritionInfo":{
+        "title": "Informations nutritionnelles",
+        "calories": "Calories",
+        "protein": "Protéines",
+        "carbs": "Glucides",
+        "fat": "Lipides"
+    },
+    "orderDetails":{
+        "served": "Marquer comme servi"
+    },
+    "orderList":{
+        "pending": "En attente",
+        "cooking": "En cuisine",
+        "ready": "Prêt",
+        "total": "Total",
+        "nFirst": "Le plus récent d'abord",
+        "oFirst": "Le plus ancien d'abord"
+    },
+    "popularItems":{
+        "title": "Articles les plus populaires"
+    },
+    "qrReaded":{
+        "title": "Commencez votre voyage vers la paix intérieure",
+        "pharagraph": "Commandez vos plats préférés dans le meilleur restaurant de la ville.",
+        "code": "Code",
+        "search": "Rechercher",
+        "scanqr": "Scannez le code QR"
+    },
+    "qrScanner":{
+        "title": "Code QR lu",
+        "error": "Impossible de lire le code QR"
+    },
+    "reastaurantMenu":{
+        "parLoad": "Chargement des articles du menu",
+        "parNoItems": "Aucun article de menu disponible",
+        "cartTitle": "Votre commande",
+        "addToCart": "Ajouter au panier",
+        "cartEmpty": "Votre panier est vide",
+        "total": "Total",
+        "checkout": "Passer à la caisse"
+    },
+    "tableList":{
+        "scanned": "SCANNÉ",
+        "available": "Disponible",
+        "occupied": "Occupé",
+        "setav": "Définir comme disponible",
+        "setoc": "Définir comme occupé"
+    },
+    "languageSelector":{
+        "en": "Anglais",
+        "hu": "Hongrois",
+        "de": "Allemand",
+        "fr": "Français",
+        "es": "Espagnol"
+    }
+}
