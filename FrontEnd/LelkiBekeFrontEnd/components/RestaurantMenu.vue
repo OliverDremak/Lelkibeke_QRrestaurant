@@ -1,10 +1,10 @@
 <template>
   <div class="menu-container container" :class="{ 'dark': isDarkMode }">
     <div v-if="loading" class="text-center mt-4">
-      <p>Loading menu items...</p>
+      <p>{{ t('reastaurantMenu.parLoad') }}</p>
     </div>
     <div v-else-if="!mainCourses.length" class="text-center mt-4">
-      <p>No menu items available</p>
+      <p>{{ t('reastaurantMenu.parNoItems') }}</p>
     </div>
     <div v-else class="menu-content">
       <div class="category-container-wrapper">
@@ -35,14 +35,14 @@
               <h3>{{ item.name }} ({{ item.category_name }})</h3>
               <p>{{ item.description }}</p>
               <p class="price">{{ item.price }}ft</p>
-              <ButtonComponet @click="addToCart(item)" text="Add to cart"/>
+              <ButtonComponet @click="addToCart(item)" :text="t('reastaurantMenu.addToCart')"/>
             </div>
           </div>
         </div>
 
         <div class="cart-section col-xl-4 col-lg-6" :class="{ expanded: isCartExpanded }">
-          <h2 class="heading orderheading text-center mb-3">Your Order</h2>
-          <div v-if="cart.length === 0">Your cart is empty</div>
+          <h2 class="heading orderheading text-center mb-3">{{ t('reastaurantMenu.cartTitle') }}</h2>
+          <div v-if="cart.length === 0">{{ t('reastaurantMenu.cartEmpty') }}</div>
           <div v-else>
             <div v-for="(cartItem, index) in cart" :key="index" class="cart-item row">
               <span class="col-5">{{ cartItem.name }}</span>
@@ -57,8 +57,8 @@
             </div>
             <hr>
             <div class="total">
-              <span class="heading">Total: {{ cartTotal }}ft</span>
-              <ButtonComponet @click="handleCheckout" text="Checkout" class="totheright"/>
+              <span class="heading">{{ t('reastaurantMenu.total') }}: {{ cartTotal }}ft</span>
+              <ButtonComponet @click="handleCheckout" :text="t('reastaurantMenu.checkout')" class="totheright"/>
             </div>
           </div>
           <button class="toggle-cart" @click="toggleCart">
@@ -74,6 +74,8 @@
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import ButtonComponet from './ButtonComponet.vue';
 import axios from 'axios';
+import { useI18n } from '#imports'
+const { t } = useI18n()
 
 const mainCourses = ref([]);
 const loading = ref(true);
@@ -95,7 +97,7 @@ onMounted(async () => {
   window.addEventListener("resize", handleResize);
   try {
     console.log('RestaurantMenu mounting with tableId:', props.tableId);
-    const response = await axios.get('http://localhost:8000/api/menu');
+    const response = await axios.get('https://bgs.jedlik.eu/innerpeace/backend/api/menu');
     console.log('Menu data received:', response.data);
     mainCourses.value = response.data;
   } catch (error) {
@@ -191,7 +193,7 @@ const handleCheckout = async () => {
   };
 
   try {
-    const response = await fetch('http://localhost:8000/api/sendOrder', {
+    const response = await fetch('https://bgs.jedlik.eu/innerpeace/backend/api/sendOrder', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

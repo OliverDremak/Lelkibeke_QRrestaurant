@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import { useI18n } from '#imports'
+const { t } = useI18n()
+
 const props = defineProps<{
   allergens: string[]
 }>()
@@ -15,7 +18,7 @@ const allergenIcons: Record<string, string> = {
 
 <template>
   <div class="allergen-info">
-    <h4>Allergen Information</h4>
+    <h4>{{ t('allergenInfo.title') }}</h4>
     <div class="allergen-list">
       <div v-for="allergen in allergens" :key="allergen" class="allergen-item">
         <span class="allergen-icon">{{ allergenIcons[allergen] || '⚠️' }}</span>

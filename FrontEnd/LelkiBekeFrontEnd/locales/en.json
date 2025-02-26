@@ -1,0 +1,9 @@
+{
+  "tableList": {
+    "scanned": "Recently Scanned",
+    "available": "Available",
+    "occupied": "Occupied",
+    "setoc": "Set as Occupied",
+    "setav": "Set as Available"
+  }
+}

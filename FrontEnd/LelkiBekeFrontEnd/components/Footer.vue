@@ -3,6 +3,9 @@ import { ref, reactive, onMounted, watch } from 'vue';
 import axios from 'axios';
 import { useAuthStore } from '~/stores/auth';
 
+import { useI18n } from '#imports'
+const { t } = useI18n()
+
 const auth = useAuthStore();
 
 const profiles = ref([
@@ -44,7 +47,7 @@ const contactForm = reactive({
 
 const submitContactForm = async () => {
   try {
-    await axios.post('http://localhost:8000/api/contact-messages', contactForm);
+    await axios.post('https://bgs.jedlik.eu/innerpeace/backend/api/contact-messages', contactForm);
     alert('Message sent successfully!');
     // Reset form
     contactForm.name = auth.user ? auth.user.name : '';
@@ -58,7 +61,7 @@ const submitContactForm = async () => {
 
 const fetchOpeningHours = async () => {
   try {
-    const response = await axios.get('http://localhost:8000/api/opening-hours');
+    const response = await axios.get('https://bgs.jedlik.eu/innerpeace/backend/api/opening-hours');
     openingHours.value = response.data;
   } catch (error) {
     console.error('Error fetching opening hours:', error);
@@ -83,7 +86,7 @@ onMounted(fetchOpeningHours);
     <div class="container">
       <div class="row">
         <div class="col-12 col-lg-4 col-md-6 text-center mb-4 border-right">
-          <h2 class="heading">About Devs</h2>
+          <h2 class="heading">{{ t('footer.titleOne') }}</h2>
           <div class="row justify-content-center g-4">
             <div v-for="(profile, index) in profiles" :key="index" class="col-4 d-flex justify-content-center">
               <div>
@@ -99,7 +102,7 @@ onMounted(fetchOpeningHours);
           </div>
         </div>
         <div class="col-12 col-lg-4 col-md-6 text-center">
-          <h2 class="heading ul-caption">Opening Hours</h2>
+          <h2 class="heading ul-caption">{{ t('footer.titleTwo') }}</h2>
           <ul class="list-unstyled">
             <li v-for="entry in openingHours" :key="entry.id">
               <strong>{{ entry.day_of_week }}:</strong>
@@ -109,19 +112,19 @@ onMounted(fetchOpeningHours);
           </ul>
         </div>
         <div class="col-12 col-lg-4 col-md-12 text-center last">
-          <h2 class="heading">Contact Us</h2>
-          <p>If you have any questions or feedback, feel free to reach out to us!</p>
+          <h2 class="heading">{{ t('footer.titleThree') }}</h2>
+          <p>{{ t('footer.p') }}</p>
           <form @submit.prevent="submitContactForm">
             <div class="mb-3">
-              <input type="text" class="form-control" v-model="contactForm.name" placeholder="Your Name" required :readonly="auth.user !== null">
+              <input type="text" class="form-control" v-model="contactForm.name" :placeholder="t('footer.placeholderOne')" required :readonly="auth.user !== null">
             </div>
             <div class="mb-3">
-              <input type="email" class="form-control" v-model="contactForm.email" placeholder="Your Email" required :readonly="auth.user !== null">
+              <input type="email" class="form-control" v-model="contactForm.email" :placeholder="t('footer.placeholderTwo')" required :readonly="auth.user !== null">
             </div>
             <div class="mb-3">
-              <textarea class="form-control" v-model="contactForm.message" placeholder="Your Message" rows="3" required></textarea>
+              <textarea class="form-control" v-model="contactForm.message" :placeholder="t('footer.placeholderThree')" rows="3" required></textarea>
             </div>
-            <ButtonComponet text="Send Message" style="margin-top: 5px;" />
+            <ButtonComponet :text="t('footer.buttonText')" style="margin-top: 5px;" />
           </form>
         </div>
       </div>

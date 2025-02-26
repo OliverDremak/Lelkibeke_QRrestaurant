@@ -5,10 +5,10 @@
         <button v-if="route.path === '/profile'" 
                 @click="goBack" 
                 class="nav-button back-button">
-          <i class="bi bi-arrow-left"></i> Back
+          <i class="bi bi-arrow-left"></i>{{ t('navbar.back') }}
         </button>
         <a class="navbar-brand" href="#">
-          <span class="brand-text">Lelkibéke</span>
+          <span class="brand-text">{{ t('navbar.title') }}</span>
         </a>
       </div>
       <button class="navbar-toggler" @click="toggleNavbar" :class="{ 'is-active': isNavbarOpen }">
@@ -65,12 +65,15 @@
             <DarkModeToggle />
           </li>
           <!-- Show these buttons only when user is NOT logged in -->
+          <li class="nav-item">
+              <LanguageSelector/>
+            </li>    
           <template v-if="!auth.token">
             <li class="nav-item">
-              <button @click="goToRegister" class="nav-button register">Register</button>
+              <button @click="goToRegister" class="nav-button register">{{ t('navbar.register') }}</button>
             </li>            
             <li class="nav-item">             
-              <button @click="goToLogin" class="nav-button login">Login</button>
+              <button @click="goToLogin" class="nav-button login">{{ t('navbar.login') }}</button>
             </li>
           </template>
           <!-- Show profile and logout when user is logged in -->
@@ -95,6 +98,9 @@ import { ref, watch, onMounted } from 'vue';
 import ButtonComponet from './ButtonComponet.vue';
 import DarkModeToggle from './DarkModeToggle.vue';
 import { useAuthStore } from '~/stores/auth';
+import { useI18n } from '#imports'
+const { t } = useI18n()
+
 
 const auth = useAuthStore();
 const router = useRouter();

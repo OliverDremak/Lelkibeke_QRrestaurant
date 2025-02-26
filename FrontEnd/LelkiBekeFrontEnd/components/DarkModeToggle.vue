@@ -1,20 +1,16 @@
 <template>
   <div class="dark-mode-toggle">
-    <button 
-      @click="toggleDarkMode"
-      :class="{ 'dark-mode': isDarkMode, 'light-mode': !isDarkMode }"
-      class="nav-button"
-    >
-      <span v-if="isDarkMode">🌞 Light</span>
-      <span v-else>🌙 Dark</span>
+    <button @click="toggleDarkMode" :class="{ 'dark-mode': isDarkMode, 'light-mode': !isDarkMode }">
+      <span v-if="isDarkMode">🌞{{ t('popularItems.light') }}</span>
+      <span v-else>🌙{{ t('popularItems.dark') }}</span>
     </button>
   </div>
 </template>
 
 <style scoped>
-
-.nav-button {
-  padding: 0.5rem 1.5rem;
+button {
+  background-color: transparent;
+  border: 2px solid currentColor;
   border-radius: 25px;
   font-weight: 600;
   transition: all 0.3s ease;
@@ -53,30 +49,36 @@ button.light-mode:hover {
   box-shadow: 0 2px 8px rgba(221, 96, 19, 0.4);
 }
 </style>
-  <script>
-  export default {
-    data() {
-      return {
-        isDarkMode: false,
-      };
-    },
-    methods: {
-      toggleDarkMode() {
-        this.isDarkMode = !this.isDarkMode;
-        document.documentElement.classList.toggle('dark', this.isDarkMode);
-        localStorage.setItem('darkMode', this.isDarkMode);
-      },
-    },
-    mounted() {
-      const savedDarkMode = localStorage.getItem('darkMode');
-      const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      
-      // Handle null/undefined properly
-      this.isDarkMode = savedDarkMode !== null 
-        ? savedDarkMode === 'true' 
-        : systemPrefersDark;
-  
+<script>
+import { useI18n } from '#imports'
+
+export default {
+  setup() {
+    // Must call useI18n in setup() first
+    const { t } = useI18n()
+    return { t }
+  },
+  data() {
+    return {
+      isDarkMode: false,
+    };
+  },
+  methods: {
+    toggleDarkMode() {
+      this.isDarkMode = !this.isDarkMode;
       document.documentElement.classList.toggle('dark', this.isDarkMode);
+      localStorage.setItem('darkMode', this.isDarkMode);
     },
-  };
-  </script>
+  },
+  mounted() {
+    const savedDarkMode = localStorage.getItem('darkMode');
+    const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+    this.isDarkMode = savedDarkMode !== null
+      ? savedDarkMode === 'true'
+      : systemPrefersDark;
+
+    document.documentElement.classList.toggle('dark', this.isDarkMode);
+  },
+};
+</script>

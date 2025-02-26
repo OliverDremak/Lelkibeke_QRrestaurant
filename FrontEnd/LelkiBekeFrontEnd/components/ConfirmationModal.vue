@@ -11,9 +11,9 @@
           <div class="modal-content">
             <p>{{ message }}</p>
             <div class="order-details" v-if="orderDetails">
-              <p class="detail-item">Order #{{ orderDetails.order_id }}</p>
-              <p class="detail-item">Table {{ orderDetails.table_id }}</p>
-              <p class="detail-item">Status: {{ orderDetails.status }}</p>
+              <p class="detail-item">{{ t('confirmationModal.order') }} #{{ orderDetails.order_id }}</p>
+              <p class="detail-item">{{ t('confirmationModal.table') }} {{ orderDetails.table_id }}</p>
+              <p class="detail-item">{{ t('confirmationModal.status') }}: {{ orderDetails.status }}</p>
             </div>
           </div>
 
@@ -23,7 +23,7 @@
               @click="onCancel"
               ref="cancelBtn"
             >
-              Cancel
+            {{ t('confirmationModal.cancel') }}
             </button>
             <button 
               class="confirm-btn" 
@@ -31,7 +31,7 @@
               :disabled="isProcessing"
               ref="confirmBtn"
             >
-              {{ isProcessing ? 'Processing...' : 'Confirm' }}
+              {{ isProcessing ? t('confirmationModal.processing') : t('confirmationModal.confirm') }}
             </button>
           </footer>
         </div>
@@ -42,6 +42,9 @@
 
 <script setup>
 import { ref, watch, onMounted, onBeforeUnmount } from 'vue';
+
+import { useI18n } from '#imports'
+const { t } = useI18n()
 
 const props = defineProps({
   show: Boolean,

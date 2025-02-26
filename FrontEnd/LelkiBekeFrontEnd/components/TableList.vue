@@ -19,12 +19,12 @@
           <div class="table-header">
             <h2 class="table-number">{{ table.table_number }}</h2>
             <div v-if="scannedTableIds.includes(table.id)" class="scan-indicator">
-              SCANNED
+              {{ t('tableList.scanned') }}
             </div>
           </div>
           
           <div class="status-badge">
-            {{ table.is_available === 1 ? 'Available' : 'Occupied' }}
+            {{ table.is_available === 1 ? t('tableList.available') : t('tableList.occupied') }}
           </div>
           
           <button
@@ -32,7 +32,7 @@
             :class="{ 'toggle-to-occupied': table.is_available === 1, 'toggle-to-available': !table.is_available }"
             @click.stop="toggleOccupancy(table)"
           >
-            {{ table.is_available === 1 ? 'Set as Occupied' : 'Set as Available' }}
+            {{ table.is_available === 1 ? t('tableList.setoc') : t('tableList.setav') }}
           </button>
         </div>
       </div>
@@ -44,6 +44,7 @@
 import { ref, onMounted, onBeforeUnmount } from 'vue';
 import { useNuxtApp } from '#app';
 import axios from 'axios';
+import { useI18n } from 'vue-i18n';  // Change this import
 
 export default {
   props: {
@@ -58,6 +59,7 @@ export default {
   },
   setup(props, { emit }) {
     const { $ws } = useNuxtApp();
+    const { t } = useI18n();  // Change to use vue-i18n directly
     const scannedTableIds = ref([]);
     const tableOrders = ref({});  // Tracks number of new orders per table
 
@@ -65,7 +67,7 @@ export default {
       console.log('Toggling occupancy status for table:', table);
       const newStatus = table.is_available === 1 ? false : true;
       try {
-        await axios.post(`http://localhost:8000/api/setOccupancyStatus`, {
+        await axios.post(`https://bgs.jedlik.eu/innerpeace/backend/api/setOccupancyStatus`, {
           id: table.id,
           is_available: newStatus
         });
@@ -160,6 +162,7 @@ export default {
       toggleOccupancy,
       tableOrders,
       selectTable,
+      t,  // Make sure to return t in the setup function
     };
   },
 };

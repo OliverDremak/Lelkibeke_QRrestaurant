@@ -5,7 +5,7 @@
            :key="notification.id" 
            class="notification-item">
         <div class="notification-content">
-          <strong>Table {{ notification.tableId }}</strong>
+          <strong>{{ t('notificationStack.table') }} {{ notification.tableId }}</strong>
           <span class="time-ago">{{ getTimeAgo(notification.timestamp) }}</span>
         </div>
       </div>
@@ -15,6 +15,8 @@
 
 <script setup>
 import { ref, computed } from 'vue';
+import { useI18n } from '#imports'
+const { t } = useI18n()
 
 const notifications = ref([]);
 const maxVisible = 5;
