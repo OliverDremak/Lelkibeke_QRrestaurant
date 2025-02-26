@@ -1,4 +1,6 @@
 <script setup lang="ts">
+  import axios from 'axios';
+
   const route = useRoute()
   const isLogin = ref(!route.query.register)
   const name = ref('')
@@ -6,6 +8,11 @@
   const password = ref('')
   const auth = useAuthStore()
   const showPassword = ref(false);
+  const isForgotPassword = ref(false);
+  const forgotEmail = ref('');
+  const resetSuccess = ref(false);
+  const resetError = ref('');
+  const isLoading = ref(false);
   
   // Get redirect path from query parameters or use default
   const redirectPath = computed(() => {
@@ -59,6 +66,32 @@
     }
   }
 
+
+  const submitForgotPassword = async () => {
+    resetSuccess.value = false;
+    resetError.value = '';
+    isLoading.value = true;
+    
+    try {
+      const response = await axios.post('http://localhost:8000/api/forgot-password', {
+        email: forgotEmail.value
+      });
+      
+      // Axios automatically parses JSON responses
+      resetSuccess.value = true;
+    } catch (error) {
+      resetError.value = error.response?.data?.error || 'Failed to send reset link';
+    } finally {
+      isLoading.value = false;
+    }
+  }
+  
+  const backToLogin = () => {
+    isForgotPassword.value = false;
+    resetSuccess.value = false;
+    resetError.value = '';
+  }
+
   const getTranslatedError = computed(() => {
     if (!auth.error) return '';
     
@@ -72,66 +105,101 @@
     return errorMap[auth.error] || auth.error;
   });
 
+
   import PasswordEyeIcon from '~/components/PasswordEyeIcon.vue'
 </script>
 
 <template>
   <div class="auth-page">
     <div class="auth-container fade-in-bottom">
-      <h1 class="text-center display-3 heading">{{ isLogin ? 'Login' : 'Register' }}</h1>
+      <template v-if="!isForgotPassword">
+        <h1 class="text-center display-3 heading">{{ isLogin ? 'Login' : 'Register' }}</h1>
 
+        <form @submit.prevent="submitForm">
+          <div v-if="!isLogin" class="form-floating mb-3">
+            <input v-model="name" type="text" class="form-control" id="floatingInput0" required placeholder="">
+            <label for="floatingInput0">Name</label>
+          </div>
 
+          <div class="form-floating mb-3">
+              <input v-model="email" type="email" class="form-control" id="floatingInput1" placeholder="">
+              <label for="floatingInput1">Email address</label>
+          </div>
 
-      <form @submit.prevent="submitForm">
-        <div v-if="!isLogin" class="form-floating mb-3">
-          <input v-model="name" type="text" class="form-control" id="floatingInput0" required placeholder="">
-          <label for="floatingInput0">Name</label>
-        </div>
+          <div class="form-floating mb-3">
+            <input 
+              v-model="password" 
+              :type="showPassword ? 'text' : 'password'" 
+              class="form-control" 
+              id="floatingInput2" 
+              placeholder=""
+            >
+            <label for="floatingInput2">Password</label>
+            <button 
+              type="button"
+              class="password-toggle"
+              @click="showPassword = !showPassword"
+              aria-label="Toggle password visibility"
+            >
+              <PasswordEyeIcon :visible="showPassword" />
+            </button>
+          </div>
 
-        <div class="form-floating mb-3">
-            <input v-model="email" type="email" class="form-control" id="floatingInput1" placeholder="">
-            <label for="floatingInput1">Email address</label>
-        </div>
+          <div class="error-message" v-if="auth.error">{{ auth.error }}</div>
 
-        <div class="form-floating mb-3">
-          <input 
-            v-model="password" 
-            :type="showPassword ? 'text' : 'password'" 
-            class="form-control" 
-            id="floatingInput2" 
-            placeholder=""
-          >
-          <label for="floatingInput2">Password</label>
-          <button 
-            type="button"
-            class="password-toggle"
-            @click="showPassword = !showPassword"
-            aria-label="Toggle password visibility"
-          >
-            <PasswordEyeIcon :visible="showPassword" />
+          <button type="submit" :disabled="auth.loading" class="glow-button">
+            {{ auth.loading ? 'Processing...' : isLogin ? 'Login' : 'Register' }}
           </button>
-        </div>
+        </form>
 
-        <div class="error-message" v-if="auth.error">
-          {{ getTranslatedError }}
-        </div>
-
-        <button type="submit" :disabled="auth.loading" class="glow-button">
-          {{ auth.loading ? 'Processing...' : isLogin ? 'Login' : 'Register' }}
+        <button @click="isLogin = !isLogin" class="toggle-button">
+          <span class="text-center w-100 d-block">{{ isLogin ? 'Need an account? Register' : 'Already have an account? Login' }}</span>
         </button>
+        
+        <button v-if="isLogin" @click="isForgotPassword = true" class="forgot-button">
+          <span class="text-center w-100 d-block">Forgot Password?</span>
+        </button>
+        
+        <button @click="navigateTo('/')" class="home-button">
+          <span class="button-text">Back to Home</span>
+        </button>
+      </template>
+      
+      <template v-else>
+        <h1 class="text-center display-3 heading">Reset Password</h1>
+        
+        <div v-if="!resetSuccess" class="forgot-password-form">
+          <p class="text-center mb-4">Enter your email address and we'll send you a link to reset your password.</p>
+          
+          <form @submit.prevent="submitForgotPassword">
+            <div class="form-floating mb-3">
+              <input v-model="forgotEmail" type="email" class="form-control" id="forgotEmail" required placeholder="">
+              <label for="forgotEmail">Email address</label>
+            </div>
+            
+            <div class="error-message" v-if="resetError">{{ resetError }}</div>
+            
+            <button type="submit" :disabled="isLoading" class="glow-button">
+              {{ isLoading ? 'Sending...' : 'Send Reset Link' }}
+            </button>
+          </form>
+        </div>
+        
+        <div v-else class="reset-success">
+          <div class="success-icon">✓</div>
+          <h2>Email Sent</h2>
+          <p>We've sent a password reset link to your email address. Please check your inbox and follow the instructions.</p>
+        </div>
 
-      </form>
-
-      <button @click="isLogin = !isLogin" class="toggle-button">
-        <span class="text-center w-100 d-block">{{ isLogin ? 'Need an account? Register' : 'Already have an account? Login' }}</span>
-      </button>
-      <button @click="navigateTo('/')" class="home-button">
-        <span class="button-text">Back to Home</span>
-      </button>
-      <!-- <ButtonComponet text="Click me!" style="margin-top: 5px;"/> -->
+        
+        <button @click="backToLogin" class="toggle-button mt-4">
+          <span class="text-center w-100 d-block">Back to Login</span>
+        </button>
+      </template>
     </div>
   </div>
 </template>
+
 
 <style scoped>
 @import url("~/assets/css/main.css");
@@ -407,6 +475,61 @@
 
 :root.dark .home-button:hover {
   box-shadow: 0 6px 20px rgba(255, 189, 0, 0.3);
+}
+
+.forgot-button {
+  width: 100%;
+  text-align: center;
+  background: none;
+  border: none;
+  color: #dd6013;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 0.5rem;
+  text-decoration: none;
+  padding: 0.5rem;
+  opacity: 0.8;
+}
+
+.forgot-button:hover {
+  opacity: 1;
+  color: #ffbd00;
+}
+
+.reset-success {
+  text-align: center;
+  padding: 1rem 0;
+}
+
+.reset-success h2 {
+  color: #4CAF50;
+  margin-bottom: 1rem;
+}
+
+.reset-success p {
+  color: #666;
+  margin-bottom: 1.5rem;
+}
+
+.success-icon {
+  width: 80px;
+  height: 80px;
+  background: #4CAF50;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1.5rem;
+  color: white;
+  font-size: 40px;
+  animation: pop 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes pop {
+  0% { transform: scale(0); }
+  70% { transform: scale(1.1); }
+  100% { transform: scale(1); }
 }
 </style>
 
