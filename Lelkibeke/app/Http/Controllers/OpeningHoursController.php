@@ -23,8 +23,8 @@ class OpeningHoursController extends Controller
         $validator = Validator::make($request->all(), [
             'day_of_week' => 'required|string',
             'is_closed' => 'required|boolean',
-            'open_time' => 'nullable|date_format:H:i',
-            'close_time' => 'nullable|date_format:H:i',
+            'open_time' => 'nullable',
+            'close_time' => 'nullable',
         ]);
 
         if ($validator->fails()) {
