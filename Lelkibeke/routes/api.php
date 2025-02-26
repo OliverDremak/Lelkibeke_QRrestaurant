@@ -18,6 +18,10 @@ Route::post('/register', [UserController::class, 'register']);
 Route::post('/login', [UserController::class, 'login']);
 Route::post('/logout', [UserController::class, 'logout']);
 
+// Password reset routes
+Route::post('/forgot-password', [UserController::class, 'forgotPassword']);
+Route::post('/reset-password', [UserController::class, 'resetPassword']);
+
 // User profile routes
 Route::get('/users/{id}', [UserController::class, 'getUser']);
 Route::put('/users/{id}', [UserController::class, 'updateUser']);

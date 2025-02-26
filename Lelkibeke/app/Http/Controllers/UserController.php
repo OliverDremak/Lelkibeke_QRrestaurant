@@ -13,6 +13,8 @@ use Tymon\JWTAuth\Facades\JWTAuth;
 use Tymon\JWTAuth\Exceptions\JWTException;
 use Tymon\JWTAuth\Contracts\JWTSubject;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Str;
 
 class UserController extends Controller
 {
@@ -226,5 +228,125 @@ class UserController extends Controller
         } catch (\Exception $e) {
             return response()->json(['error' => 'Failed to update user'], 500);
         }
+    }
+
+    /**
+     * @OA\Post(
+     *     path="/api/forgot-password",
+     *     summary="Send password reset email",
+     *     tags={"User"},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"email"},
+     *             @OA\Property(property="email", type="string", format="email")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Password reset email sent"
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Validation error"
+     *     )
+     * )
+     */
+    public function forgotPassword(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email|exists:users,email'
+        ]);
+
+        // Generate token
+        $token = Str::random(64);
+        
+        // Store token in database
+        DB::table('password_reset_tokens')->updateOrInsert(
+            ['email' => $request->email],
+            [
+                'token' => $token,
+                'created_at' => now()
+            ]
+        );
+        
+        // Create reset URL
+        $resetUrl = env('FRONTEND_URL', 'http://localhost:3000') . '/reset-password?token=' . $token . '&email=' . urlencode($request->email);
+        
+        // Send email via the separate mail server
+        try {
+            $mailServerUrl = env('MAIL_SERVER_URL', 'http://localhost:8001');
+            $response = Http::post($mailServerUrl . '/api/send-reset-password-email', [
+                'email' => $request->email,
+                'resetUrl' => $resetUrl
+            ]);
+            
+            if($response->successful()) {
+                return response()->json(['message' => 'Password reset link sent to your email']);
+            } else {
+                return response()->json(['error' => 'Failed to send reset link: ' . $response->body()], 500);
+            }
+        } catch(\Exception $e) {
+            return response()->json(['error' => 'Mail service unavailable: ' . $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * @OA\Post(
+     *     path="/api/reset-password",
+     *     summary="Reset user password",
+     *     tags={"User"},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"email", "token", "password"},
+     *             @OA\Property(property="email", type="string", format="email"),
+     *             @OA\Property(property="token", type="string"),
+     *             @OA\Property(property="password", type="string", format="password")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Password reset successful"
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Invalid token"
+     *     )
+     * )
+     */
+    public function resetPassword(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email|exists:users',
+            'token' => 'required|string',
+            'password' => 'required|string|min:8'
+        ]);
+        
+        // Verify token
+        $tokenData = DB::table('password_reset_tokens')
+            ->where('email', $request->email)
+            ->where('token', $request->token)
+            ->first();
+        
+        if(!$tokenData) {
+            return response()->json(['error' => 'Invalid token'], 400);
+        }
+        
+        // Check if token is expired (60 minutes)
+        if(now()->diffInMinutes($tokenData->created_at) > 60) {
+            DB::table('password_reset_tokens')->where('email', $request->email)->delete();
+            return response()->json(['error' => 'Token expired'], 400);
+        }
+        
+        // Update user password
+        $user = User::where('email', $request->email)->first();
+        $user->password = hash('sha256', $request->password);
+        $user->save();
+        
+        // Delete token
+        DB::table('password_reset_tokens')->where('email', $request->email)->delete();
+        
+        return response()->json(['message' => 'Password reset successfully']);
     }
 }
