@@ -66,12 +66,14 @@
 import { ref, onMounted, watch, nextTick, onBeforeUnmount } from 'vue';
 import { useNuxtApp, useRouter } from '#app';
 import { useOrderStore } from '@/stores/orderStore';
+import { useAuthStore } from '@/stores/auth';
 import TableList from '@/components/TableList.vue';
 import OrderList from '@/components/OrderList.vue';
 import axios from 'axios';
 
 const router = useRouter();
 const orderStore = useOrderStore();
+const authStore = useAuthStore();
 
 const tables = ref([]);
 const selectedTable = ref(null);
@@ -280,13 +282,21 @@ const scrollToTop = () => {
   });
 };
 
-const logout = () => {
-  // Clear any auth tokens from localStorage
+const logout = async () => {
+  console.log("Logout initiated from waiter page");
+  
+  // Call the auth store's logout method which is more comprehensive
+  authStore.logout();
+  
+  // Clear any remaining auth tokens from localStorage as a backup
   localStorage.removeItem('auth_token');
   localStorage.removeItem('user_role');
+  localStorage.removeItem('user');
   
-  // Redirect to auth page
-  router.push('/auth');
+  console.log("Auth data cleared, redirecting to auth page");
+  
+  // Use await to ensure navigation completes
+  await router.push('/auth');
 };
 
 // Modify the websocket listener to ensure immediate updates

@@ -102,17 +102,20 @@ export const useAuthStore = defineStore('auth', {
       },
   
       logout() {
-        this.token = null
-        this.user = null
+        console.log("Auth store logout called");
+        this.token = null;
+        this.user = null;
         
         // Clear all auth-related storage consistently
-        localStorage.removeItem('auth_token') // Changed from 'token' to 'auth_token'
-        localStorage.removeItem('user')
-        localStorage.removeItem('user_role') // Also remove the role
+        localStorage.removeItem('auth_token');
+        localStorage.removeItem('user');
+        localStorage.removeItem('user_role');
+        localStorage.removeItem('token');  // Also clear any legacy keys
         
-        console.log('Logged out, auth data cleared')
-        // Use router navigation instead of page reload for smoother experience
-        navigateTo('/auth')
+        console.log('Auth store: Logged out, all auth data cleared');
+        
+        // Don't use window.location.reload() as it interrupts navigation
+        // Instead, let the component handle navigation after this method completes
       },
   
       async checkAuth() {

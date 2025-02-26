@@ -63,6 +63,7 @@
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount, nextTick } from 'vue';
 import { useNuxtApp, useRouter } from '#app';
+import { useAuthStore } from '@/stores/auth';
 import KitchenOrderCard from '../components/KitchenOrderCard.vue';  // Update this path
 import axios from 'axios';
 import { useTimeStore } from '@/stores/timeStore';
@@ -71,6 +72,7 @@ import { useOrderStore } from '@/stores/orderStore';
 const router = useRouter();
 const timeStore = useTimeStore();
 const orderStore = useOrderStore();
+const authStore = useAuthStore();
 const { $ws } = useNuxtApp();
 const orders = ref([]);
 const currentFilter = ref('all');
@@ -175,13 +177,21 @@ const fetchOrders = async () => {
   }
 };
 
-const logout = () => {
-  // Clear any auth tokens from localStorage
+const logout = async () => {
+  console.log("Logout initiated from kitchen page");
+  
+  // Call the auth store's logout method which is more comprehensive
+  authStore.logout();
+  
+  // Clear any remaining auth tokens from localStorage as a backup
   localStorage.removeItem('auth_token');
   localStorage.removeItem('user_role');
+  localStorage.removeItem('user');
   
-  // Redirect to auth page
-  router.push('/auth');
+  console.log("Auth data cleared, redirecting to auth page");
+  
+  // Use await to ensure navigation completes
+  await router.push('/auth');
 };
 
 onMounted(() => {
