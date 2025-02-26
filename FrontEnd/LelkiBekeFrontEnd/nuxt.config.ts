@@ -4,19 +4,19 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
 
   runtimeConfig: {
-      public: {
-        reverbKey: process.env.REVERB_KEY, // Exposes REVERB_KEY to client code
-      },
+    public: {
+      reverbKey: process.env.REVERB_KEY, // Exposes REVERB_KEY to client code
     },
+  },
 
   css: [
-    'bootstrap/dist/css/bootstrap.min.css', 
+    'bootstrap/dist/css/bootstrap.min.css',
     'bootstrap-icons/font/bootstrap-icons.css'
   ],
 
   plugins: [
     { src: '~/plugins/bootstrap-vue.js', mode: 'client' },
-    { src: '~/plugins/echo.client.js', mode: 'client' } 
+    { src: '~/plugins/echo.client.js', mode: 'client' }
   ],
 
   build: {
@@ -32,11 +32,11 @@ export default defineNuxtConfig({
     langDir: 'locales',
     defaultLocale: 'en',
     locales: [
-      {
-        code: 'en',
-        file: 'en.json'
-      },
-      { code: 'hu', iso: 'hu-HU', file: 'hu.json', name: 'Magyar' },
+      { code: 'en', file: 'en.json'},
+      { code: 'hu', file: 'hu.json' },
+      { code: 'de', file: 'de.json' },
+      { code: 'fr', file: 'fr.json' },
+      { code: 'es', file: 'es.json' }
       // Add more languages...
     ],
     strategy: 'prefix_except_default', // URLs like /en/about or /hu/about
@@ -48,39 +48,64 @@ export default defineNuxtConfig({
     },
     customRoutes: 'config',
     pages: {
-      'auth': {
+      auth: {
         en: '/auth',
         hu: '/identifikacio',
+        de: '/identifikation',
+        fr: '/identification',
+        es: '/identificacion'
       },
-      'index':{
+      index: {
         en: '/',
-        hu: '/fooldal'
+        hu: '/fooldal',
+        de: '/startseite',
+        fr: '/accueil',
+        es: '/inicio'
       },
-      'kitchen':{
+      kitchen: {
         en: '/kitchen',
-        hu: '/konyha'
+        hu: '/konyha',
+        de: '/kueche',
+        fr: '/cuisine',
+        es: '/cocina'
       },
-      'profile':{
+      profile: {
         en: '/profile',
-        hu: '/profil'
+        hu: '/profil',
+        de: '/profil',
+        fr: '/profil',
+        es: '/perfil'
       },
-      'menu':{
+      menu: {
         en: '/menu',
-        hu: '/menu'
+        hu: '/menu',
+        de: '/speisekarte',
+        fr: '/carte',
+        es: '/menu'
       },
-      'qrscannerpage':{
+      qrscannerpage: {
         en: '/qrscannerpage',
-        hu: '/qrscanneroldal'
+        hu: '/qrscanneroldal',
+        de: '/qrscannerseite',
+        fr: '/pageqrscanner',
+        es: '/qrscannerpagina'
       },
-      'thankyou':{
+      thankyou: {
         en: '/thankyou',
-        hu: '/koszonjuk'
+        hu: '/koszonjuk',
+        de: '/dankeschon',
+        fr: '/merci',
+        es: '/gracias'
       },
-      'waiter':{
+      waiter: {
         en: '/waiter',
-        hu: '/pincer'
-      },
-    },
+        hu: '/pincer',
+        de: '/kellner',
+        fr: '/serveur',
+        es: '/camarero'
+      }
+    }
+    
   },
 
   compatibilityDate: '2025-02-23',
@@ -94,6 +119,6 @@ export default defineNuxtConfig({
         }
       ]
     },
-    baseURL:'/innerpeace/'
+    baseURL: '/innerpeace/'
   }
 });

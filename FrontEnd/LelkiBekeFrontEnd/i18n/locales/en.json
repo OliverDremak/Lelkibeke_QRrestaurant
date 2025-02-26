@@ -93,8 +93,11 @@
         "setoc": "Set as occupied"
     },
     "languageSelector":{
+        "en": "English",
         "hu": "Hungarian",
-        "en": "English"
+        "de": "German",
+        "fr": "French",
+        "es": "Spanish"
     }
 
 
