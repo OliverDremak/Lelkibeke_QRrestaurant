@@ -15,7 +15,7 @@ export const useAuthStore = defineStore('auth', {
           this.loading = true
           this.error = null
           try {
-            const response = await $fetch<AuthResponse>('http://localhost:8000/api/login', {
+            const response = await $fetch<AuthResponse>('https://bgs.jedlik.eu/innerpeace/backend/api/login', {
               method: 'POST',
               body: { 
                 email,
@@ -80,7 +80,7 @@ export const useAuthStore = defineStore('auth', {
         try {
           // Add type assertion here as well
           //const hashedPassword = VueCryptojs.CryptoJS.SHA256(password).toString();
-          const response = await $fetch<AuthResponse>('http://localhost:8000/api/register', {
+          const response = await $fetch<AuthResponse>('https://bgs.jedlik.eu/innerpeace/backend/api/register', {
             method: 'POST',
             body: { name, email, password }
           })
