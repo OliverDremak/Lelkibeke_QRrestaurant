@@ -48,7 +48,7 @@ class UserController extends Controller
      *             @OA\Property(property="name", type="string"),
      *             @OA\Property(property="email", type="string", format="email"),
      *             @OA\Property(property="password", type="string", format="password"),
-     *             @OA\Property(property="role", type="string", enum={"admin", "user", "waiter"})
+     *             @OA\Property(property="role", type="string", enum={"admin", "user", "waiter", "kitchen"})
      *         )
      *     ),
      *     @OA\Response(
@@ -67,7 +67,7 @@ class UserController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
             'password' => 'required|string|min:8',
-            'role' => 'nullable|in:admin,user,waiter'
+            'role' => 'nullable|in:admin,user,waiter,kitchen' // Added kitchen role
         ]);
 
         try {
@@ -83,7 +83,12 @@ class UserController extends Controller
 
             return response()->json([
                 'token' => $token,
-                'user' => $user
+                'user' => [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'role' => $user->role
+                ]
             ], 201);
         } catch (\Exception $e) {
             $statusCode = method_exists($e, 'getStatusCode') ? $e->getStatusCode() : 500;
@@ -132,14 +137,10 @@ class UserController extends Controller
             }
 
             $userData = $result[0];
-            Log::info($userData->password);
-            Log::info(hash('sha256', $request->password));
 
             if (hash('sha256', $request->password) !== $userData->password) {
-                return response()->json(['error' => 'Hibás e-mail vagy jelszó'], 401);
+                return response()->json(['message' => 'Hibás e-mail vagy jelszó'], 401); // Fixed to use 'message' key consistently
             }
-
-
 
             $user = User::find($userData->id);
             $token = JWTAuth::fromUser($user);
@@ -151,10 +152,11 @@ class UserController extends Controller
                     'id' => $user->id,
                     'name' => $user->name,
                     'email' => $user->email,
-                    'role' => $user->role
+                    'role' => $user->role // Ensure role is included
                 ]
             ]);
         } catch (\Exception $e) {
+            Log::error('Login error: ' . $e->getMessage());
             return response()->json([
                 'message' => 'Bejelentkezés sikertelen',
                 'error' => $e->getMessage()
