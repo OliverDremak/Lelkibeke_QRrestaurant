@@ -27,8 +27,13 @@ export const useAuthStore = defineStore('auth', {
             if (response.token) {
               this.token = response.token
               this.user = response.user
+              
+              // Store both token AND user object in localStorage
               localStorage.setItem('token', response.token)
-              console.log('Token stored:', response.token) // Debug log
+              localStorage.setItem('user', JSON.stringify(response.user))
+              
+              console.log('Token stored:', response.token)
+              console.log('User role:', response.user?.role)
               return true
             } else {
               console.error('No token in response:', response)
@@ -36,7 +41,23 @@ export const useAuthStore = defineStore('auth', {
             }
           } catch (error: any) {
             console.error('Login error:', error) // Debug log
-            this.error = error.response?.data?.message || 'Login failed'
+            
+            // Handle different error formats
+            if (error.response?.data?.message) {
+              this.error = error.response.data.message
+            } else if (typeof error.data === 'object' && error.data?.message) {
+              this.error = error.data.message
+            } else if (typeof error.message === 'string') {
+              this.error = error.message
+            } else {
+              this.error = 'Login failed'
+            }
+            
+            // Translate common error messages
+            if (this.error === 'Hibás e-mail vagy jelszó') {
+              this.error = 'Invalid email or password'
+            }
+            
             return false
           } finally {
             this.loading = false
@@ -74,24 +95,33 @@ export const useAuthStore = defineStore('auth', {
         this.token = null
         this.user = null
         localStorage.removeItem('token')
+        localStorage.removeItem('user') // Also remove user from storage
         window.location.reload()
       },
   
       async checkAuth() {
         const token = localStorage.getItem('token')
-        if (token) {
+        const userStr = localStorage.getItem('user')
+        
+        if (token && userStr) {
           try {
-            // Add user type assertion
-            const user = await $fetch<User>('/api/auth/me', {
-              headers: { Authorization: `Bearer ${token}` }
-            })
-            
+            // First try to load user from localStorage
             this.token = token
-            this.user = user
+            this.user = JSON.parse(userStr)
+            
+            // Optionally verify with backend
+            // const user = await $fetch<User>('/api/auth/me', {
+            //   headers: { Authorization: `Bearer ${token}` }
+            // })
+            // this.user = user
           } catch {
             this.logout()
           }
         }
       }
+    },
+    getters: {
+      // Add a getter for user role
+      userRole: (state) => state.user?.role || null
     }
   })

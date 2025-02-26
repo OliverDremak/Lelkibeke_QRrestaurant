@@ -13,17 +13,39 @@
   })
   
   const handleLogin = async () => {
-    await auth.login(email.value, password.value)
+    const success = await auth.login(email.value, password.value)
 
-    if (auth.user) {
-      // Retrieve the intended URL from localStorage
-      const intendedUrl = localStorage.getItem('intendedUrl');
-      if (intendedUrl) {
-        localStorage.removeItem('intendedUrl');
-        await navigateTo(intendedUrl);
-      } else {
-        await navigateTo('/');
+    if (success && auth.user) {
+      // Debug log the user and role
+      console.log('Login successful, user:', auth.user)
+      console.log('User role:', auth.user.role)
+      
+      // Role-based redirection with explicit string comparison
+      const role = auth.user.role?.toLowerCase().trim();
+      
+      if (role === 'waiter') {
+        console.log('Redirecting to waiter page')
+        await navigateTo('/waiter');
+        return; // Add early return to prevent further execution
+      } 
+      else if (role === 'kitchen') {
+        console.log('Redirecting to kitchen page')
+        await navigateTo('/kitchen');
+        return; // Add early return to prevent further execution
+      } 
+      else {
+        console.log('No special role, using default redirection')
+        // Retrieve the intended URL from localStorage or use default route
+        const intendedUrl = localStorage.getItem('intendedUrl');
+        if (intendedUrl) {
+          localStorage.removeItem('intendedUrl');
+          await navigateTo(intendedUrl);
+        } else {
+          await navigateTo('/');
+        }
       }
+    } else {
+      console.error('Login failed or user missing')
     }
   }
 
@@ -31,13 +53,25 @@
     if (isLogin.value) {
       await handleLogin()
     } else {
-      await auth.register(name.value, email.value, password.value)
-    }
-    
-    if (auth.user) {
-      navigateTo(redirectPath.value)
+      const success = await auth.register(name.value, email.value, password.value)
+      if (success && auth.user) {
+        navigateTo(redirectPath.value)
+      }
     }
   }
+
+  const getTranslatedError = computed(() => {
+    if (!auth.error) return '';
+    
+    // Add translations for common errors
+    const errorMap: Record<string, string> = {
+      'Hibás e-mail vagy jelszó': 'Invalid email or password',
+      'The email field is required': 'Email is required',
+      'The password field is required': 'Password is required'
+    };
+    
+    return errorMap[auth.error] || auth.error;
+  });
 
   import PasswordEyeIcon from '~/components/PasswordEyeIcon.vue'
 </script>
@@ -79,7 +113,9 @@
           </button>
         </div>
 
-        <div class="error-message" v-if="auth.error">{{ auth.error }}</div>
+        <div class="error-message" v-if="auth.error">
+          {{ getTranslatedError }}
+        </div>
 
         <button type="submit" :disabled="auth.loading" class="glow-button">
           {{ auth.loading ? 'Processing...' : isLogin ? 'Login' : 'Register' }}
@@ -263,6 +299,10 @@
   margin-bottom: 1rem;
   text-align: center;
   font-weight: 500;
+  background-color: rgba(220, 53, 69, 0.1);
+  padding: 10px;
+  border-radius: 8px;
+  border-left: 4px solid #dc3545;
 }
 
 .password-input {
