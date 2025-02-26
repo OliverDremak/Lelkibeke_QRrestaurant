@@ -20,17 +20,38 @@
   })
   
   const handleLogin = async () => {
-    await auth.login(email.value, password.value)
+    console.log('Login attempt with:', { email: email.value })
+    const success = await auth.login(email.value, password.value)
 
-    if (auth.user) {
-      // Retrieve the intended URL from localStorage
-      const intendedUrl = localStorage.getItem('intendedUrl');
-      if (intendedUrl) {
-        localStorage.removeItem('intendedUrl');
-        await navigateTo(intendedUrl);
-      } else {
-        await navigateTo('/');
+    if (success && auth.user) {
+      console.log('Login successful, full user object:', auth.user)
+      
+      // Get role with null safety and normalization
+      const role = auth.user.role?.toLowerCase().trim() || ''
+      console.log('Normalized role for routing:', role)
+      
+      // Explicit role checking with proper logging
+      if (role === 'kitchen') {
+        console.log('Role matched: kitchen - redirecting to kitchen page')
+        await navigateTo('/kitchen')
+      } 
+      else if (role === 'waiter') {
+        console.log('Role matched: waiter - redirecting to waiter page')
+        await navigateTo('/waiter')
+      } 
+      else {
+        console.log('No role match found, role value was:', role)
+        // Retrieve the intended URL from localStorage or use default route
+        const intendedUrl = localStorage.getItem('intendedUrl');
+        if (intendedUrl) {
+          localStorage.removeItem('intendedUrl');
+          await navigateTo(intendedUrl);
+        } else {
+          await navigateTo('/');
+        }
       }
+    } else {
+      console.error('Login failed or user data missing')
     }
   }
 
@@ -38,13 +59,13 @@
     if (isLogin.value) {
       await handleLogin()
     } else {
-      await auth.register(name.value, email.value, password.value)
-    }
-    
-    if (auth.user) {
-      navigateTo(redirectPath.value)
+      const success = await auth.register(name.value, email.value, password.value)
+      if (success && auth.user) {
+        navigateTo(redirectPath.value)
+      }
     }
   }
+
 
   const submitForgotPassword = async () => {
     resetSuccess.value = false;
@@ -70,6 +91,20 @@
     resetSuccess.value = false;
     resetError.value = '';
   }
+
+  const getTranslatedError = computed(() => {
+    if (!auth.error) return '';
+    
+    // Add translations for common errors
+    const errorMap: Record<string, string> = {
+      'Hibás e-mail vagy jelszó': 'Invalid email or password',
+      'The email field is required': 'Email is required',
+      'The password field is required': 'Password is required'
+    };
+    
+    return errorMap[auth.error] || auth.error;
+  });
+
 
   import PasswordEyeIcon from '~/components/PasswordEyeIcon.vue'
 </script>
@@ -155,6 +190,7 @@
           <h2>Email Sent</h2>
           <p>We've sent a password reset link to your email address. Please check your inbox and follow the instructions.</p>
         </div>
+
         
         <button @click="backToLogin" class="toggle-button mt-4">
           <span class="text-center w-100 d-block">Back to Login</span>
@@ -163,6 +199,7 @@
     </div>
   </div>
 </template>
+
 
 <style scoped>
 @import url("~/assets/css/main.css");
@@ -329,6 +366,10 @@
   margin-bottom: 1rem;
   text-align: center;
   font-weight: 500;
+  background-color: rgba(220, 53, 69, 0.1);
+  padding: 10px;
+  border-radius: 8px;
+  border-left: 4px solid #dc3545;
 }
 
 .password-input {

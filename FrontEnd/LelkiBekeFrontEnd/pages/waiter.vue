@@ -14,13 +14,21 @@
 
     <header class="dashboard-header">
       <h1>Waiter Dashboard</h1>
-      <button 
-        class="action-button"
-        :class="{ 'active': showAllOrders }"
-        @click="toggleAllOrders"
-      >
-        {{ showAllOrders ? 'Table View' : 'All Orders' }}
-      </button>
+      <div class="header-actions">
+        <button 
+          class="action-button"
+          :class="{ 'active': showAllOrders }"
+          @click="toggleAllOrders"
+        >
+          {{ showAllOrders ? 'Table View' : 'All Orders' }}
+        </button>
+        <button 
+          class="logout-button"
+          @click="logout"
+        >
+          Logout
+        </button>
+      </div>
     </header>
 
     <div class="dashboard-content">
@@ -56,13 +64,16 @@
 
 <script setup>
 import { ref, onMounted, watch, nextTick, onBeforeUnmount } from 'vue';
-import { useNuxtApp } from '#app';
+import { useNuxtApp, useRouter } from '#app';
 import { useOrderStore } from '@/stores/orderStore';
+import { useAuthStore } from '@/stores/auth';
 import TableList from '@/components/TableList.vue';
 import OrderList from '@/components/OrderList.vue';
 import axios from 'axios';
 
+const router = useRouter();
 const orderStore = useOrderStore();
+const authStore = useAuthStore();
 
 const tables = ref([]);
 const selectedTable = ref(null);
@@ -271,8 +282,49 @@ const scrollToTop = () => {
   });
 };
 
+const logout = async () => {
+  console.log("Logout initiated from waiter page");
+  
+  // Call the auth store's logout method which is more comprehensive
+  authStore.logout();
+  
+  // Clear any remaining auth tokens from localStorage as a backup
+  localStorage.removeItem('auth_token');
+  localStorage.removeItem('user_role');
+  localStorage.removeItem('user');
+  
+  console.log("Auth data cleared, redirecting to auth page");
+  
+  // Use await to ensure navigation completes
+  await router.push('/auth');
+};
+
 // Modify the websocket listener to ensure immediate updates
 onMounted(() => {
+  // Comprehensive role checking with debugging
+  const authToken = localStorage.getItem('auth_token');
+  const userRole = localStorage.getItem('user_role');
+  
+  console.log('Waiter page - Auth check:', { 
+    hasToken: !!authToken,
+    userRole: userRole || 'none'
+  });
+  
+  // Explicit role check with proper error messaging
+  if (!authToken) {
+    console.log('No auth token found, redirecting to login');
+    router.push('/auth');
+    return;
+  }
+  
+  if (userRole !== 'waiter') {
+    console.log(`Access denied: Role "${userRole}" cannot access waiter page`);
+    router.push('/auth');
+    return;
+  }
+  
+  console.log('Access granted: Waiter role confirmed');
+  
   fetchTables();
   fetchAllOrders();
   
@@ -447,6 +499,28 @@ onBeforeUnmount(() => {
   transform: translateX(-50%) translateY(-20px);
 }
 
+.header-actions {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.logout-button {
+  background: linear-gradient(45deg, #e74c3c, #c0392b);
+  border: none;
+  color: white;
+  padding: 1rem 2rem;
+  border-radius: 12px;
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.logout-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(231, 76, 60, 0.3);
+}
+
 @media (max-width: 768px) {
   .waiter-dashboard {
     padding: 1rem;
@@ -458,7 +532,12 @@ onBeforeUnmount(() => {
     text-align: center;
   }
 
-  .action-button {
+  .header-actions {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .action-button, .logout-button {
     width: 100%;
   }
 }
