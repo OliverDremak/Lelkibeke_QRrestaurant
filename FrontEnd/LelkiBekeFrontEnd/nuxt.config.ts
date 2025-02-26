@@ -29,15 +29,18 @@ export default defineNuxtConfig({
   ],
 
   i18n: {
+    langDir: 'locales',
+    defaultLocale: 'en',
     locales: [
-      { code: 'en', iso: 'en-US', file: 'en.json', name: 'English' },
+      {
+        code: 'en',
+        file: 'en.json'
+      },
       { code: 'hu', iso: 'hu-HU', file: 'hu.json', name: 'Magyar' },
       // Add more languages...
     ],
-    defaultLocale: 'en', // Default language
     strategy: 'prefix_except_default', // URLs like /en/about or /hu/about
     lazy: true, // Load translations lazily
-    langDir: 'locales/', // Directory for translation files
     detectBrowserLanguage: {
       useCookie: true,
       cookieKey: 'i18n_redirected',

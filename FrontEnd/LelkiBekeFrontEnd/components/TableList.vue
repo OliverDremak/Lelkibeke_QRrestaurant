@@ -44,8 +44,7 @@
 import { ref, onMounted, onBeforeUnmount } from 'vue';
 import { useNuxtApp } from '#app';
 import axios from 'axios';
-import { useI18n } from '#imports'
-
+import { useI18n } from 'vue-i18n';  // Change this import
 
 export default {
   props: {
@@ -60,7 +59,7 @@ export default {
   },
   setup(props, { emit }) {
     const { $ws } = useNuxtApp();
-    const { t } = useI18n()
+    const { t } = useI18n();  // Change to use vue-i18n directly
     const scannedTableIds = ref([]);
     const tableOrders = ref({});  // Tracks number of new orders per table
 
@@ -68,7 +67,7 @@ export default {
       console.log('Toggling occupancy status for table:', table);
       const newStatus = table.is_available === 1 ? false : true;
       try {
-        await axios.post(`http://localhost:8000/api/setOccupancyStatus`, {
+        await axios.post(`https://bgs.jedlik.eu/innerpeace/backend/api/setOccupancyStatus`, {
           id: table.id,
           is_available: newStatus
         });
@@ -163,6 +162,7 @@ export default {
       toggleOccupancy,
       tableOrders,
       selectTable,
+      t,  // Make sure to return t in the setup function
     };
   },
 };

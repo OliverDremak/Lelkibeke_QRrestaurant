@@ -97,7 +97,7 @@ onMounted(async () => {
   window.addEventListener("resize", handleResize);
   try {
     console.log('RestaurantMenu mounting with tableId:', props.tableId);
-    const response = await axios.get('http://localhost:8000/api/menu');
+    const response = await axios.get('https://bgs.jedlik.eu/innerpeace/backend/api/menu');
     console.log('Menu data received:', response.data);
     mainCourses.value = response.data;
   } catch (error) {
@@ -193,7 +193,7 @@ const handleCheckout = async () => {
   };
 
   try {
-    const response = await fetch('http://localhost:8000/api/sendOrder', {
+    const response = await fetch('https://bgs.jedlik.eu/innerpeace/backend/api/sendOrder', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
