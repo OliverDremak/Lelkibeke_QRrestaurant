@@ -15,11 +15,11 @@ export default defineNuxtPlugin(() => {
   
   const config = useRuntimeConfig();
 
-  const ws =new Echo({
+  const ws = new Echo({
     broadcaster: 'reverb',
     key: config.public.reverbKey,
-    wsHost: 'localhost',
-    wsPort: 8080,
+    wsHost: 'ws.innerpeace.jedlik.cloud', 
+    wsPort: 80,
     wssPort: 443,
     forceTLS: false,
     enabledTransports: ['ws', 'wss'],
