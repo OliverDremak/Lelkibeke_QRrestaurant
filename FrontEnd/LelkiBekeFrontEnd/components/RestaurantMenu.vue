@@ -26,9 +26,9 @@
         </div>
       </div>
       <div class="main-content row">
-        <!-- Menu Section -->
+        <!-- Menu Section - Removed "Main Courses" heading -->
         <div class="menu-section" :class="menuClass">
-          <h2>Main Courses</h2>
+          <!-- h2>Main Courses</h2> removed -->
           <div class="menu-grid">
             <div v-for="item in filteredMainCourses" :key="item.id" class="menu-item">
               <img class="menu-item-image" src="https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fimages.deliveryhero.io%2Fimage%2Ffd-hu%2FLH%2Fhvmf-hero.jpg&f=1&nofb=1&ipt=3f262fe518822ce6b005b76e32553af53eb53e599d9891c6a15efd23cad0747e&ipo=images" alt="">
@@ -58,7 +58,12 @@
             <hr>
             <div class="total">
               <span class="heading">{{ t('reastaurantMenu.total') }}: {{ cartTotal }}ft</span>
-              <ButtonComponet @click="handleCheckout" :text="t('reastaurantMenu.checkout')" class="totheright"/>
+              <ButtonComponet 
+                @click="handleCheckout" 
+                :text="isSubmitting ? 'Processing...' : t('reastaurantMenu.checkout')"
+                :disabled="isSubmitting"
+                class="totheright"
+              />
             </div>
           </div>
           <button class="toggle-cart" @click="toggleCart">
@@ -169,7 +174,13 @@ const toggleCart = () => {
   isCartExpanded.value = !isCartExpanded.value;
 };
 
+// Add a loading state
+const isSubmitting = ref(false);
+
 const handleCheckout = async () => {
+  // Prevent multiple submissions
+  if (isSubmitting.value) return;
+  
   const auth = useAuthStore();
   const token = auth.token;
   console.log('Retrieved token:', token);
@@ -182,17 +193,22 @@ const handleCheckout = async () => {
     return;
   }
 
-  const orderData = {
-    table_id: props.tableId,
-    total_price: cartTotal.value,
-    order_items: cart.value.map(item => ({
-      menu_item_id: item.id,
-      quantity: item.quantity,
-      notes: item.notes || ''
-    }))
-  };
-
   try {
+    // Set submitting state to true
+    isSubmitting.value = true;
+    
+    // ...rest of the existing checkout code...
+    
+    const orderData = {
+      table_id: props.tableId,
+      total_price: cartTotal.value,
+      order_items: cart.value.map(item => ({
+        menu_item_id: item.id,
+        quantity: item.quantity,
+        notes: item.notes || ''
+      }))
+    };
+
     const response = await fetch('https://api.innerpeace.jedlik.cloud/api/sendOrder', {
       method: 'POST',
       headers: {
@@ -217,12 +233,14 @@ const handleCheckout = async () => {
 
     const responseData = await response.json();
     if (responseData.order_id) {
-      alert('Order placed successfully!');
       localStorage.removeItem('cart');
       await navigateTo('/thankyou');
     }
   } catch (error) {
     console.error('Checkout error:', error);
+    // Reset submitting state on error
+    isSubmitting.value = false;
+    
     if (error.message.includes('Unauthorized')) {
       localStorage.removeItem('token');
       await navigateTo('/auth');
@@ -285,11 +303,11 @@ button:hover .svg-icon {
 .category-buttons {
   display: flex;
   gap: 10px;
-  margin-bottom: 20px;
+  margin-bottom: 10px; /* Reduced from 20px to 10px */
   overflow-x: auto;
   white-space: nowrap;
   scroll-behavior: smooth;
-  padding: 0 40px;
+  padding: 0 40px 5px; /* Reduced bottom padding from 10px to 5px */
 }
 
 /* Update Category Button Styles */
@@ -328,11 +346,16 @@ button:hover .svg-icon {
   position: relative;
   display: flex;
   align-items: center;
+  padding-top: 0; /* Reduced from 5px to 0 */
+  overflow: visible; /* Ensure content isn't clipped */
+  margin-top: 0; /* Add this to ensure no extra spacing */
 }
 
 .category-buttons {
   -ms-overflow-style: none;
   scrollbar-width: none;
+  padding: 5px 40px 10px; /* Add top padding to container */
+  overflow-y: visible; /* Allow vertical overflow for hover effect */
 }
 
 .category-buttons::-webkit-scrollbar {
