@@ -83,7 +83,8 @@
         "addToCart": "Add to Cart",
         "cartEmpty": "Your cart is empty",
         "total": "Total",
-        "checkout": "Checkout"
+        "checkout": "Checkout",
+        "specialRequest": "Add special request..."
     },
     "tableList":{
         "scanned": "SCANNED",
@@ -99,7 +100,4 @@
         "fr": "French",
         "es": "Spanish"
     }
-
-
-
 }

@@ -81,6 +81,7 @@
         "parNoItems": "No hay elementos en el menú disponibles",
         "cartTitle": "Tu Pedido",
         "addToCart": "Añadir al carrito",
+        "specialRequest": "Añadir petición especial...",
         "cartEmpty": "Tu carrito está vacío",
         "total": "Total",
         "checkout": "Pagar"

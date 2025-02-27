@@ -83,7 +83,8 @@
         "addToCart": "Ajouter au panier",
         "cartEmpty": "Votre panier est vide",
         "total": "Total",
-        "checkout": "Passer à la caisse"
+        "checkout": "Passer à la caisse",
+        "specialRequest": "Ajouter une demande spéciale..."
     },
     "tableList":{
         "scanned": "SCANNÉ",

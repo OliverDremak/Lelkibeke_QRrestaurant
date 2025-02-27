@@ -83,7 +83,8 @@
         "addToCart": "Zum Warenkorb hinzufügen",
         "cartEmpty": "Ihr Warenkorb ist leer",
         "total": "Gesamt",
-        "checkout": "Zur Kasse gehen"
+        "checkout": "Zur Kasse gehen",
+        "specialRequest": "Besondere Anfrage hinzufügen..."
     },
     "tableList":{
         "scanned": "GESCANNT",
