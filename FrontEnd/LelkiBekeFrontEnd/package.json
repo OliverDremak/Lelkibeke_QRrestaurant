@@ -30,6 +30,7 @@
     "vue-router": "latest"
   },
   "devDependencies": {
-    "@types/crypto-js": "^4.2.2"
+    "@types/crypto-js": "^4.2.2",
+    "cypress": "^14.1.0"
   }
 }
