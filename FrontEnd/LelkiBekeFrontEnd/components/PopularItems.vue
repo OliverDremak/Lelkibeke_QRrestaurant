@@ -10,7 +10,7 @@ const isLoading = ref(true)
 
 const fetchPopularItems = async () => {
   try {
-    const response = await axios.get('http://localhost:8000/api/salesTop-items')
+    const response = await axios.get('https://api.innerpeace.jedlik.cloud/api/salesTop-items')
     popularItems.value = response.data.slice(0, 3) // Get only top 3
     isLoading.value = false
   } catch (error) {

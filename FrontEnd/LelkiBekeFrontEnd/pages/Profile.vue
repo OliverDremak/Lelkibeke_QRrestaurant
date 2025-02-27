@@ -29,7 +29,7 @@ watchEffect(() => {
 
 const fetchCoupons = async () => {
     try {
-        const response = await axios.get(`http://localhost:8000/api/coupons/user/${auth.user.id}`);
+        const response = await axios.get(`https://api.innerpeace.jedlik.cloud/api/coupons/user/${auth.user.id}`);
         coupons.value = response.data;
     } catch (error) {
         console.error('Error fetching coupons:', error);
@@ -40,7 +40,7 @@ const fetchOrders = async () => {
     isLoading.value = true;
     error.value = null;
     try {
-        const response = await axios.get(`http://localhost:8000/api/orders/user/${auth.user.id}`);
+        const response = await axios.get(`https://api.innerpeace.jedlik.cloud/api/orders/user/${auth.user.id}`);
         orders.value = response.data.map(order => ({
             ...order,
             items: JSON.parse(`[${order.items}]`)
@@ -59,7 +59,7 @@ const fetchOrders = async () => {
 
 const updateProfile = async () => {
     try {
-        await axios.put(`http://localhost:8000/api/users/${auth.user.id}`, userForm.value);
+        await axios.put(`https://api.innerpeace.jedlik.cloud/api/users/${auth.user.id}`, userForm.value);
         auth.user.name = userForm.value.name;
         auth.user.email = userForm.value.email;
         isEditing.value = false;

@@ -86,7 +86,7 @@ const tableListTop = ref(0);
 
 const fetchTables = async () => {
   try {
-    const response = await axios.get('http://localhost:8000/api/tables');
+    const response = await axios.get('https://api.innerpeace.jedlik.cloud/api/tables');
     tables.value = response.data;
   } catch (error) {
     console.error('Error fetching tables:', error);
@@ -96,7 +96,7 @@ const fetchTables = async () => {
 // Separate fetch function without scrolling
 const updateTableOrders = async (tableId) => {
   try {
-    const response = await axios.post('http://localhost:8000/api/getActiveOrdersForTable', {
+    const response = await axios.post('https://api.innerpeace.jedlik.cloud/api/getActiveOrdersForTable', {
       id: tableId
     });
     selectedTableOrders.value = response.data;
@@ -135,7 +135,7 @@ const refreshOrders = async () => {
 
 const fetchActiveOrdersForTable = async (tableId) => {
   try {
-    const response = await axios.post('http://localhost:8000/api/getActiveOrdersForTable', {
+    const response = await axios.post('https://api.innerpeace.jedlik.cloud/api/getActiveOrdersForTable', {
       id: tableId
     });
     
@@ -215,7 +215,7 @@ const scrollToOrders = () => {
 
 const fetchAllOrders = async () => {
   try {
-    const response = await axios.get('http://localhost:8000/api/allActiveOrders');
+    const response = await axios.get('https://api.innerpeace.jedlik.cloud/api/allActiveOrders');
     
     // Process the orders to group items by order_id
     const processedOrders = response.data.reduce((acc, item) => {
@@ -336,7 +336,7 @@ onMounted(() => {
         await fetchAllOrders();
       } else if (selectedTable.value && selectedTable.value.id === e.tableId) {
         // For new orders, immediately add to store and update view
-        const response = await axios.post('http://localhost:8000/api/getActiveOrdersForTable', {
+        const response = await axios.post('https://api.innerpeace.jedlik.cloud/api/getActiveOrdersForTable', {
           id: selectedTable.value.id
         });
         

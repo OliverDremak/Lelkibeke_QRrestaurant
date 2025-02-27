@@ -287,7 +287,7 @@ const markAsServed = async () => {
   try {
     console.log('Attempting to mark order as served:', selectedOrder.value);
     const originalPosition = orderStore.getOrderPosition(selectedOrder.value.order_id);
-    await axios.post('http://localhost:8000/api/kitchen/update-status', {
+    await axios.post('https://api.innerpeace.jedlik.cloud/api/kitchen/update-status', {
       order_id: selectedOrder.value.order_id,
       status: 'served',
       table_id: selectedOrder.value.table_id,

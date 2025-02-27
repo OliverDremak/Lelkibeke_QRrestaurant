@@ -37,7 +37,7 @@ onMounted(async () => {
       return;
     }
 
-    const tablesResponse = await axios.get('http://localhost:8000/api/tables');
+    const tablesResponse = await axios.get('https://api.innerpeace.jedlik.cloud/api/tables');
     const tableExists = tablesResponse.data.some(table => table.id === tableId);
     
     if (!tableExists) {
@@ -45,7 +45,7 @@ onMounted(async () => {
       return;
     }
     
-    await axios.post('http://localhost:8000/api/table-scanned', {
+    await axios.post('https://api.innerpeace.jedlik.cloud/api/table-scanned', {
       tableId: tableId
     });
     

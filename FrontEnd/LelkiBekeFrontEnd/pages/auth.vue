@@ -73,7 +73,7 @@
     isLoading.value = true;
     
     try {
-      const response = await axios.post('http://localhost:8000/api/forgot-password', {
+      const response = await axios.post('https://api.innerpeace.jedlik.cloud/api/forgot-password', {
         email: forgotEmail.value
       });
       

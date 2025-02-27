@@ -35,7 +35,7 @@ const resetPassword = async () => {
   isLoading.value = true;
   
   try {
-    const response = await axios.post('http://127.0.0.1:8000/api/reset-password', {
+    const response = await axios.post('https://api.innerpeace.jedlik.cloud/api/reset-password', {
       email: email,
       token: token,
       password: password.value

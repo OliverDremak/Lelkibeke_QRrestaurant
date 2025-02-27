@@ -132,7 +132,7 @@ const updateStatus = async ({ orderId, newStatus, originalDate }) => {
     order.sort_key = new Date(originalDate).getTime(); // Preserve original sort order
 
     // Then send to server
-    await axios.post('http://localhost:8000/api/kitchen/update-status', {
+    await axios.post('https://api.innerpeace.jedlik.cloud/api/kitchen/update-status', {
       order_id: orderId,
       status: newStatus,
       table_id: order.table_id
@@ -160,7 +160,7 @@ const updateStatus = async ({ orderId, newStatus, originalDate }) => {
 
 const fetchOrders = async () => {
   try {
-    const response = await axios.get('http://localhost:8000/api/kitchen/pending-orders');
+    const response = await axios.get('https://api.innerpeace.jedlik.cloud/api/kitchen/pending-orders');
     
     if (!response.data) {
       orders.value = [];
