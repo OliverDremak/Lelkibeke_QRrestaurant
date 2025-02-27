@@ -16,7 +16,7 @@ use Illuminate\Routing\Controller as BaseController;
  *     )
  * )
  * @OA\Server(
- *     url="https://bgs.jedlik.eu/innerpeace/backend/api",
+ *     url="https://api.innerpeace.jedlik.cloud/api",
  *     description="Local API Server"
  * )
  */

@@ -47,7 +47,7 @@ const contactForm = reactive({
 
 const submitContactForm = async () => {
   try {
-    await axios.post('https://bgs.jedlik.eu/innerpeace/backend/api/contact-messages', contactForm);
+    await axios.post('https://api.innerpeace.jedlik.cloud/api/contact-messages', contactForm);
     alert('Message sent successfully!');
     // Reset form
     contactForm.name = auth.user ? auth.user.name : '';
@@ -61,7 +61,7 @@ const submitContactForm = async () => {
 
 const fetchOpeningHours = async () => {
   try {
-    const response = await axios.get('https://bgs.jedlik.eu/innerpeace/backend/api/opening-hours');
+    const response = await axios.get('https://api.innerpeace.jedlik.cloud/api/opening-hours');
     openingHours.value = response.data;
   } catch (error) {
     console.error('Error fetching opening hours:', error);

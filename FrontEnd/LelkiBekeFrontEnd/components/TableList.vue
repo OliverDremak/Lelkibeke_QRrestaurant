@@ -67,7 +67,7 @@ export default {
       console.log('Toggling occupancy status for table:', table);
       const newStatus = table.is_available === 1 ? false : true;
       try {
-        await axios.post(`https://bgs.jedlik.eu/innerpeace/backend/api/setOccupancyStatus`, {
+        await axios.post(`https://api.innerpeace.jedlik.cloud/api/setOccupancyStatus`, {
           id: table.id,
           is_available: newStatus
         });
