@@ -9,7 +9,14 @@
     <div v-else>
       <Navbar />
       <div class="container mt-4">
-        <h1 class="text-center">Table {{ tableId }}</h1>
+        <!-- Simplified Table Number Display -->
+        <div class="table-display">
+          <div class="table-number-badge">
+            <span class="table-prefix">#</span>
+            <span class="table-number">{{ tableId }}</span>
+          </div>
+        </div>
+        
         <RestaurantMenu :table-id="tableId"/>
       </div>
       <Footer/>
@@ -73,5 +80,43 @@ onMounted(async () => {
 pre {
   white-space: pre-wrap;
   word-wrap: break-word;
+}
+
+/* Simplified Table Number Display Styles */
+.table-display {
+  text-align: center;
+  margin: 1.5rem auto 0.5rem; /* Reduced bottom margin from 2rem to 0.5rem */
+}
+
+.table-number-badge {
+  display: inline-flex;
+  align-items: center;
+  background: linear-gradient(135deg, #dd6013, #ffbd00);
+  border-radius: 50px;
+  padding: 0.5rem 1.5rem;
+  box-shadow: 0 4px 12px rgba(221, 96, 19, 0.25);
+  position: relative;
+}
+
+.table-prefix {
+  font-size: 1rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.8);
+  letter-spacing: 2px;
+  margin-right: 8px;
+}
+
+.table-number {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: white;
+  line-height: 1;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  position: relative;
+}
+
+/* Dark mode support */
+:root.dark .table-number-badge {
+  box-shadow: 0 4px 12px rgba(255, 189, 0, 0.25);
 }
 </style>
