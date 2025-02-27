@@ -18,7 +18,10 @@
               <span class="stat-label">Total Active</span>
             </div>
           </div>
-          <button class="logout-button" @click="logout">Logout</button>
+          <div class="header-buttons">
+            <button class="logout-button" @click="logout">Logout</button>
+            <button class="main-page-button" @click="goToMainPage">Go to Main Page</button>
+          </div>
         </div>
       </div>
     </header>
@@ -192,6 +195,10 @@ const logout = async () => {
   
   // Use await to ensure navigation completes
   await router.push('/auth');
+};
+
+const goToMainPage = () => {
+  router.push('/');
 };
 
 onMounted(() => {
@@ -376,6 +383,30 @@ h1 {
   box-shadow: 0 4px 12px rgba(231, 76, 60, 0.3);
 }
 
+.header-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.main-page-button {
+  background: linear-gradient(45deg, #2980b9, #3498db);
+  border: none;
+  color: white;
+  padding: 0.8rem 1.5rem;
+  border-radius: 12px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.main-page-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+}
+
+/* Update responsive styles for mobile */
 @media (max-width: 768px) {
   .kitchen-dashboard {
     padding: 1rem;
@@ -406,6 +437,14 @@ h1 {
   }
   
   .logout-button {
+    width: 100%;
+  }
+
+  .header-buttons {
+    width: 100%;
+  }
+  
+  .main-page-button {
     width: 100%;
   }
 }

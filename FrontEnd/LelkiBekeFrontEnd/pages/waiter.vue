@@ -22,6 +22,15 @@
         >
           {{ showAllOrders ? 'Table View' : 'All Orders' }}
         </button>
+        
+        <!-- New Home button -->
+        <button 
+          class="home-button"
+          @click="goToMainPage"
+        >
+          Go to Main Page
+        </button>
+        
         <button 
           class="logout-button"
           @click="logout"
@@ -299,6 +308,11 @@ const logout = async () => {
   await router.push('/auth');
 };
 
+// Add this new function
+const goToMainPage = () => {
+  router.push('/');
+};
+
 // Modify the websocket listener to ensure immediate updates
 onMounted(() => {
   // Comprehensive role checking with debugging
@@ -521,6 +535,25 @@ onBeforeUnmount(() => {
   box-shadow: 0 4px 12px rgba(231, 76, 60, 0.3);
 }
 
+/* Add styles for the new button */
+.home-button {
+  background: linear-gradient(45deg, #2980b9, #3498db);
+  border: none;
+  color: white;
+  padding: 1rem 2rem;
+  border-radius: 12px;
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-width: 200px;
+}
+
+.home-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+}
+
+/* Adjust responsive styling for the additional button */
 @media (max-width: 768px) {
   .waiter-dashboard {
     padding: 1rem;
@@ -537,8 +570,12 @@ onBeforeUnmount(() => {
     flex-direction: column;
   }
 
-  .action-button, .logout-button {
+  .action-button, .logout-button, .home-button {
     width: 100%;
+  }
+
+  .home-button {
+    margin-bottom: 0.5rem;
   }
 }
 
