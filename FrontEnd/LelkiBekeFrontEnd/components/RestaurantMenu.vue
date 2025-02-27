@@ -46,7 +46,11 @@
           </div>
         </div>
 
-        <div class="cart-section col-xl-4 col-lg-6" :class="{ expanded: isCartExpanded }">
+        <div class="cart-section col-xl-4 col-lg-6" 
+             :class="{ 
+               expanded: isCartExpanded, 
+               'footer-visible': isNearFooter 
+             }">
           <div class="cart-header">
             <h2>{{ t('reastaurantMenu.cartTitle') }}</h2>
             <div class="cart-count" v-if="cart.length">
@@ -111,6 +115,13 @@
               <span></span>
             </div>
           </button>
+          
+          <!-- Add a minimal indicator that shows when near footer -->
+          <div class="cart-mini-indicator" v-if="isNearFooter && !isCartExpanded && cart.length > 0">
+            <span class="mini-count">{{ cart.length }}</span>
+            <span class="mini-total">{{ cartTotal }}ft</span>
+            <span class="mini-arrow">↑</span>
+          </div>
         </div>
       </div>
     </div>
@@ -118,7 +129,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
+import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue';
 import ButtonComponet from './ButtonComponet.vue';
 import axios from 'axios';
 import { useI18n } from '#imports'
@@ -300,6 +311,30 @@ watch(cart, (newCart) => {
   localStorage.setItem('cart', JSON.stringify(newCart));
 }, { deep: true });
 
+// Add state for footer visibility
+const isNearFooter = ref(false);
+
+onMounted(() => {
+  // ...existing onMounted code...
+  
+  // Set up intersection observer to detect when near footer
+  if (typeof window !== 'undefined' && 'IntersectionObserver' in window) {
+    // Create observer for footer detection
+    const footerObserver = new IntersectionObserver((entries) => {
+      // When footer becomes visible, adjust cart position
+      isNearFooter.value = entries[0].isIntersecting;
+    }, {
+      rootMargin: '100px',
+      threshold: 0.1
+    });
+    
+    // Observe the footer element
+    const footerElement = document.querySelector('.footer');
+    if (footerElement) {
+      footerObserver.observe(footerElement);
+    }
+  }
+});
 </script>
 
 <style scoped>
@@ -1344,4 +1379,69 @@ button:hover .svg-icon {
     50% { box-shadow: 0 -4px 18px rgba(255, 189, 0, 0.3); }
     100% { box-shadow: 0 -4px 12px rgba(0,0,0,0.4); }
 }
+
+/* Styles for cart when footer is visible */
+@media (max-width: 999px) {
+  /* When footer is visible, minimize the cart */
+  .cart-section.footer-visible:not(.expanded) {
+    transform: translateY(calc(100% - 30px)); /* Show just a hint */
+    opacity: 0.9;
+    transition: all 0.4s ease;
+  }
+  
+  /* Mini indicator for minimized cart */
+  .cart-mini-indicator {
+    position: absolute;
+    top: 5px;
+    left: 0;
+    right: 0;
+    height: 25px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    color: #dd6013;
+    font-weight: bold;
+  }
+  
+  .mini-count {
+    background: #dd6013;
+    color: white;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+  }
+  
+  .mini-total {
+    font-size: 1.1rem;
+  }
+  
+  .mini-arrow {
+    animation: bounce 1.5s infinite;
+    font-size: 1.2rem;
+  }
+  
+  @keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-5px); }
+  }
+  
+  /* When cart is expanded, show it completely regardless of footer */
+  .cart-section.footer-visible.expanded {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  
+  /* Ensure footer buttons always stay on top */
+  .footer .custom-button {
+    position: relative;
+    z-index: 2000;
+  }
+}
+
+/* ...existing styles... */
 </style>
