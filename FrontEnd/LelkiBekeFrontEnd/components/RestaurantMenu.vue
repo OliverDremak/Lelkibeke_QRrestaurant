@@ -31,44 +31,97 @@
           <!-- h2>Main Courses</h2> removed -->
           <div class="menu-grid">
             <div v-for="item in filteredMainCourses" :key="item.id" class="menu-item">
-              <img class="menu-item-image" src="https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fimages.deliveryhero.io%2Fimage%2Ffd-hu%2FLH%2Fhvmf-hero.jpg&f=1&nofb=1&ipt=3f262fe518822ce6b005b76e32553af53eb53e599d9891c6a15efd23cad0747e&ipo=images" alt="">
-              <h3>{{ item.name }} ({{ item.category_name }})</h3>
-              <p>{{ item.description }}</p>
-              <p class="price">{{ item.price }}ft</p>
-              <ButtonComponet @click="addToCart(item)" :text="t('reastaurantMenu.addToCart')"/>
+              <div class="menu-item-content">
+                <img class="menu-item-image" src="https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fimages.deliveryhero.io%2Fimage%2Ffd-hu%2FLH%2Fhvmf-hero.jpg&f=1&nofb=1&ipt=3f262fe518822ce6b005b76e32553af53eb53e599d9891c6a15efd23cad0747e&ipo=images" alt="">
+                <h3>{{ item.name }}</h3>
+                <div class="description-container">
+                  <p>{{ item.description }}</p>
+                </div>
+                <div class="menu-item-footer">
+                  <p class="price">{{ item.price }}ft</p>
+                  <ButtonComponet @click="addToCart(item)" :text="t('reastaurantMenu.addToCart')"/>
+                </div>
+              </div>
             </div>
           </div>
         </div>
 
-        <div class="cart-section col-xl-4 col-lg-6" :class="{ expanded: isCartExpanded }">
-          <h2 class="heading orderheading text-center mb-3">{{ t('reastaurantMenu.cartTitle') }}</h2>
-          <div v-if="cart.length === 0">{{ t('reastaurantMenu.cartEmpty') }}</div>
-          <div v-else>
-            <div v-for="(cartItem, index) in cart" :key="index" class="cart-item row">
-              <span class="col-5">{{ cartItem.name }}</span>
-              <span class="col-3">{{ (cartItem.price * cartItem.quantity).toFixed(2) }}ft</span>
-              <div class="quantitybuttons col-2 text-center">
-                <button @click="decreaseQuantity(index)"><img src="../public/svgs/minus.svg" alt="Trash" class="svg-icon" width="24" height="24"></button>
-                <span style="margin-top: 2px;">{{ cartItem.quantity }}</span>
-                <button @click="increaseQuantity(index)"><img src="../public/svgs/plus.svg" alt="Trash" class="svg-icon" width="24" height="24"></button>
-              </div>
-              <button @click="removeFromCart(index)" class="trash col-2"><img src="../public/svgs/trash.svg" alt="Trash" class="svg-icon" width="24" height="24"></button>
-              <input v-model="cartItem.notes" placeholder="Add a note" class="col-12 mt-2"/>
+        <div class="cart-section col-xl-4 col-lg-6" 
+             :class="{ 
+               expanded: isCartExpanded, 
+               'footer-visible': isNearFooter 
+             }">
+          <div class="cart-header">
+            <h2>{{ t('reastaurantMenu.cartTitle') }}</h2>
+            <div class="cart-count" v-if="cart.length">
+              {{ cart.length }}
             </div>
-            <hr>
-            <div class="total">
-              <span class="heading">{{ t('reastaurantMenu.total') }}: {{ cartTotal }}ft</span>
+          </div>
+          
+          <div v-if="cart.length === 0" class="empty-cart">
+            <div class="empty-cart-icon">🛒</div>
+            <p>{{ t('reastaurantMenu.cartEmpty') }}</p>
+          </div>
+          
+          <div v-else class="cart-content">
+            <div class="cart-items">
+              <div v-for="(cartItem, index) in cart" :key="index" class="cart-item">
+                <div class="item-details">
+                  <div class="item-name-price">
+                    <h4>{{ cartItem.name }}</h4>
+                    <span class="item-price">{{ (cartItem.price * cartItem.quantity).toFixed(0) }}ft</span>
+                  </div>
+                  <div class="item-controls">
+                    <div class="quantity-control">
+                      <button @click="decreaseQuantity(index)" class="quantity-btn">
+                        <img src="../public/svgs/minus.svg" alt="-" class="svg-icon" width="16" height="16">
+                      </button>
+                      <span class="quantity-value">{{ cartItem.quantity }}</span>
+                      <button @click="increaseQuantity(index)" class="quantity-btn">
+                        <img src="../public/svgs/plus.svg" alt="+" class="svg-icon" width="16" height="16">
+                      </button>
+                    </div>
+                    <button @click="removeFromCart(index)" class="remove-btn">
+                      <img src="../public/svgs/trash.svg" alt="Remove" class="svg-icon" width="18" height="18">
+                    </button>
+                  </div>
+                </div>
+                <textarea 
+                  v-model="cartItem.notes" 
+                  :placeholder="t('reastaurantMenu.specialRequest')"
+                  class="item-notes"
+                  rows="1"
+                ></textarea>
+              </div>
+            </div>
+            
+            <div class="cart-footer">
+              <div class="cart-total">
+                <span class="total-label">{{ t('reastaurantMenu.total') }}</span>
+                <span class="total-amount">{{ cartTotal }}ft</span>
+              </div>
               <ButtonComponet 
                 @click="handleCheckout" 
                 :text="isSubmitting ? 'Processing...' : t('reastaurantMenu.checkout')"
                 :disabled="isSubmitting"
-                class="totheright"
+                class="checkout-btn"
               />
             </div>
           </div>
+          
           <button class="toggle-cart" @click="toggleCart">
-            {{ isCartExpanded ? '▼' : '▲' }}
+            <div class="toggle-icon">
+              <span></span>
+              <span></span>
+            </div>
           </button>
+          
+          <!-- Add a minimal indicator that shows when near footer -->
+          <div class="cart-mini-indicator" v-if="isNearFooter && !isCartExpanded && cart.length > 0">
+            <span class="mini-count">{{ cart.length }}</span>
+            <span class="mini-total">{{ cartTotal }}ft</span>
+            <span class="mini-arrow">↑</span>
+          </div>
         </div>
       </div>
     </div>
@@ -76,7 +129,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
+import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue';
 import ButtonComponet from './ButtonComponet.vue';
 import axios from 'axios';
 import { useI18n } from '#imports'
@@ -258,6 +311,30 @@ watch(cart, (newCart) => {
   localStorage.setItem('cart', JSON.stringify(newCart));
 }, { deep: true });
 
+// Add state for footer visibility
+const isNearFooter = ref(false);
+
+onMounted(() => {
+  // ...existing onMounted code...
+  
+  // Set up intersection observer to detect when near footer
+  if (typeof window !== 'undefined' && 'IntersectionObserver' in window) {
+    // Create observer for footer detection
+    const footerObserver = new IntersectionObserver((entries) => {
+      // When footer becomes visible, adjust cart position
+      isNearFooter.value = entries[0].isIntersecting;
+    }, {
+      rootMargin: '100px',
+      threshold: 0.1
+    });
+    
+    // Observe the footer element
+    const footerElement = document.querySelector('.footer');
+    if (footerElement) {
+      footerObserver.observe(footerElement);
+    }
+  }
+});
 </script>
 
 <style scoped>
@@ -398,55 +475,194 @@ button:hover .svg-icon {
   width: 100%;
 }
 
+/* Enhanced Menu Item Styling */
 .menu-item {
-  border: 1px solid #e0e0e0;
+  border: none;
   background-color: #fff;
-  padding: 20px;
-  border-radius: 12px;
+  padding: 0;
+  border-radius: 16px;
   width: calc(33.333% - 20px);
   box-sizing: border-box;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
 }
 
 .menu-item:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+  transform: translateY(-8px);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.12);
+}
+
+.menu-item:active {
+  transform: translateY(-2px);
+}
+
+.menu-item-content {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  height: 100%;
+}
+
+.menu-item-image {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+  border-radius: 0;
+  margin-bottom: 0;
+  transition: transform 0.5s ease;
+}
+
+.menu-item:hover .menu-item-image {
+  transform: scale(1.05);
 }
 
 .menu-item h3 {
   font-size: 1.25rem;
-  margin-bottom: 10px;
+  margin: 15px 20px 10px;
   color: #333;
+  font-weight: 700;
+  line-height: 1.3;
 }
 
-.menu-item p {
-  font-size: 0.9rem;
+/* Fixed height description container */
+.description-container {
+  padding: 0 20px;
+  min-height: 80px; /* Use min-height instead of fixed height */
+  max-height: 100px; /* Add a max-height with overflow handling */
+  overflow: hidden;
+  margin-bottom: 10px;
+  position: relative; /* For potential fade effect */
+}
+
+.description-container p {
+  margin: 0;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 4; /* Increased from 3 to 4 lines */
+  -webkit-box-orient: vertical;
   color: #666;
-  margin-bottom: 15px;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  word-wrap: break-word; /* Ensure long words break appropriately */
+  hyphens: auto; /* Add hyphenation for better text wrapping */
+}
+
+/* Add fade effect at the bottom of long descriptions */
+.description-container::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 20px;
+  background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,1));
+  pointer-events: none;
+}
+
+/* Dark mode support for the fade effect */
+:root.dark .description-container::after {
+  background: linear-gradient(to bottom, rgba(45,45,45,0), rgba(45,45,45,1));
+}
+
+/* Updated footer styling with centered button */
+.menu-item-footer {
+  width: 100%;
+  padding: 15px 20px;
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+  background: rgba(249, 249, 249, 0.5);
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-top: auto;
+  align-items: center; /* Center children horizontally */
+  text-align: center; /* Center text content */
 }
 
 .menu-item .price {
-  font-size: 1.1rem;
-  font-weight: bold;
+  font-size: 1.4rem;
+  font-weight: 700;
   color: #dd6013;
-  margin-bottom: 15px;
+  margin: 0;
+  position: relative;
+  padding-bottom: 5px;
+  display: inline-block; /* Allow the element to be centered */
+  border-bottom: 3px solid #dd6013; /* Change from border-left to border-bottom for centered design */
 }
 
+/* Improved button styling */
 .menu-item button {
-  background: linear-gradient(145deg, #dd6013, #ffbd00);
+  background: linear-gradient(135deg, #dd6013, #ffbd00);
   border: none;
-  border-radius: 25px;
-  padding: 10px 20px;
+  border-radius: 30px;
+  padding: 12px 20px;
   color: white;
-  font-weight: bold;
+  font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(221, 96, 19, 0.2);
+  width: auto; /* Allow button to size based on content */
+  min-width: 80%; /* Set a minimum width */
+  max-width: 90%; /* Set a maximum width */
+  text-align: center;
+  font-size: 1rem;
+  margin: 0 auto; /* Center the button */
 }
 
-.menu-item button:hover {
-  background: linear-gradient(145deg, #ffbd00, #dd6013);
-  transform: scale(1.05);
+/* Dark mode compatibility */
+:root.dark .menu-item {
+  background-color: #2d2d2d;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.25);
+}
+
+:root.dark .menu-item h3 {
+  color: #f0f0f0;
+}
+
+:root.dark .description-container p {
+  color: #bbb;
+}
+
+:root.dark .menu-item-footer {
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(45, 45, 45, 0.8);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .menu-item {
+    border-radius: 12px;
+  }
+  
+  .menu-item-image {
+    height: 150px;
+  }
+  
+  .menu-item h3 {
+    font-size: 1.1rem;
+    margin: 12px 15px 8px;
+  }
+  
+  .description-container {
+    height: 70px; /* Smaller fixed height for mobile */
+    padding: 0 15px;
+  }
+  
+  .menu-item-footer {
+    padding: 12px 15px;
+  }
+  
+  .menu-item .price {
+    font-size: 1.2rem;
+  }
+  
+  .menu-item button {
+    padding: 8px 15px;
+    font-size: 0.9rem;
+  }
 }
 
 .menu-grid {
@@ -482,35 +698,393 @@ button:hover .svg-icon {
 
 .cart-section {
   flex: 1;
-  background: #f5f5f5;
-  padding: 1rem;
-  border-radius: 25px; /* Rounded corners */
-  box-shadow: 9px 9px 12px #b2b2b3, inset 0 0 7px rgba(0, 0, 0, 0.3);
+  background: white;
+  padding: 0;
+  border-radius: 20px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
   max-height: fit-content;
 }
 
-.cart-item {
+.cart-header {
+  background: linear-gradient(135deg, #dd6013, #ffbd00);
+  color: white;
+  padding: 1.2rem 1.5rem;
+  display: flex;
+  justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
 }
 
-.cart-item input {
-  border-radius: 25px; /* Rounded corners for the input field */
-  padding: 10px;
-  border: 1px solid #ccc;
+.cart-header h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 700;
 }
 
-.total {
+.cart-count {
+  background: white;
+  color: #dd6013;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   font-weight: bold;
-  margin-top: 10px;
-  margin-left: 3px;
 }
 
-.toggle-cart {
-  margin-top: 10px;
+.empty-cart {
+  padding: 3rem 1rem;
+  text-align: center;
+  color: #777;
+}
+
+.empty-cart-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  opacity: 0.5;
+}
+
+.cart-content {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.cart-items {
+  padding: 1rem;
+  overflow-y: auto;
+  max-height: 60vh;
+}
+
+.cart-item {
+  background: #f9f9f9;
+  border-radius: 12px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  transition: all 0.2s ease;
+}
+
+.cart-item:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+  transform: translateY(-2px);
+}
+
+.item-details {
+  display: flex;
+  justify-content: space-between;
+}
+
+.item-name-price {
+  flex: 1;
+}
+
+.item-name-price h4 {
+  margin: 0 0 0.5rem;
+  font-size: 1.1rem;
+  color: #333;
+}
+
+.item-price {
+  font-weight: 600;
+  color: #dd6013;
+}
+
+.item-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.quantity-control {
+  display: flex;
+  align-items: center;
+  background: white;
+  border-radius: 20px;
+  padding: 0.3rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.quantity-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: none;
+  background: #f0f0f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.quantity-btn:hover {
+  background: #e0e0e0;
+}
+
+.quantity-value {
+  padding: 0 0.8rem;
+  font-weight: 600;
+  min-width: 1.5rem;
+  text-align: center;
+}
+
+.remove-btn {
+  background: #f0f0f0;
+  border: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.remove-btn:hover {
+  background: #ffecec;
+}
+
+.remove-btn .svg-icon {
+  filter: brightness(0) saturate(100%) invert(30%) sepia(100%) saturate(1000%) hue-rotate(0deg);
+}
+
+.item-notes {
+  width: 100%;
+  margin-top: 0.8rem;
+  padding: 0.8rem;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  resize: vertical;
+  min-height: 40px;
+  font-family: inherit;
+}
+
+.item-notes:focus {
+  outline: none;
+  border-color: #dd6013;
+}
+
+.cart-footer {
+  padding: 1.2rem;
+  background: white;
+  border-top: 1px solid #eee;
+  margin-top: auto;
+}
+
+.cart-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.total-label {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.total-amount {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #dd6013;
+}
+
+.checkout-btn {
+  width: 100%;
+  padding: 1rem !important;
+  border-radius: 12px !important;
+  font-size: 1.2rem !important;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-top: 0.5rem;
 }
 
 @media (max-width: 999px) {
+  .cart-section {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    padding-top: 30px; /* Add padding at the top to make room for the button */
+    box-shadow: 0 -5px 25px rgba(0, 0, 0, 0.15);
+    transition: transform 0.3s ease;
+    transform: translateY(calc(100% - 60px));
+    width: 100%;
+    border-radius: 20px 20px 0 0;
+  }
+
+  .cart-section.expanded {
+    transform: translateY(0);
+  }
+
+  .cart-header {
+    cursor: pointer;
+    padding: 1rem 1.5rem;
+  }
+
+  .cart-items {
+    max-height: 50vh;
+  }
+  
+  .toggle-cart {
+    position: absolute;
+    top: -20px; /* Adjusted from -25px to reduce how high it sits */
+    left: 50%;
+    transform: translateX(-50%);
+    background: white;
+    border: 2px solid #eee; /* Slightly thicker border */
+    border-radius: 50%;
+    width: 50px; /* Increased from 30px */
+    height: 50px; /* Increased from 30px */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15); /* Added shadow for better visibility */
+    z-index: 1001; /* Increase z-index to ensure it's always on top */
+    padding: 0;
+  }
+
+  .toggle-icon {
+    width: 20px;
+    height: 20px;
+    position: relative;
+    transition: transform 0.3s ease;
+  }
+
+  .toggle-icon span {
+    display: block;
+    position: absolute;
+    height: 3px;
+    width: 100%;
+    background: #dd6013;
+    border-radius: 3px;
+    opacity: 1;
+    left: 0;
+    transform: rotate(0deg);
+    transition: all 0.3s ease;
+  }
+
+  .toggle-icon span:first-child {
+    top: 8px;
+  }
+
+  .toggle-icon span:last-child {
+    top: 16px;
+  }
+
+  .expanded .toggle-icon span:first-child {
+    top: 12px;
+    transform: rotate(45deg);
+  }
+
+  .expanded .toggle-icon span:last-child {
+    top: 12px;
+    transform: rotate(-45deg);
+  }
+
+  .checkout-btn {
+    padding: 1.2rem !important;
+  }
+
+  /* Remove any overflow hidden properties that might clip the button */
+  .cart-content, .cart-items {
+    overflow: visible;
+    overflow-y: auto;
+  }
+}
+
+/* Dark mode compatibility */
+:root.dark .cart-section {
+  background-color: #2d2d2d;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+}
+
+:root.dark .cart-item {
+  background: #383838;
+}
+
+:root.dark .item-name-price h4 {
+  color: #eee;
+}
+
+:root.dark .empty-cart {
+  color: #aaa;
+}
+
+:root.dark .quantity-control {
+  background: #2d2d2d;
+}
+
+:root.dark .quantity-btn,
+:root.dark .remove-btn {
+  background: #444;
+}
+
+:root.dark .quantity-btn:hover {
+  background: #555;
+}
+
+:root.dark .remove-btn:hover {
+  background: #633030;
+}
+
+:root.dark .item-notes {
+  background: #383838;
+  border-color: #444;
+  color: #eee;
+}
+
+:root.dark .total-label {
+  color: #eee;
+}
+
+:root.dark .cart-footer {
+  background: #2d2d2d;
+  border-top: 1px solid #444;
+}
+
+@media (max-width: 999px) {
+  .cart-section {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: #f5f5f5;
+    padding: 1rem;
+    border-radius: 25px; /* Rounded corners */
+    box-shadow: 9px 9px 12px #b2b2b3, inset 0 0 7px rgba(0, 0, 0, 0.3);
+    max-height: fit-content;
+  }
+
+  .cart-item {
+    align-items: center;
+    margin-bottom: 20px;
+  }
+
+  .cart-item input {
+    border-radius: 25px; /* Rounded corners for the input field */
+    padding: 10px;
+    border: 1px solid #ccc;
+  }
+
+  .total {
+    font-weight: bold;
+    margin-top: 10px;
+    margin-left: 3px;
+  }
+
+  .toggle-cart {
+    margin-top: 10px;
+  }
+
   .cart-section {
     position: fixed;
     bottom: 0;
@@ -558,18 +1132,59 @@ button:hover .svg-icon {
 
   .toggle-cart {
     position: absolute;
-    top: -20px;
+    top: -25px; /* Moved slightly higher to be more visible */
     left: 50%;
     transform: translateX(-50%);
     background: white;
-    border: 1px solid #ccc;
+    border: 2px solid #eee; /* Slightly thicker border */
     border-radius: 50%;
-    width: 30px;
-    height: 30px;
+    width: 50px; /* Increased from 30px */
+    height: 50px; /* Increased from 30px */
     display: flex;
     justify-content: center;
     align-items: center;
     cursor: pointer;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15); /* Added shadow for better visibility */
+    z-index: 100; /* Ensure it's above other elements */
+    padding: 0;
+  }
+
+  .toggle-icon {
+    width: 20px;
+    height: 20px;
+    position: relative;
+    transition: transform 0.3s ease;
+  }
+
+  .toggle-icon span {
+    display: block;
+    position: absolute;
+    height: 3px;
+    width: 100%;
+    background: #dd6013;
+    border-radius: 3px;
+    opacity: 1;
+    left: 0;
+    transform: rotate(0deg);
+    transition: all 0.3s ease;
+  }
+
+  .toggle-icon span:first-child {
+    top: 8px;
+  }
+
+  .toggle-icon span:last-child {
+    top: 16px;
+  }
+
+  .expanded .toggle-icon span:first-child {
+    top: 12px;
+    transform: rotate(45deg);
+  }
+
+  .expanded .toggle-icon span:last-child {
+    top: 12px;
+    transform: rotate(-45deg);
   }
 }
 
@@ -636,8 +1251,197 @@ button:hover .svg-icon {
 }
 
 :root.dark .toggle-cart {
-  background-color: #2d2d2d;
-  color: #ffffff;
-  border-color: #404040;
+  background: #2d2d2d;
+  border-color: #444;
 }
+
+:root.dark .toggle-icon span {
+  background: #ffbd00;
+}
+
+/* Fixed toggle button styles */
+@media (max-width: 999px) {
+  /* Fix cart section to ensure button visibility */
+  .cart-section {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 999;
+    padding-top: 40px; /* Increased padding to make more room for the button */
+    margin-top: 40px; /* Add margin to create space for the button */
+    overflow: visible !important; /* Force visible overflow */
+  }
+  
+  /* Style the button to ensure it's always visible */
+  .toggle-cart {
+    position: fixed; /* Change to fixed positioning */
+    bottom: calc(100% - 25px); /* Position relative to viewport bottom */
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1999; /* Very high z-index */
+    width: 60px; /* Slightly larger */
+    height: 60px; /* Slightly larger */
+    border: 3px solid #eee;
+    box-shadow: 0 -4px 12px rgba(0,0,0,0.2);
+    pointer-events: auto !important; /* Ensure clickability */
+    /* Add better center alignment */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: visible;
+    background: white;
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  }
+  
+  /* Add hover effect */
+  .toggle-cart:hover {
+    transform: translateX(-50%) scale(1.1);
+  }
+  
+  /* Add active effect */
+  .toggle-cart:active {
+    transform: translateX(-50%) scale(0.95);
+  }
+  
+  /* Improved toggle icon styling */
+  .toggle-icon {
+    width: 24px;
+    height: 24px;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    /* Center the icon properly */
+    margin: 0 auto;
+  }
+  
+  .toggle-icon span {
+    position: absolute;
+    height: 3px;
+    width: 100%;
+    background: #dd6013;
+    border-radius: 3px;
+    left: 0;
+    transition: all 0.4s cubic-bezier(0.68, -0.6, 0.32, 1.6);
+  }
+  
+  .toggle-icon span:first-child {
+    top: 8px;
+    transform-origin: center;
+  }
+  
+  .toggle-icon span:last-child {
+    top: 16px;
+    transform-origin: center;
+  }
+  
+  /* Fancy animation for expanded state */
+  .expanded .toggle-icon span:first-child {
+    top: 12px;
+    transform: rotate(45deg) scaleX(1.2);
+  }
+  
+  .expanded .toggle-icon span:last-child {
+    top: 12px;
+    transform: rotate(-45deg) scaleX(1.2);
+  }
+  
+  /* Add a subtle pulse animation for the button when cart has items */
+  @keyframes gentle-pulse {
+    0% { box-shadow: 0 -4px 12px rgba(0,0,0,0.2); }
+    50% { box-shadow: 0 -4px 18px rgba(221, 96, 19, 0.3); }
+    100% { box-shadow: 0 -4px 12px rgba(0,0,0,0.2); }
+  }
+  
+  .cart-section:has(.cart-count) .toggle-cart {
+    animation: gentle-pulse 2s infinite ease-in-out;
+  }
+}
+
+/* Dark mode adjustments */
+:root.dark .toggle-cart {
+  background: #2d2d2d;
+  border-color: #444;
+  animation: none;
+}
+
+:root.dark .toggle-icon span {
+  background: #ffbd00;
+}
+
+:root.dark .cart-section:has(.cart-count) .toggle-cart {
+  animation: gentle-pulse-dark 2s infinite ease-in-out;
+}
+
+@keyframes gentle-pulse-dark {
+  0% { box-shadow: 0 -4px 12px rgba(0,0,0,0.4); }
+    50% { box-shadow: 0 -4px 18px rgba(255, 189, 0, 0.3); }
+    100% { box-shadow: 0 -4px 12px rgba(0,0,0,0.4); }
+}
+
+/* Styles for cart when footer is visible */
+@media (max-width: 999px) {
+  /* When footer is visible, minimize the cart */
+  .cart-section.footer-visible:not(.expanded) {
+    transform: translateY(calc(100% - 30px)); /* Show just a hint */
+    opacity: 0.9;
+    transition: all 0.4s ease;
+  }
+  
+  /* Mini indicator for minimized cart */
+  .cart-mini-indicator {
+    position: absolute;
+    top: 5px;
+    left: 0;
+    right: 0;
+    height: 25px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    color: #dd6013;
+    font-weight: bold;
+  }
+  
+  .mini-count {
+    background: #dd6013;
+    color: white;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+  }
+  
+  .mini-total {
+    font-size: 1.1rem;
+  }
+  
+  .mini-arrow {
+    animation: bounce 1.5s infinite;
+    font-size: 1.2rem;
+  }
+  
+  @keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-5px); }
+  }
+  
+  /* When cart is expanded, show it completely regardless of footer */
+  .cart-section.footer-visible.expanded {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  
+  /* Ensure footer buttons always stay on top */
+  .footer .custom-button {
+    position: relative;
+    z-index: 2000;
+  }
+}
+
+/* ...existing styles... */
 </style>
