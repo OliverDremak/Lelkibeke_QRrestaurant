@@ -3,24 +3,37 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Foundation\Bus\DispatchesJobs;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Routing\Controller as BaseController;
+use OpenApi\Annotations as OA;
 
 /**
  * @OA\Info(
+ *     title="Lelkibéke QR Restaurant API",
  *     version="1.0.0",
- *     title="Lelkibeke Restaurant API",
- *     description="API documentation for Lelkibeke Restaurant",
+ *     description="API documentation for Lelkibéke QR Restaurant system",
  *     @OA\Contact(
- *         email="admin@example.com"
+ *         email="info@lelkibeke.com",
+ *         name="Support Team"
  *     )
  * )
+ * 
  * @OA\Server(
- *     url="https://api.innerpeace.jedlik.cloud/api",
- *     description="Local API Server"
+ *     url="/",
+ *     description="API Server"
+ * )
+ * 
+ * @OA\SecurityScheme(
+ *     securityScheme="bearerAuth",
+ *     in="header",
+ *     name="Authorization",
+ *     type="http",
+ *     scheme="bearer",
+ *     bearerFormat="JWT"
  * )
  */
 class Controller extends BaseController
 {
-    use AuthorizesRequests, ValidatesRequests;
+    use AuthorizesRequests, DispatchesJobs, ValidatesRequests;
 }

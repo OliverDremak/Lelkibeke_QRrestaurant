@@ -6,6 +6,8 @@ use App\Http\Controllers\MenuItemController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\TableController;
 
+// Remove the Swagger redirect route
+
 Route::get('/', function () {
     return view('welcome');
 });
@@ -13,9 +15,6 @@ Route::get('/', function () {
 Route::get('/users', [UserController::class, 'getUsers']);
 
 Route::get('/activeOrder', [OrderController::class, 'getActiveOrders']);
-
-
-
 
 //Route::post('/sendorder', [OrderController::class, 'sendOrder']); //Meg nem jo kell a useres rész
 

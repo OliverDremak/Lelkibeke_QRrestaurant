@@ -4,30 +4,21 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use OpenApi\Annotations as OA;
 
 /**
- * @OA\Info(
- *     title="Menu API",
- *     version="1.0",
- *     description="Restaurant Menu API",
- *     @OA\Contact(
- *         email=""
- *     )
- * )
- *
- * @OA\Server(
- *     url=L5_SWAGGER_CONST_HOST,
- *     description="Local Development Server"
+ * @OA\Tag(
+ *     name="Menu Items",
+ *     description="API Endpoints for menu items"
  * )
  */
-
 class MenuItemController extends Controller
 {
-        /**
+    /**
      * @OA\Get(
-     *     path="/menu",
+     *     path="/api/menu",
      *     summary="Get all menu items",
-     *     tags={"Menu"},
+     *     tags={"Menu Items"},
      *     @OA\Response(
      *         response=200,
      *         description="List of menu items",
@@ -43,15 +34,16 @@ class MenuItemController extends Controller
         // Visszaküldjük a lekérdezett adatokat JSON formátumban
         return response()->json($menuItems);
     }
+
     /**
      * @OA\Post(
-     *     path="/menu",
+     *     path="/api/newMenuItem",
      *     summary="Create a new menu item",
-     *     tags={"Menu"},
+     *     tags={"Menu Items"},
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\JsonContent(
-     *             required={"category_id", "name", "description", "price", "image_url"},
+     *             required={"category_id", "name", "price"},
      *             @OA\Property(property="category_id", type="integer"),
      *             @OA\Property(property="name", type="string"),
      *             @OA\Property(property="description", type="string"),
@@ -60,8 +52,13 @@ class MenuItemController extends Controller
      *         )
      *     ),
      *     @OA\Response(
-     *         response=201,
-     *         description="Menu item created successfully"
+     *         response=200,
+     *         description="Menu item created successfully",
+     *         @OA\JsonContent(type="object")
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Invalid input"
      *     )
      * )
      */
@@ -82,21 +79,17 @@ class MenuItemController extends Controller
 
         return response()->json($result);
     }
+
     /**
-     * @OA\Put(
-     *     path="/api/menu/{id}",
-     *     summary="Modify an existing menu item",
-     *     tags={"Menu"},
-     *     @OA\Parameter(
-     *         name="id",
-     *         in="path",
-     *         required=true,
-     *         @OA\Schema(type="integer")
-     *     ),
+     * @OA\Post(
+     *     path="/api/modifyMenuItem",
+     *     summary="Update an existing menu item",
+     *     tags={"Menu Items"},
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\JsonContent(
-     *             required={"category_id", "name", "description", "price", "image_url"},
+     *             required={"id", "category_id", "name", "price"},
+     *             @OA\Property(property="id", type="integer"),
      *             @OA\Property(property="category_id", type="integer"),
      *             @OA\Property(property="name", type="string"),
      *             @OA\Property(property="description", type="string"),
@@ -106,7 +99,12 @@ class MenuItemController extends Controller
      *     ),
      *     @OA\Response(
      *         response=200,
-     *         description="Menu item modified successfully"
+     *         description="Menu item updated successfully",
+     *         @OA\JsonContent(type="object")
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Menu item not found"
      *     )
      * )
      */
@@ -129,20 +127,26 @@ class MenuItemController extends Controller
 
         return response()->json($result);
     }
+
     /**
-     * @OA\Delete(
-     *     path="/api/menu/{id}",
+     * @OA\Post(
+     *     path="/api/deleteMenuItem",
      *     summary="Delete a menu item",
-     *     tags={"Menu"},
-     *     @OA\Parameter(
-     *         name="id",
-     *         in="path",
+     *     tags={"Menu Items"},
+     *     @OA\RequestBody(
      *         required=true,
-     *         @OA\Schema(type="integer")
+     *         @OA\JsonContent(
+     *             required={"id"},
+     *             @OA\Property(property="id", type="integer")
+     *         )
      *     ),
      *     @OA\Response(
      *         response=200,
-     *         description="Item deleted successfully"
+     *         description="Menu item deleted successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string"),
+     *             @OA\Property(property="result", type="object")
+     *         )
      *     ),
      *     @OA\Response(
      *         response=500,
@@ -154,7 +158,6 @@ class MenuItemController extends Controller
         try {
             $menuItemId = $request->input('id');
 
-            // Debug log (ezt ellenőrizheted a laravel.log fájlban)
             \Log::info("Deleting menu item with ID: " . $menuItemId);
 
             $result = DB::select('CALL DeleteMenuItemById(?)', [

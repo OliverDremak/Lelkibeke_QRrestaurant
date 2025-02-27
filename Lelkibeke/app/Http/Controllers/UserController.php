@@ -18,6 +18,12 @@ use Illuminate\Support\Str;
 use App\Mail\ResetPasswordMail;
 use Illuminate\Support\Facades\Mail;
 
+/**
+ * @OA\Tag(
+ *     name="User",
+ *     description="User management endpoints"
+ * )
+ */
 class UserController extends Controller
 {
      /**
@@ -190,6 +196,29 @@ class UserController extends Controller
         }
     }
 
+    /**
+     * @OA\Get(
+     *     path="/api/user/coupons",
+     *     summary="Get coupons for authenticated user",
+     *     tags={"User"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Response(
+     *         response=200,
+     *         description="List of user's coupons",
+     *         @OA\JsonContent(type="array", @OA\Items(
+     *             @OA\Property(property="id", type="integer"),
+     *             @OA\Property(property="user_id", type="integer"),
+     *             @OA\Property(property="code", type="string"),
+     *             @OA\Property(property="discount_value", type="number"),
+     *             @OA\Property(property="is_used", type="boolean")
+     *         ))
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Unauthenticated"
+     *     )
+     * )
+     */
     public function getCoupons()
     {
         $coupons = DB::table('coupons')
@@ -200,6 +229,28 @@ class UserController extends Controller
         return response()->json($coupons);
     }
 
+    /**
+     * @OA\Get(
+     *     path="/api/users/{id}",
+     *     summary="Get a specific user's details",
+     *     tags={"User"},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="User details",
+     *         @OA\JsonContent(type="object")
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="User not found"
+     *     )
+     * )
+     */
     public function getUser($id)
     {
         try {
@@ -210,6 +261,37 @@ class UserController extends Controller
         }
     }
 
+    /**
+     * @OA\Put(
+     *     path="/api/users/{id}",
+     *     summary="Update user information",
+     *     tags={"User"},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"name", "email"},
+     *             @OA\Property(property="name", type="string"),
+     *             @OA\Property(property="email", type="string", format="email"),
+     *             @OA\Property(property="password", type="string"),
+     *             @OA\Property(property="newPassword", type="string")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="User updated successfully"
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Failed to update user"
+     *     )
+     * )
+     */
     public function updateUser(Request $request, $id)
     {
         $validated = $request->validate([

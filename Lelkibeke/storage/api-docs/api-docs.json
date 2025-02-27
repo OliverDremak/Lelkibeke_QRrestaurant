@@ -1,35 +1,44 @@
 {
     "openapi": "3.0.0",
     "info": {
-        "title": "Menu API",
-        "description": "Restaurant Menu API",
-        "contact": {
-            "email": ""
-        },
-        "version": "1.0"
+        "title": "Lelkibeke QR Restaurant API",
+        "description": "API Documentation for Lelkibeke QR Restaurant",
+        "version": "1.0.0"
     },
-    "servers": [
-        {
-            "url": "https://bgs.jedlik.eu/innerpeace/backend",
-            "description": "Local Development Server"
-        }
-    ],
     "paths": {
-        "/menu": {
+        "/contact/messages": {
             "get": {
                 "tags": [
-                    "Menu"
+                    "Contact"
                 ],
-                "summary": "Get all menu items",
-                "operationId": "6fbbf669fed7cf2e4147dfaa7a2c0f43",
+                "summary": "Get all contact messages",
+                "operationId": "a314680841b31c2111734b940ae1227e",
                 "responses": {
                     "200": {
-                        "description": "List of menu items",
+                        "description": "Successful operation",
                         "content": {
                             "application/json": {
                                 "schema": {
                                     "type": "array",
                                     "items": {
+                                        "properties": {
+                                            "id": {
+                                                "type": "integer"
+                                            },
+                                            "name": {
+                                                "type": "string"
+                                            },
+                                            "email": {
+                                                "type": "string"
+                                            },
+                                            "message": {
+                                                "type": "string"
+                                            },
+                                            "created_at": {
+                                                "type": "string",
+                                                "format": "datetime"
+                                            }
+                                        },
                                         "type": "object"
                                     }
                                 }
@@ -40,37 +49,31 @@
             },
             "post": {
                 "tags": [
-                    "Menu"
+                    "Contact"
                 ],
-                "summary": "Create a new menu item",
-                "operationId": "18b88258fa4f90adfebc1a55cc0a1e72",
+                "summary": "Create a new contact message",
+                "operationId": "ae995afa099e9447a3ffe005abaf4d47",
                 "requestBody": {
                     "required": true,
                     "content": {
                         "application/json": {
                             "schema": {
                                 "required": [
-                                    "category_id",
                                     "name",
-                                    "description",
-                                    "price",
-                                    "image_url"
+                                    "email",
+                                    "message"
                                 ],
                                 "properties": {
-                                    "category_id": {
-                                        "type": "integer"
-                                    },
                                     "name": {
-                                        "type": "string"
+                                        "type": "string",
+                                        "maxLength": 255
                                     },
-                                    "description": {
-                                        "type": "string"
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "maxLength": 255
                                     },
-                                    "price": {
-                                        "type": "number",
-                                        "format": "float"
-                                    },
-                                    "image_url": {
+                                    "message": {
                                         "type": "string"
                                     }
                                 },
@@ -81,91 +84,25 @@
                 },
                 "responses": {
                     "201": {
-                        "description": "Menu item created successfully"
-                    }
-                }
-            }
-        },
-        "/api/menu/{id}": {
-            "put": {
-                "tags": [
-                    "Menu"
-                ],
-                "summary": "Modify an existing menu item",
-                "operationId": "d10662b74b6df90d0d573ec03afff4b4",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "required": [
-                                    "category_id",
-                                    "name",
-                                    "description",
-                                    "price",
-                                    "image_url"
-                                ],
-                                "properties": {
-                                    "category_id": {
-                                        "type": "integer"
+                        "description": "Message created successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string"
+                                        },
+                                        "message_id": {
+                                            "type": "integer"
+                                        }
                                     },
-                                    "name": {
-                                        "type": "string"
-                                    },
-                                    "description": {
-                                        "type": "string"
-                                    },
-                                    "price": {
-                                        "type": "number",
-                                        "format": "float"
-                                    },
-                                    "image_url": {
-                                        "type": "string"
-                                    }
-                                },
-                                "type": "object"
+                                    "type": "object"
+                                }
                             }
                         }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Menu item modified successfully"
-                    }
-                }
-            },
-            "delete": {
-                "tags": [
-                    "Menu"
-                ],
-                "summary": "Delete a menu item",
-                "operationId": "f7ba28316ee361273d84e518b35fc0a4",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Item deleted successfully"
                     },
-                    "500": {
-                        "description": "Failed to delete menu item"
+                    "422": {
+                        "description": "Validation error"
                     }
                 }
             }
@@ -281,9 +218,6 @@
         },
         "/api/tables": {
             "get": {
-                "tags": [
-                    "Tables"
-                ],
                 "summary": "Retrieve all tables",
                 "operationId": "d951b540828f22231a71c368861837a8",
                 "responses": {
@@ -525,7 +459,8 @@
                                         "enum": [
                                             "admin",
                                             "user",
-                                            "waiter"
+                                            "waiter",
+                                            "kitchen"
                                         ]
                                     }
                                 },
@@ -598,12 +533,93 @@
                     }
                 }
             }
+        },
+        "/api/forgot-password": {
+            "post": {
+                "tags": [
+                    "User"
+                ],
+                "summary": "Send password reset email",
+                "operationId": "7f0e98a39ddfc40c60396569db381cf0",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Password reset email sent"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                }
+            }
+        },
+        "/api/reset-password": {
+            "post": {
+                "tags": [
+                    "User"
+                ],
+                "summary": "Reset user password",
+                "operationId": "ed01832d747dc8e430fe35d31c9a7825",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email",
+                                    "token",
+                                    "password"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email"
+                                    },
+                                    "token": {
+                                        "type": "string"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "format": "password"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Password reset successful"
+                    },
+                    "400": {
+                        "description": "Invalid token"
+                    }
+                }
+            }
         }
     },
     "tags": [
         {
-            "name": "Menu",
-            "description": "Menu"
+            "name": "Contact",
+            "description": "API Endpoints for contact messages"
         },
         {
             "name": "Sales",
@@ -616,6 +632,20 @@
         {
             "name": "User",
             "description": "User"
+        }
+    ],
+    "components": {
+        "securitySchemes": {
+            "bearer": {
+                "type": "apiKey",
+                "name": "Authorization",
+                "in": "header"
+            }
+        }
+    },
+    "security": [
+        {
+            "bearer": []
         }
     ]
 }

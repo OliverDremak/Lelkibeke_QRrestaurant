@@ -11,6 +11,8 @@ use App\Http\Controllers\OpeningHoursController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\CouponController;
 
+// Remove the Swagger security scheme annotation
+
 Route::get('/users', [UserController::class, 'getUsers']);
 
 // POST routes

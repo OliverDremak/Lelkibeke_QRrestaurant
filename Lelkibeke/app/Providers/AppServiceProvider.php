@@ -27,9 +27,6 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        Route::prefix('api') // Comment or remove this line
-            ->middleware('api')
-            ->namespace($this->namespace)
-            ->group(base_path('routes/api.php'));
+        // Remove the Swagger routes inclusion
     }
 }

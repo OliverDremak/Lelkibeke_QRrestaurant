@@ -5,13 +5,21 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use OpenApi\Annotations as OA;
 
+/**
+ * @OA\Tag(
+ *     name="Tables",
+ *     description="API Endpoints for restaurant tables"
+ * )
+ */
 class TableController extends Controller
 {
     /**
      * @OA\Get(
      *     path="/api/tables",
      *     summary="Retrieve all tables",
+     *     tags={"Tables"},
      *     @OA\Response(
      *         response=200,
      *         description="List of tables",
