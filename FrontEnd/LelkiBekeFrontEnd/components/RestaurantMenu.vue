@@ -32,7 +32,7 @@
           <div class="menu-grid">
             <div v-for="item in filteredMainCourses" :key="item.id" class="menu-item">
               <div class="menu-item-content">
-                <img class="menu-item-image" src="https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fimages.deliveryhero.io%2Fimage%2Ffd-hu%2FLH%2Fhvmf-hero.jpg&f=1&nofb=1&ipt=3f262fe518822ce6b005b76e32553af53eb53e599d9891c6a15efd23cad0747e&ipo=images" alt="">
+                <img class="menu-item-image" :src="item.image_url" :alt="item.image_url">
                 <h3>{{ item.name }}</h3>
                 <div class="description-container">
                   <p>{{ item.description }}</p>
