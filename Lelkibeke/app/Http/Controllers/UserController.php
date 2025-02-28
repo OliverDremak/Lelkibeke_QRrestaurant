@@ -275,7 +275,7 @@ class UserController extends Controller
         );
         
         // Create reset URL
-        $resetUrl = env('FRONTEND_URL', 'http://localhost:3000') . '/reset-password?token=' . $token . '&email=' . urlencode($request->email);
+        $resetUrl = env('FRONTEND_URL', 'https://innerpeace.jedlik.cloud/innerpeace') . '/reset-password?token=' . $token . '&email=' . urlencode($request->email);
         
         // Send email directly
         try {

@@ -118,25 +118,29 @@ INSERT INTO tables (table_number, qr_code_url, is_available) VALUES
 ('T5', 'https://example.com/qr5', false),
 ('T6', 'https://example.com/qr6', true);
 
--- Insert into category
+-- MODIFIED: Insert new categories instead of previous ones
 INSERT INTO category (name) VALUES
-('Pizza'),
 ('Burger'),
-('Pasta'),
-('Drinks');
+('Pizza'),
+('Sushi');
 
--- Insert into menu_items
+-- MODIFIED: Insert new menu items with updated image URLs
+-- Original menu items INSERT with shortened descriptions (8 words maximum)
+-- Locate the existing INSERT statements for menu items and replace with these
 INSERT INTO menu_items (category_id, name, description, price, image_url) VALUES
-(1, 'Margherita Pizza', 'Classic Italian pizza with mozzarella and tomato sauce', 2500, 'https://example.com/margherita.jpg'),
-(1, 'Pepperoni Pizza', 'Spicy pepperoni with mozzarella cheese', 2800, 'https://example.com/pepperoni.jpg'),
-(2, 'Cheeseburger', 'Juicy beef patty with cheese and lettuce', 2000, 'https://example.com/cheeseburger.jpg'),
-(2, 'Chicken Burger', 'Crispy chicken patty with mayo and lettuce', 2200, 'https://example.com/chickenburger.jpg'),
-(3, 'Spaghetti Bolognese', 'Classic pasta with meat sauce', 2300, 'https://example.com/spaghetti.jpg'),
-(4, 'Coke', 'Refreshing Coca-Cola', 600, 'https://example.com/coke.jpg'),
-(1, 'Hawaiian Pizza', 'Pizza with ham and pineapple', 2700, 'https://example.com/hawaiian.jpg'),
-(2, 'Veggie Burger', 'Vegetarian burger with fresh veggies', 2100, 'https://example.com/veggieburger.jpg'),
-(3, 'Fettuccine Alfredo', 'Creamy pasta with parmesan cheese', 2400, 'https://example.com/fettuccine.jpg'),
-(4, 'Iced Tea', 'Refreshing iced tea', 500, 'https://example.com/icedtea.jpg');
+(1, 'Boombox Burger', 'Hearty burger with rhythm in every bite.', 2800, 'https://bgs.jedlik.eu/innerpeace/images/boombox_burger.jpeg'),
+(1, 'Cupido Burger', 'Love-infused burger to steal your heart.', 2900, 'https://bgs.jedlik.eu/innerpeace/images/cupido_burger.jpeg'),
+(1, 'Mammut Burger', 'Colossal patty with prehistoric flavors.', 3200, 'https://bgs.jedlik.eu/innerpeace/images/mamut_burger.png'),
+(1, 'Sci-Fi Burger', 'Futuristic flavors from the galactic depths.', 3100, 'https://bgs.jedlik.eu/innerpeace/images/scifi_burger.jpeg'),
+(1, 'Gamer Burger', 'Energy-packed burger for marathon gaming sessions.', 3000, 'https://bgs.jedlik.eu/innerpeace/images/gamer_burger.jpeg'),
+(2, 'Inferno Pizza', 'Fiery spices that ignite your taste buds.', 3200, 'https://bgs.jedlik.eu/innerpeace/images/inferno_pizza.png'),
+(2, 'Colosseum Pizza', 'Grand mix reminiscent of ancient feasts.', 3100, 'https://bgs.jedlik.eu/innerpeace/images/colosseum_pizza.png'),
+(2, 'Party Pizza', 'Festive toppings perfect for any celebration.', 3000, 'https://bgs.jedlik.eu/innerpeace/images/party_pizza.png'),
+(2, 'Samurai Pizza', 'Bold flavors with refined warrior balance.', 3300, 'https://bgs.jedlik.eu/innerpeace/images/samurai_pizza.png'),
+(3, 'Anime Maki', 'Vibrant ingredients inspired by Japanese animation.', 3400, 'https://bgs.jedlik.eu/innerpeace/images/anime_maki.png'),
+(3, 'Robot Nigiri', 'Precision-cut fish with futuristic presentation.', 3500, 'https://bgs.jedlik.eu/innerpeace/images/robot_nigiri.png'),
+(3, 'Volcano Sushi', 'Spicy toppings that erupt with flavor.', 3600, 'https://bgs.jedlik.eu/innerpeace/images/volcano_sushi.png'),
+(3, 'Phoenix Roll', 'Fiery and fresh flavors in harmony.', 3300, 'https://bgs.jedlik.eu/innerpeace/images/phoenix_roll.png');
 
 -- Clear existing order data
 SET SQL_SAFE_UPDATES = 0;

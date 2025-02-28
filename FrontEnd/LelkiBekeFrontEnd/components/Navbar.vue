@@ -7,9 +7,9 @@
                 class="nav-button back-button">
           <i class="bi bi-arrow-left"></i>{{ t('navbar.back') }}
         </button>
-        <a class="navbar-brand" href="#">
+        <NuxtLink to="/" class="navbar-brand">
           <span class="brand-text">{{ t('navbar.title') }}</span>
-        </a>
+        </NuxtLink>
       </div>
       <button class="navbar-toggler" @click="toggleNavbar" :class="{ 'is-active': isNavbarOpen }">
         <span></span>
