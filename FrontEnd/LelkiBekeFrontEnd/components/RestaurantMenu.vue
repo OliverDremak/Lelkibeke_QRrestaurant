@@ -49,7 +49,8 @@
         <div class="cart-section col-xl-4 col-lg-6" 
              :class="{ 
                expanded: isCartExpanded, 
-               'footer-visible': isNearFooter 
+               'footer-visible': isNearFooter,
+               'empty': cart.length === 0
              }">
           <div class="cart-header">
             <h2>{{ t('reastaurantMenu.cartTitle') }}</h2>
@@ -207,7 +208,12 @@ const addToCart = (item) => {
   }
 };
 
+// Update the removeFromCart function to maintain expanded state when emptying cart
 const removeFromCart = (index) => {
+  // Check if this is the last item in cart
+  const isLastItem = cart.value.length === 1;
+  
+  // Remove the item
   cart.value.splice(index, 1);
 };
 
@@ -224,6 +230,10 @@ const decreaseQuantity = (index) => {
 };
 
 const toggleCart = () => {
+  if (cart.value.length === 0 && !isCartExpanded.value) {
+    // Don't expand if cart is empty
+    return;
+  }
   isCartExpanded.value = !isCartExpanded.value;
 };
 
@@ -335,6 +345,15 @@ onMounted(() => {
     }
   }
 });
+
+// Modify the cart visibility watcher to handle empty state
+watch([cart, isNearFooter], ([newCart, isNear]) => {
+  // If cart becomes empty and we're not explicitly expanded, ensure cart is collapsed
+  if (newCart.length === 0 && !isCartExpanded.value) {
+    isCartExpanded.value = false;
+  }
+}, { deep: true });
+
 </script>
 
 <style scoped>
@@ -1440,6 +1459,110 @@ button:hover .svg-icon {
   .footer .custom-button {
     position: relative;
     z-index: 2000;
+  }
+}
+
+/* Hide empty cart content when cart is not expanded */
+@media (max-width: 999px) {
+  .cart-section:not(.expanded).empty .empty-cart {
+    display: none !important;
+  }
+
+  .cart-section.empty {
+    background: transparent;
+    box-shadow: none;
+  }
+
+  /* Show only toggle button for empty cart */
+  .cart-section:not(.expanded).empty {
+    height: 0;
+    min-height: 0;
+    padding: 0;
+    transform: translateY(100%) !important; 
+  }
+
+  /* Make sure toggle button is still visible */
+  .cart-section.empty .toggle-cart {
+    transform: translateX(-50%) translateY(-30px);
+    opacity: 0.8;
+    box-shadow: 0 -2px 8px rgba(0,0,0,0.1);
+  }
+
+  /* Hide cart hint when cart is empty */
+  .cart-section.empty.footer-visible:not(.expanded) {
+    transform: translateY(100%) !important;
+  }
+}
+
+/* Keep cart visible and properly styled when expanded but empty */
+@media (max-width: 999px) {
+  /* Only hide when both empty AND not expanded */
+  .cart-section:not(.expanded).empty .empty-cart {
+    display: none !important;
+  }
+
+  /* Keep cart visible and properly styled when expanded but empty */
+  .cart-section.empty.expanded {
+    background: white;
+    box-shadow: 0 -5px 25px rgba(0, 0, 0, 0.15);
+    min-height: 25vh;
+    padding: 1rem;
+    transform: translateY(0) !important;
+  }
+
+  /* Only apply transparent background when not expanded */
+  .cart-section:not(.expanded).empty {
+    background: transparent;
+    box-shadow: none;
+    height: 0;
+    min-height: 0;
+    padding: 0;
+    transform: translateY(100%) !important; 
+  }
+
+  /* Fix header for empty cart in expanded state */
+  .cart-section.empty.expanded .cart-header {
+    display: flex;
+    margin-bottom: 1rem;
+  }
+
+  /* Ensure empty cart message is visible when expanded */
+  .cart-section.empty.expanded .empty-cart {
+    display: block !important;
+    opacity: 1;
+    padding: 3rem 1rem;
+  }
+
+  /* Fix darkmode styling for empty expanded cart */
+  :root.dark .cart-section.empty.expanded {
+    background: #2d2d2d;
+    box-shadow: 0 -5px 25px rgba(0, 0, 0, 0.3);
+  }
+  
+  /* Fix specific styling issues when cart is expanded but empty */
+  .cart-section.expanded.empty h2,
+  .cart-section.expanded.empty hr {
+    display: flex !important;
+  }
+  
+  /* Make sure header and footer styling is consistent in empty expanded state */
+  .cart-section.empty.expanded .cart-header {
+    cursor: pointer;
+    padding: 1rem 1.5rem;
+    background: linear-gradient(135deg, #dd6013, #ffbd00);
+  }
+  
+  /* Make the empty cart icon more visible */
+  .cart-section.empty.expanded .empty-cart-icon {
+    font-size: 4rem;
+    margin-bottom: 1.5rem;
+    opacity: 0.7;
+    animation: gentle-float 3s ease-in-out infinite;
+  }
+  
+  @keyframes gentle-float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
   }
 }
 
